@@ -8,6 +8,11 @@ by WarLore and is deployed for real use.
 - Live: https://type37.github.io/xenos-rampant-force-builder/
 - Repo: https://github.com/Type37/xenos-rampant-force-builder
 
+Active work: a full visual redesign is specced in `REDESIGN-BRIEF.md`. Read that brief before
+changing the UI. It inverts the current aesthetic, sets hard rules (min 16px type, AA contrast,
+larger targets, icon plus text stats, cost on the left, columns, motion, a WarLore footer), and
+maps every change to file and line anchors.
+
 ## Stack and commands
 
 Vite + React 18. No router, no backend, no state library. Every bit of state lives in
