@@ -94,14 +94,14 @@ function roleOf(u) {
 
 /* activation strings: "Free (5+)", "(Free) 6+", "5+", "—" */
 function parseAct(s) {
-  if (!s || s === "—" || s === "-") return { val: "—", free: false };
+  if (!s || s === "—" || s === "-" || s === "n/a") return { val: "n/a", free: false };
   const free = /free/i.test(s);
   const m = s.match(/(\d+\+?)/);
   return { val: m ? m[1] : s, free };
 }
 /* shoot value "4+ / 18\"" -> { main:"4+", range:"18\"" } */
 function splitRange(s) {
-  if (!s || s === "—") return { main: "—", range: "" };
+  if (!s || s === "—" || s === "n/a") return { main: "n/a", range: "" };
   if (s.includes("/")) {
     const [a, b] = s.split("/");
     return { main: a.trim(), range: b.trim() };
@@ -184,8 +184,8 @@ function validate(roster, budget) {
   else {
     if (cmds === 0) issues.push({ lvl: "err", msg: "No Commander. Crown one unit." });
     if (cmds > 1) issues.push({ lvl: "err", msg: `${cmds} Commanders. Only one is allowed.` });
-    if (count < minU) issues.push({ lvl: "warn", msg: `Below minimum size (${minU}\u2013${maxU} units at ${budget} points).` });
-    if (count > maxU) issues.push({ lvl: "err", msg: `Above maximum size (${minU}\u2013${maxU} units at ${budget} points).` });
+    if (count < minU) issues.push({ lvl: "warn", msg: `Below minimum size (${minU} to ${maxU} units at ${budget} points).` });
+    if (count > maxU) issues.push({ lvl: "err", msg: `Above maximum size (${minU} to ${maxU} units at ${budget} points).` });
     if (heavyVeh > heavyCap)
       issues.push({ lvl: "err", msg: `${heavyVeh} fighting/transport vehicles. The limit is ${heavyCap} (one per full 18 points).` });
     if (vehPts > budget / 2)
@@ -224,9 +224,12 @@ function Muster({ used, budget }) {
 function ActCell({ def, raw }) {
   const { val, free } = parseAct(raw);
   const { Icon } = def;
+  const na = val === "n/a";
   return (
-    <div className={`xr-stat ${val === "—" ? "muted" : ""}`}>
-      <Icon className="xr-stat-ic" size={17} strokeWidth={2} />
+    <div className={`xr-stat ${na ? "muted" : ""}`}>
+      <div className={`xr-act-disc k-${def.key}`}>
+        <Icon size={24} strokeWidth={2} />
+      </div>
       <div className="xr-stat-body">
         <div className="xr-stat-val">{val}</div>
         <div className="xr-stat-key">{def.label}{free && <em className="xr-free">free</em>}</div>
@@ -240,9 +243,10 @@ function ProfCell({ def, prof, sp }) {
   if (def.key === "sp") main = String(sp);
   else if (def.key === "sho") { const r = splitRange(prof.sho); main = r.main; range = r.range; }
   else main = prof[def.key];
+  const na = main === "n/a";
   return (
-    <div className={`xr-stat ${main === "—" ? "muted" : ""}`}>
-      <Icon className="xr-stat-ic" size={17} strokeWidth={2} />
+    <div className={`xr-stat ${na ? "muted" : ""}`}>
+      <Icon className="xr-stat-ic" size={26} strokeWidth={2} />
       <div className="xr-stat-body">
         <div className="xr-stat-val">{main}{range && <span className="xr-stat-rng">{range}</span>}</div>
         <div className="xr-stat-key">{def.label}</div>
@@ -252,23 +256,23 @@ function ProfCell({ def, prof, sp }) {
 }
 
 /* ---------------- catalogue card ---------------- */
-function CatalogCard({ t, onAdd }) {
+function CatalogCard({ t, onAdd, pulsing }) {
   const cat = catOf(t);
+  const sho = splitRange(t.prof.sho).main;
   return (
-    <button className={`xr-cat-card cat-${cat}`} onClick={() => onAdd(t.id)}>
-      <div className="xr-cat-top">
-        <span className="xr-cat-name">{t.name}</span>
-        <span className="xr-cat-cost">{t.base}<i>pts</i></span>
-      </div>
-      <p className="xr-cat-role">{t.role}</p>
-      <div className="xr-cat-ribbon">
-        <span><Sword size={12} strokeWidth={2.2} />{t.prof.atk}</span>
-        <span><Shield size={12} strokeWidth={2.2} />{t.prof.def}</span>
-        <span><Target size={12} strokeWidth={2.2} />{splitRange(t.prof.sho).main}</span>
-        <span><ShieldHalf size={12} strokeWidth={2.2} />{t.prof.arm}</span>
-        <span><Heart size={12} strokeWidth={2.2} />{t.sp}</span>
-        <span className="xr-cat-add"><Plus size={14} strokeWidth={2.6} /></span>
-      </div>
+    <button className={`xr-cat-card cat-${cat} ${pulsing ? "pulsing" : ""}`} onClick={() => onAdd(t.id)}>
+      <span className="xr-cat-stamp"><Plus size={18} strokeWidth={2.6} /><b>{t.base}</b><i>pts</i></span>
+      <span className="xr-cat-main">
+        <span className="xr-cat-top"><span className="xr-cat-name">{t.name}</span></span>
+        <span className="xr-cat-role">{t.role}</span>
+        <span className="xr-cat-ribbon">
+          <span><Sword size={18} strokeWidth={2.2} />Atk <em>{t.prof.atk}</em></span>
+          <span><Shield size={18} strokeWidth={2.2} />Def <em>{t.prof.def}</em></span>
+          <span><Target size={18} strokeWidth={2.2} />Sho <em>{sho}</em></span>
+          <span><ShieldHalf size={18} strokeWidth={2.2} />Arm <em>{t.prof.arm}</em></span>
+          <span><Heart size={18} strokeWidth={2.2} />SP <em>{t.sp}</em></span>
+        </span>
+      </span>
     </button>
   );
 }
@@ -278,9 +282,9 @@ function Row({ active, disabled, name, cost, text, onToggle, sub, children }) {
   return (
     <div className={`xr-row ${active ? "on" : ""} ${disabled ? "off" : ""} ${sub ? "sub" : ""}`}>
       <button className="xr-row-hit" onClick={onToggle} disabled={disabled}>
-        <span className="xr-check">{active ? <Check size={13} strokeWidth={3} /> : null}</span>
-        <span className="xr-row-name">{name}</span>
         <span className={`xr-row-cost ${cost < 0 ? "neg" : cost > 0 ? "pos" : ""}`}>{costLabel(cost)}</span>
+        <span className="xr-check">{active ? <Check size={18} strokeWidth={3} /> : null}</span>
+        <span className="xr-row-name">{name}</span>
       </button>
       <p className="xr-row-text">{text}</p>
       {children}
@@ -294,7 +298,7 @@ function CommandPanel({ u, onTable, onRoll }) {
   const trait = typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
   return (
     <div className="xr-group xr-command">
-      <div className="xr-group-bar"><Crown size={14} strokeWidth={2.4} /> Command</div>
+      <div className="xr-group-bar"><Crown size={18} strokeWidth={2.4} /> Command</div>
       <div className="xr-cmd-tables">
         {Object.entries(COMMANDER_TABLES).map(([key, t]) => (
           <button key={key} className={`xr-cmd-tab ${tbl === key ? "on" : ""}`} onClick={() => onTable(key)}>
@@ -304,7 +308,7 @@ function CommandPanel({ u, onTable, onRoll }) {
       </div>
       <p className="xr-cmd-blurb">{COMMANDER_TABLES[tbl].blurb}</p>
       <button className="xr-roll" onClick={onRoll}>
-        <Dices size={16} strokeWidth={2.2} /> {trait ? "Reroll trait" : "Roll a trait"}
+        <Dices size={20} strokeWidth={2.2} /> {trait ? "Reroll trait" : "Roll a trait"}
       </button>
       {trait && (
         <div className="xr-trait">
@@ -336,7 +340,7 @@ function UnitCard({ u, index, onName, onCmd, onDup, onDel, onOpt, onXeno, onTier
           aria-label={u.isCmd ? "Remove Commander" : "Make Commander"}
           title={u.isCmd ? "Commander" : "Make Commander"}
         >
-          <Crown size={18} strokeWidth={2.2} />
+          <Crown size={26} strokeWidth={2.2} />
         </button>
         <div className="xr-unit-id">
           <input
@@ -356,8 +360,8 @@ function UnitCard({ u, index, onName, onCmd, onDup, onDel, onOpt, onXeno, onTier
           <div className="xr-ro-sp"><Heart size={11} strokeWidth={2.4} />{sp} SP</div>
         </div>
         <div className="xr-unit-tools">
-          <button onClick={() => onDup(u.key)} aria-label="Duplicate" title="Duplicate"><Copy size={16} /></button>
-          <button onClick={() => onDel(u.key)} aria-label="Remove" title="Remove"><Trash2 size={16} /></button>
+          <button onClick={() => onDup(u.key)} aria-label="Duplicate" title="Duplicate"><Copy size={22} /></button>
+          <button onClick={() => onDel(u.key)} aria-label="Remove" title="Remove"><Trash2 size={22} /></button>
         </div>
       </div>
 
@@ -469,7 +473,7 @@ function PrintSheet({ roster, det, budget, used, count }) {
     <div className="xr-printsheet">
       <div className="xr-pr-head">
         <div className="xr-pr-title">{det || "Untitled Detachment"}</div>
-        <div className="xr-pr-meta">Xenos Rampant &middot; {used}/{budget} pts &middot; {count} units</div>
+        <div className="xr-pr-meta">Xenos Rampant, {used}/{budget} pts, {count} units</div>
       </div>
       {roster.map((u, i) => {
         const { t, p, a, pts, sp } = unitLine(u);
@@ -483,26 +487,43 @@ function PrintSheet({ roster, det, budget, used, count }) {
               <span className="xr-pr-unit-name">
                 {u.isCmd && <b>[CMD] </b>}
                 {u.name || `${t.name} ${i + 1}`}
-                <em> — {t.name}</em>
+                <em> ({t.name})</em>
               </span>
-              <span className="xr-pr-unit-pts">{pts} pts &middot; {sp} SP</span>
+              <span className="xr-pr-unit-pts">{pts} pts, {sp} SP</span>
             </div>
             <div className="xr-pr-stats">
-              <span>Act &mdash; A {parseAct(t.noAttack ? "—" : a.atk).val} / M {parseAct(a.mov).val} / S {parseAct(a.sho).val} / C {parseAct(a.cou).val}</span>
-              <span>Prof &mdash; A {p.atk} / D {p.def} / S {p.sho} / Arm {p.arm} / Mov {p.mov}</span>
+              <span>Act: A {parseAct(t.noAttack ? "—" : a.atk).val} / M {parseAct(a.mov).val} / S {parseAct(a.sho).val} / C {parseAct(a.cou).val}</span>
+              <span>Prof: A {p.atk} / D {p.def} / S {p.sho} / Arm {p.arm} / Mov {p.mov}</span>
             </div>
             <div className="xr-pr-rules">{t.special.filter((s) => s !== "None").join(", ")}</div>
             {opts.map((o) => (
-              <div className="xr-pr-line" key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}) — {o.text}</div>
+              <div className="xr-pr-line" key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</div>
             ))}
             {xenos.map((x) => (
-              <div className="xr-pr-line" key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}) — {x.text}</div>
+              <div className="xr-pr-line" key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.text}</div>
             ))}
-            {trait && <div className="xr-pr-line"><b>Trait: {trait.name}</b> — {trait.rule}</div>}
+            {trait && <div className="xr-pr-line"><b>Trait: {trait.name}:</b> {trait.rule}</div>}
           </div>
         );
       })}
     </div>
+  );
+}
+
+/* ---------------- site footer ---------------- */
+function SiteFooter() {
+  return (
+    <footer className="game-info-footer">
+      <div className="gif-inner">
+        <span className="gif-title">Xenos Rampant</span>
+        <span>Written by <a href="https://www.ospreypublishing.com/us/author/daniel-mersey/" target="_blank" rel="noopener">Daniel Mersey</a></span>
+        <span>Published by <a href="https://www.ospreypublishing.com/" target="_blank" rel="noopener">Osprey Games</a></span>
+        <a href="https://www.ospreypublishing.com/us/xenos-rampant-9781472852366/" target="_blank" rel="noopener">Buy the game</a>
+        <a href="https://jetwong.neocities.org/wargaming" target="_blank" rel="noopener">More WarLore tools</a>
+        <a href="https://github.com/Type37/xenos-rampant-force-builder" target="_blank" rel="noopener">Source on GitHub</a>
+        <span className="gif-builder">Force builder by <a href="https://linktr.ee/warlore" target="_blank" rel="noopener">WarLore</a></span>
+      </div>
+    </footer>
   );
 }
 
@@ -513,17 +534,21 @@ export default function App() {
   const [budget, setBudget] = useState(24);
   const [det, setDet] = useState("");
   const [roster, setRoster] = useState([]);
+  const [pulseId, setPulseId] = useState(null);
 
   const { issues, used, count } = useMemo(() => validate(roster, budget), [roster, budget]);
   const errors = issues.filter((i) => i.lvl === "err");
   const status = errors.length ? "err" : count === 0 ? "empty" : "ok";
 
   /* mutations */
-  const addUnit = (typeId) =>
+  const addUnit = (typeId) => {
     setRoster((r) => [
       ...r,
       { key: uid(), typeId, name: "", isCmd: r.length === 0, traitTable: "aggressive", traitIndex: undefined, options: {}, xenos: {} },
     ]);
+    setPulseId(typeId);
+    setTimeout(() => setPulseId((p) => (p === typeId ? null : p)), 420);
+  };
   const dupUnit = (key) =>
     setRoster((r) => {
       const i = r.findIndex((u) => u.key === key);
@@ -569,15 +594,15 @@ export default function App() {
   const clearAll = () => { if (roster.length === 0 || window.confirm("Clear the whole detachment?")) setRoster([]); };
 
   const copyList = () => {
-    const lines = [`${det || "Untitled Detachment"} — ${used}/${budget} pts, ${count} units`, ""];
+    const lines = [`${det || "Untitled Detachment"} (${used}/${budget} pts, ${count} units)`, ""];
     roster.forEach((u, i) => {
       const t = UNIT_BY_ID[u.typeId];
-      lines.push(`${u.isCmd ? "[CMD] " : ""}${u.name || `${t.name} ${i + 1}`} — ${t.name} (${unitPoints(u)} pts, ${unitSP(u)} SP)`);
-      t.options.filter((o) => u.options[o.id]).forEach((o) => lines.push(`  · ${o.name} (${costLabel(optCost(o))})`));
-      XENO_RULES.filter((x) => x.id in u.xenos).forEach((x) => lines.push(`  · ${x.name} (${costLabel(xenoCost(x, u.xenos[x.id]))})`));
+      lines.push(`${u.isCmd ? "[CMD] " : ""}${u.name || `${t.name} ${i + 1}`} (${t.name}, ${unitPoints(u)} pts, ${unitSP(u)} SP)`);
+      t.options.filter((o) => u.options[o.id]).forEach((o) => lines.push(`  - ${o.name} (${costLabel(optCost(o))})`));
+      XENO_RULES.filter((x) => x.id in u.xenos).forEach((x) => lines.push(`  - ${x.name} (${costLabel(xenoCost(x, u.xenos[x.id]))})`));
       if (u.isCmd && typeof u.traitIndex === "number") {
         const tr = COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex];
-        lines.push(`  · Trait: ${tr.name}`);
+        lines.push(`  - Trait: ${tr.name}`);
       }
     });
     navigator.clipboard?.writeText(lines.join("\n"));
@@ -588,6 +613,7 @@ export default function App() {
   return (
     <div className="xr-app">
       <style>{CSS}</style>
+      <div className="field-book">
 
       {/* masthead */}
       <header className="xr-mast">
@@ -599,9 +625,9 @@ export default function App() {
           <div className="xr-mast-right">
             <Muster used={used} budget={budget} />
             <div className="xr-actions">
-              <button className="xr-act" onClick={() => window.print()}><Printer size={15} strokeWidth={2.2} /> Print</button>
-              <button className="xr-act" onClick={copyList}><Copy size={15} strokeWidth={2.2} /> Copy</button>
-              <button className="xr-act danger" onClick={clearAll}><RotateCcw size={15} strokeWidth={2.2} /> Clear</button>
+              <button className="xr-act" onClick={() => window.print()}><Printer size={20} strokeWidth={2.2} /> Print</button>
+              <button className="xr-act" onClick={copyList}><Copy size={20} strokeWidth={2.2} /> Copy</button>
+              <button className="xr-act danger" onClick={clearAll}><RotateCcw size={20} strokeWidth={2.2} /> Clear</button>
             </div>
           </div>
         </div>
@@ -614,8 +640,8 @@ export default function App() {
             ))}
           </div>
           <div className={`xr-status ${status}`}>
-            {status === "ok" && (<><Check size={14} strokeWidth={3} /> {count} units, legal</>)}
-            {status === "err" && (<><AlertTriangle size={14} strokeWidth={2.6} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>)}
+            {status === "ok" && (<><Check size={18} strokeWidth={3} /> {count} units, legal</>)}
+            {status === "err" && (<><AlertTriangle size={18} strokeWidth={2.6} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>)}
             {status === "empty" && (<>Empty detachment</>)}
           </div>
         </div>
@@ -633,9 +659,9 @@ export default function App() {
         <aside className="xr-catalogue">
           {grouped.map((g) => (
             <section className="xr-catsec" key={g.id}>
-              <div className={`xr-catsec-h cat-${g.id}`}><g.Icon size={15} strokeWidth={2.3} /> {g.label}</div>
+              <div className={`xr-catsec-h cat-${g.id}`}><g.Icon size={22} strokeWidth={2.3} /> {g.label}</div>
               <div className="xr-catsec-list">
-                {g.units.map((t) => <CatalogCard key={t.id} t={t} onAdd={addUnit} />)}
+                {g.units.map((t) => <CatalogCard key={t.id} t={t} onAdd={addUnit} pulsing={pulseId === t.id} />)}
               </div>
             </section>
           ))}
@@ -645,7 +671,7 @@ export default function App() {
         <main className="xr-roster">
           {roster.length === 0 ? (
             <div className="xr-empty">
-              <Skull size={40} strokeWidth={1.3} />
+              <Skull size={56} strokeWidth={1.3} />
               <p>Pick units from the catalogue to muster your detachment.</p>
               <span>Standard games are 24 points. One unit must be your Commander.</span>
             </div>
@@ -670,6 +696,9 @@ export default function App() {
         </main>
       </div>
 
+      <SiteFooter />
+      </div>
+
       <PrintSheet roster={roster} det={det} budget={budget} used={used} count={count} />
     </div>
   );
@@ -679,285 +708,256 @@ export default function App() {
  * STYLE
  * ================================================================== */
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800&family=Oswald:wght@400;500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
 
 .xr-app{
-  --void:#15110B; --slab:#1F1A12; --slab2:#26201533; --panel:#221C13;
-  --edge:#3C3322; --edge2:#4D4230;
-  --bone:#ECE3CC; --bone-dim:#B6AA8C; --ash:#8A7E64; --faint:#6A5F49;
-  --spice:#C9701E; --spice-br:#E58A2E; --spice-soft:#C9701E22;
-  --gold:#C8A53C; --gold-br:#E0BE52; --gold-soft:#C8A53C22;
-  --steel:#7C8A92; --steel-br:#A6B6BF; --steel-soft:#7C8A9222;
-  --blood:#C2402E; --blood-soft:#C2402E22;
-  --disp:'Big Shoulders Display',sans-serif;
-  --cond:'Oswald',sans-serif;
-  --body:'Barlow',system-ui,sans-serif;
-  background:
-    radial-gradient(120% 80% at 50% -10%, #221b11 0%, var(--void) 60%) fixed,
-    var(--void);
-  color:var(--bone); font-family:var(--body); font-size:16px; line-height:1.5;
+  --paper:#F4ECD8; --paper-2:#EFE4CB; --paper-3:#ECDFC0;
+  --ink:#1F3D2E; --ink-2:#3A5446; --ink-18:rgba(31,61,46,.18); --ink-30:rgba(31,61,46,.32);
+  --cream:#F6EFDD;
+  --coral:#F4604C; --coral-ink:#BE3319;
+  --sage:#5C7A52; --iris:#6A4A8C; --rust:#B06A2C; --brass:#8A6A1F;
+  --display:'Zilla Slab',Georgia,serif;
+  --body:'Source Serif 4',Georgia,serif;
+  --r-card:14px; --r-stamp:50%;
+  --shadow-page:0 2px 18px rgba(31,61,46,.10);
+  --shadow-card:0 6px 16px -8px rgba(31,61,46,.32);
+  background:var(--paper);
+  color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.6;
   min-height:100vh;
 }
 .xr-app *{box-sizing:border-box;}
 .xr-app button{font-family:inherit;cursor:pointer;color:inherit;background:none;border:none;}
 .xr-app input{font-family:inherit;}
-.xr-app ::selection{background:var(--spice);color:#1a1209;}
-.xr-app :focus-visible{outline:2px solid var(--spice-br);outline-offset:2px;}
+.xr-app ::selection{background:var(--coral);color:#fff;}
+.xr-app :focus-visible{outline:3px solid var(--iris);outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){
+  .xr-app *{animation:none !important; transition:none !important;}
+}
+@keyframes xr-pop-in{0%{opacity:0;transform:translateY(10px) scale(1.03);}60%{opacity:1;transform:translateY(0) scale(.99);}100%{transform:scale(1);}}
+@keyframes xr-pulse{0%{transform:scale(1);}40%{transform:scale(1.05);}100%{transform:scale(1);}}
+@keyframes xr-check{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
+
+/* centered book shell */
+.field-book{max-width:1100px;margin-inline:auto;background:var(--paper);box-shadow:var(--shadow-page);min-height:100vh;}
 
 /* ---------- masthead ---------- */
-.xr-mast{
-  position:sticky; top:0; z-index:30;
-  background:linear-gradient(180deg,#1c160e 0%, #18130c 100%);
-  border-bottom:1px solid var(--edge);
-  box-shadow:0 10px 30px -12px #000a;
-  padding:14px clamp(12px,3vw,30px) 12px;
-}
+.xr-mast{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:3px solid var(--ink);padding:18px clamp(16px,3vw,30px) 16px;}
 .xr-mast-row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;}
-.xr-brand{display:flex;align-items:baseline;gap:14px;}
-.xr-word{
-  font-family:var(--disp); font-weight:800; font-size:clamp(30px,5vw,52px);
-  letter-spacing:.06em; text-transform:uppercase; line-height:.82; margin:0;
-  color:var(--bone);
-  text-shadow:0 2px 0 #0007;
-}
-.xr-sub{
-  font-family:var(--cond); font-weight:600; text-transform:uppercase;
-  letter-spacing:.42em; font-size:clamp(11px,1.4vw,15px); color:var(--spice);
-  padding-bottom:3px;
-}
-.xr-mast-right{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
-.xr-actions{display:flex;gap:8px;}
-.xr-act{
-  display:inline-flex;align-items:center;gap:7px;
-  font-family:var(--cond);font-weight:500;text-transform:uppercase;letter-spacing:.12em;
-  font-size:13px;color:var(--bone-dim);
-  border:1px solid var(--edge2);background:#ffffff05;
-  padding:9px 13px;border-radius:2px;transition:.13s;
-}
-.xr-act:hover{color:var(--bone);border-color:var(--spice);background:var(--spice-soft);}
-.xr-act.danger:hover{color:#fff;border-color:var(--blood);background:var(--blood-soft);}
+.xr-brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.xr-word{font-family:var(--display);font-weight:700;font-size:clamp(30px,5vw,48px);letter-spacing:-.01em;line-height:.95;margin:0;color:var(--ink);}
+.xr-sub{font-family:var(--body);font-style:italic;font-weight:400;letter-spacing:.01em;font-size:clamp(16px,1.6vw,19px);color:var(--coral-ink);}
+.xr-mast-right{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.xr-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.xr-act{display:inline-flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink);border:2px solid var(--ink);background:var(--paper-2);padding:11px 16px;border-radius:10px;transition:.13s;min-height:48px;}
+.xr-act:hover{background:var(--sage);color:var(--cream);border-color:var(--sage);}
+.xr-act:active{transform:scale(.97);}
+.xr-act.danger:hover{background:var(--coral);color:#fff;border-color:var(--coral-ink);}
 
 /* gauge */
-.xr-muster{min-width:230px;}
-.xr-muster-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px;}
-.xr-muster-label{font-family:var(--cond);font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:11px;color:var(--ash);}
-.xr-muster-read{font-family:var(--disp);font-weight:700;line-height:1;}
-.xr-muster-read b{font-size:30px;color:var(--bone);}
-.xr-muster-slash{font-size:20px;color:var(--faint);margin:0 2px;}
-.xr-muster-budget{font-size:22px;color:var(--bone-dim);}
-.xr-muster-pts{font-family:var(--cond);font-weight:500;font-size:12px;color:var(--ash);text-transform:uppercase;letter-spacing:.14em;margin-left:5px;}
-.xr-muster-track{
-  position:relative;height:14px;border:1px solid var(--edge2);
-  background:#0d0a06;border-radius:2px;overflow:hidden;
-}
-.xr-muster-fill{height:100%;transition:width .25s cubic-bezier(.4,0,.2,1);
-  background:linear-gradient(90deg,var(--spice),var(--spice-br));}
-.xr-muster.near .xr-muster-fill{background:linear-gradient(90deg,var(--gold),var(--gold-br));}
-.xr-muster.over .xr-muster-fill{background:linear-gradient(90deg,var(--blood),#E0563F);}
-.xr-muster-over{position:absolute;inset:0;border:1px solid var(--blood);pointer-events:none;
-  box-shadow:inset 0 0 12px var(--blood-soft);}
-.xr-muster-ticks{position:absolute;inset:0;pointer-events:none;
-  background-image:repeating-linear-gradient(90deg,#0000 0 calc(10% - 1px),#00000055 calc(10% - 1px) 10%);}
+.xr-muster{min-width:240px;}
+.xr-muster-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;gap:10px;}
+.xr-muster-label{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);}
+.xr-muster-read{font-family:var(--display);font-weight:700;line-height:1;font-variant-numeric:tabular-nums;}
+.xr-muster-read b{font-size:30px;color:var(--ink);}
+.xr-muster-slash{font-size:22px;color:var(--ink-2);margin:0 3px;}
+.xr-muster-budget{font-size:24px;color:var(--ink-2);}
+.xr-muster-pts{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-left:6px;}
+.xr-muster-track{position:relative;height:18px;border:2px solid var(--ink);background:var(--paper-2);border-radius:6px;overflow:hidden;}
+.xr-muster-fill{height:100%;transition:width .3s cubic-bezier(.4,0,.2,1);background:var(--sage);}
+.xr-muster.near .xr-muster-fill{background:var(--brass);}
+.xr-muster.over .xr-muster-fill{background:var(--coral);}
+.xr-muster-over{position:absolute;inset:0;border:2px solid var(--coral-ink);pointer-events:none;}
+.xr-muster-ticks{position:absolute;inset:0;pointer-events:none;background-image:repeating-linear-gradient(90deg,#0000 0 calc(10% - 2px),var(--ink-18) calc(10% - 2px) 10%);}
 
-.xr-mast-row2{display:flex;align-items:center;gap:16px;margin-top:13px;flex-wrap:wrap;}
-.xr-detname{
-  flex:1;min-width:180px;
-  font-family:var(--disp);font-weight:600;font-size:21px;letter-spacing:.02em;
-  color:var(--bone);background:transparent;
-  border:none;border-bottom:1px solid var(--edge2);padding:4px 2px 6px;
-}
-.xr-detname::placeholder{color:var(--faint);}
-.xr-detname:focus{outline:none;border-bottom-color:var(--spice);}
-.xr-budget{display:flex;align-items:center;gap:5px;}
-.xr-budget-l{font-family:var(--cond);font-weight:600;text-transform:uppercase;letter-spacing:.2em;font-size:11px;color:var(--ash);margin-right:4px;}
-.xr-budget-b{
-  font-family:var(--cond);font-weight:600;font-size:14px;color:var(--bone-dim);
-  border:1px solid var(--edge2);min-width:38px;padding:6px 4px;border-radius:2px;transition:.12s;
-}
-.xr-budget-b:hover{border-color:var(--spice);color:var(--bone);}
-.xr-budget-b.on{background:var(--spice);border-color:var(--spice);color:#1a1209;}
-.xr-status{
-  display:inline-flex;align-items:center;gap:7px;
-  font-family:var(--cond);font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:12px;
-  padding:7px 12px;border-radius:2px;border:1px solid var(--edge2);
-}
-.xr-status.ok{color:#9bd17e;border-color:#3f5a35;background:#9bd17e12;}
-.xr-status.err{color:#e8927f;border-color:#5a342c;background:var(--blood-soft);}
-.xr-status.empty{color:var(--ash);}
-.xr-issues{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px;}
-.xr-issue{font-family:var(--cond);font-weight:500;font-size:12.5px;letter-spacing:.02em;
-  padding:5px 10px;border-radius:2px;border-left:3px solid;}
-.xr-issue.err{color:#e8927f;background:var(--blood-soft);border-color:var(--blood);}
-.xr-issue.warn{color:var(--gold-br);background:var(--gold-soft);border-color:var(--gold);}
+.xr-mast-row2{display:flex;align-items:center;gap:16px;margin-top:16px;flex-wrap:wrap;}
+.xr-detname{flex:1;min-width:200px;font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);background:transparent;border:none;border-bottom:2px solid var(--ink-30);padding:4px 2px 6px;}
+.xr-detname::placeholder{color:var(--ink-2);opacity:.7;}
+.xr-detname:focus{outline:none;border-bottom-color:var(--coral);}
+.xr-budget{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.xr-budget-l{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);margin-right:4px;}
+.xr-budget-b{font-family:var(--body);font-weight:600;font-size:17px;color:var(--ink);border:2px solid var(--ink);min-width:52px;min-height:48px;padding:8px 10px;border-radius:10px;transition:.12s;}
+.xr-budget-b:hover{background:var(--paper-2);}
+.xr-budget-b:active{transform:scale(.96);}
+.xr-budget-b.on{background:var(--ink);color:var(--cream);}
+.xr-status{display:inline-flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:16px;padding:9px 14px;border-radius:10px;border:2px solid var(--ink);}
+.xr-status.ok{color:var(--sage);border-color:var(--sage);background:var(--paper-2);}
+.xr-status.err{color:var(--coral-ink);border-color:var(--coral-ink);background:#F4604C18;}
+.xr-status.empty{color:var(--ink-2);}
+.xr-issues{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.xr-issue{font-family:var(--body);font-weight:600;font-size:16px;padding:7px 12px;border-radius:8px;border-left:4px solid;background:var(--paper-2);}
+.xr-issue.err{color:var(--coral-ink);border-color:var(--coral-ink);}
+.xr-issue.warn{color:var(--brass);border-color:var(--brass);}
 
 /* ---------- body ---------- */
-.xr-body{display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:0;align-items:start;}
+.xr-body{display:grid;grid-template-columns:minmax(280px,340px) 1fr;gap:0;align-items:start;}
 @media(max-width:880px){.xr-body{grid-template-columns:1fr;}}
 
 /* catalogue */
-.xr-catalogue{
-  position:sticky;top:166px;align-self:start;max-height:calc(100vh - 166px);overflow-y:auto;
-  padding:18px clamp(10px,1.5vw,16px) 40px;border-right:1px solid var(--edge);
-}
-@media(max-width:880px){.xr-catalogue{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--edge);}}
-.xr-catsec{margin-bottom:22px;}
-.xr-catsec-h{
-  display:flex;align-items:center;gap:8px;
-  font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.16em;
-  font-size:16px;color:var(--bone);padding-bottom:8px;margin-bottom:10px;
-  border-bottom:1px solid var(--edge2);
-}
-.xr-catsec-h.cat-inf{color:var(--spice-br);}
-.xr-catsec-h.cat-xeno{color:var(--spice-br);}
-.xr-catsec-h.cat-veh{color:var(--steel-br);}
-.xr-catsec-list{display:flex;flex-direction:column;gap:8px;}
-.xr-cat-card{
-  text-align:left;border:1px solid var(--edge);background:var(--slab);
-  border-left:3px solid var(--spice);padding:11px 13px;border-radius:2px;transition:.13s;
-}
-.xr-cat-card.cat-veh{border-left-color:var(--steel);}
-.xr-cat-card:hover{background:#2a2316;border-color:var(--edge2);transform:translateX(2px);}
-.xr-cat-card:hover .xr-cat-add{background:var(--spice);color:#1a1209;border-color:var(--spice);}
+.xr-catalogue{position:sticky;top:190px;align-self:start;max-height:calc(100vh - 190px);overflow-y:auto;padding:20px clamp(12px,1.5vw,18px) 40px;border-right:3px solid var(--ink);}
+@media(max-width:880px){.xr-catalogue{position:static;max-height:none;border-right:none;border-bottom:3px solid var(--ink);}}
+.xr-catsec{margin-bottom:26px;}
+.xr-catsec-h{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:24px;padding-bottom:8px;margin-bottom:12px;border-bottom:2px solid var(--ink-30);}
+.xr-catsec-h.cat-inf{color:var(--sage);}
+.xr-catsec-h.cat-xeno{color:var(--iris);}
+.xr-catsec-h.cat-veh{color:var(--rust);}
+.xr-catsec-list{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:1100px){.xr-catsec-list{grid-template-columns:repeat(2,1fr);}}
+
+.xr-cat-card{display:flex;gap:12px;text-align:left;border:3px solid var(--ink);background:var(--paper-2);padding:14px;border-radius:var(--r-card);transition:.14s;align-items:flex-start;}
+.xr-cat-card.cat-veh{border-color:var(--rust);}
+.xr-cat-card.cat-xeno{border-color:var(--iris);}
+.xr-cat-card:hover{box-shadow:var(--shadow-card);transform:translateY(-2px);}
+.xr-cat-card:active{transform:scale(.99);}
+.xr-cat-card.pulsing{animation:xr-pulse .42s cubic-bezier(.2,.8,.2,1);}
+.xr-cat-stamp{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:66px;min-height:66px;border-radius:var(--r-stamp);background:var(--coral);color:var(--ink);border:2px solid var(--ink);transition:.14s;}
+.xr-cat-card:hover .xr-cat-stamp{background:var(--coral-ink);color:var(--cream);}
+.xr-cat-stamp b{font-family:var(--display);font-weight:700;font-size:24px;line-height:1;}
+.xr-cat-stamp i{font-family:var(--body);font-style:normal;font-weight:600;font-size:13px;}
+.xr-cat-main{flex:1;min-width:0;display:flex;flex-direction:column;}
 .xr-cat-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
-.xr-cat-name{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.02em;color:var(--bone);}
-.xr-cat-cost{font-family:var(--disp);font-weight:700;font-size:20px;color:var(--spice-br);}
-.xr-cat-card.cat-veh .xr-cat-cost{color:var(--steel-br);}
-.xr-cat-cost i{font-family:var(--cond);font-weight:500;font-style:normal;font-size:10px;color:var(--ash);text-transform:uppercase;letter-spacing:.1em;margin-left:3px;}
-.xr-cat-role{font-size:12.5px;line-height:1.42;color:var(--bone-dim);margin:5px 0 9px;}
-.xr-cat-ribbon{display:flex;align-items:center;gap:11px;flex-wrap:wrap;}
-.xr-cat-ribbon span{display:inline-flex;align-items:center;gap:3px;
-  font-family:var(--cond);font-weight:600;font-size:13px;color:var(--ash);}
-.xr-cat-ribbon span svg{color:var(--faint);}
-.xr-cat-add{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;
-  width:24px;height:24px;border:1px solid var(--edge2);border-radius:2px;color:var(--bone-dim);transition:.13s;}
+.xr-cat-name{font-family:var(--display);font-weight:700;font-size:21px;color:var(--ink);}
+.xr-cat-role{font-style:italic;font-size:16px;line-height:1.45;color:var(--ink-2);margin:4px 0 10px;}
+.xr-cat-ribbon{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;}
+.xr-cat-ribbon span{display:inline-flex;align-items:center;gap:5px;font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);}
+.xr-cat-ribbon span svg{color:var(--ink);}
+.xr-cat-ribbon span em{font-style:normal;color:var(--ink);font-weight:700;}
 
 /* roster */
-.xr-roster{padding:18px clamp(12px,2.5vw,28px) 80px;display:flex;flex-direction:column;gap:16px;}
-.xr-empty{
-  border:1px dashed var(--edge2);border-radius:3px;padding:70px 30px;text-align:center;
-  color:var(--ash);margin-top:24px;
-}
-.xr-empty svg{color:var(--faint);margin-bottom:14px;}
-.xr-empty p{font-family:var(--disp);font-weight:600;font-size:20px;color:var(--bone-dim);margin:0 0 6px;letter-spacing:.02em;}
-.xr-empty span{font-size:13.5px;}
+.xr-roster{padding:20px clamp(14px,2.5vw,28px) 60px;display:grid;grid-template-columns:1fr;gap:20px;}
+@media(min-width:1000px){.xr-roster{grid-template-columns:repeat(auto-fill,minmax(420px,1fr));}}
+.xr-empty{grid-column:1/-1;border:3px dashed var(--ink-30);border-radius:var(--r-card);padding:70px 30px;text-align:center;color:var(--ink-2);margin-top:10px;}
+.xr-empty svg{color:var(--sage);margin-bottom:14px;}
+.xr-empty p{font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);margin:0 0 8px;}
+.xr-empty span{font-size:16px;font-style:italic;}
 
-.xr-unit{
-  border:1px solid var(--edge);background:linear-gradient(180deg,var(--panel),#1d180f);
-  border-radius:3px;border-left:4px solid var(--spice);overflow:hidden;
-  box-shadow:0 12px 26px -18px #000;
-}
-.xr-unit.role-veh{border-left-color:var(--steel);}
-.xr-unit.role-cmd{border-left-color:var(--gold);box-shadow:0 0 0 1px var(--gold-soft),0 12px 26px -18px #000;}
+.xr-unit{border:3px solid var(--ink);background:var(--paper-2);border-radius:var(--r-card);overflow:hidden;animation:xr-pop-in .38s cubic-bezier(.2,.8,.2,1);}
+.xr-unit.role-veh{border-color:var(--rust);}
+.xr-unit.role-cmd{border-color:var(--brass);box-shadow:0 0 0 2px var(--brass) inset;}
 
-.xr-unit-head{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--edge);background:#ffffff04;}
-.xr-crown{
-  flex:none;width:38px;height:38px;border:1px solid var(--edge2);border-radius:2px;
-  display:flex;align-items:center;justify-content:center;color:var(--faint);transition:.13s;
-}
-.xr-crown:hover{color:var(--gold);border-color:var(--gold);}
-.xr-crown.on{color:#1a1209;background:var(--gold);border-color:var(--gold);}
+.xr-unit-head{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:2px solid var(--ink-30);background:var(--paper);}
+.xr-crown{flex:none;width:56px;height:56px;border:2px solid var(--ink);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--ink-2);transition:.13s;}
+.xr-crown:hover{color:var(--brass);border-color:var(--brass);}
+.xr-crown:active{transform:scale(.95);}
+.xr-crown.on{color:var(--cream);background:var(--brass);border-color:var(--brass);}
 .xr-unit-id{flex:1;min-width:0;}
-.xr-unit-name{
-  width:100%;font-family:var(--disp);font-weight:700;font-size:clamp(22px,3vw,30px);
-  letter-spacing:.02em;color:var(--bone);background:transparent;border:none;
-  border-bottom:1px solid transparent;padding:0 0 1px;line-height:1.04;
-}
-.xr-unit-name::placeholder{color:var(--faint);}
-.xr-unit-name:focus{outline:none;border-bottom-color:var(--edge2);}
-.xr-unit-type{font-family:var(--cond);font-weight:500;text-transform:uppercase;letter-spacing:.16em;font-size:12px;color:var(--ash);margin-top:3px;}
-.xr-tag-cmd{color:var(--gold);margin-right:9px;border:1px solid var(--gold-soft);background:var(--gold-soft);padding:1px 6px;border-radius:2px;letter-spacing:.12em;}
+.xr-unit-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(24px,3vw,30px);color:var(--ink);background:transparent;border:none;border-bottom:2px solid transparent;padding:0 0 2px;line-height:1.05;}
+.xr-unit-name::placeholder{color:var(--ink-2);opacity:.6;}
+.xr-unit-name:focus{outline:none;border-bottom-color:var(--coral);}
+.xr-unit-type{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-top:4px;}
+.xr-tag-cmd{color:var(--cream);background:var(--brass);margin-right:9px;padding:2px 8px;border-radius:6px;font-weight:700;}
 .xr-unit-readout{text-align:right;flex:none;}
-.xr-ro-pts{font-family:var(--disp);font-weight:800;font-size:30px;line-height:.9;color:var(--bone);}
-.xr-ro-pts i{font-family:var(--cond);font-weight:500;font-style:normal;font-size:11px;color:var(--ash);text-transform:uppercase;letter-spacing:.12em;margin-left:3px;}
-.xr-ro-sp{display:inline-flex;align-items:center;gap:3px;font-family:var(--cond);font-weight:600;font-size:12px;color:var(--spice-br);margin-top:2px;}
-.xr-unit.role-veh .xr-ro-sp{color:var(--steel-br);}
-.xr-unit-tools{display:flex;gap:4px;flex:none;}
-.xr-unit-tools button{width:34px;height:34px;border:1px solid var(--edge2);border-radius:2px;color:var(--ash);display:flex;align-items:center;justify-content:center;transition:.12s;}
-.xr-unit-tools button:hover{color:var(--bone);border-color:var(--spice);background:var(--spice-soft);}
-.xr-unit-tools button:last-child:hover{color:#fff;border-color:var(--blood);background:var(--blood-soft);}
+.xr-ro-pts{font-family:var(--display);font-weight:700;font-size:32px;line-height:.9;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-ro-pts i{font-family:var(--body);font-weight:600;font-style:normal;font-size:15px;color:var(--ink-2);margin-left:4px;}
+.xr-ro-sp{display:inline-flex;align-items:center;gap:4px;font-family:var(--body);font-weight:600;font-size:16px;color:var(--sage);margin-top:3px;}
+.xr-unit.role-veh .xr-ro-sp{color:var(--rust);}
+.xr-unit-tools{display:flex;gap:6px;flex:none;}
+.xr-unit-tools button{width:48px;height:48px;border:2px solid var(--ink);border-radius:10px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.12s;}
+.xr-unit-tools button:hover{background:var(--paper);}
+.xr-unit-tools button:active{transform:scale(.95);}
+.xr-unit-tools button:last-child:hover{color:#fff;background:var(--coral);border-color:var(--coral-ink);}
 
 /* stat groups */
-.xr-stats{display:grid;grid-template-columns:auto 1fr;gap:1px;background:var(--edge);}
-@media(max-width:620px){.xr-stats{grid-template-columns:1fr;}}
-.xr-statgroup{background:#1d180f;padding:11px 14px 13px;}
-.xr-statgroup-h{font-family:var(--cond);font-weight:600;text-transform:uppercase;letter-spacing:.24em;font-size:10.5px;color:var(--ash);margin-bottom:9px;}
-.xr-statgroup-h em{font-style:normal;color:var(--faint);margin-left:5px;letter-spacing:.1em;}
-.xr-statgrid{display:grid;gap:7px 9px;}
+.xr-stats{display:grid;grid-template-columns:1fr;gap:0;}
+.xr-statgroup{padding:16px;border-bottom:2px solid var(--ink-18);}
+.xr-statgroup:last-child{border-bottom:none;}
+.xr-statgroup-h{font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.03em;font-size:18px;color:var(--ink-2);margin-bottom:12px;}
+.xr-statgroup-h em{font-style:italic;color:var(--ink-2);margin-left:6px;}
+.xr-statgrid{display:grid;gap:14px 12px;}
 .xr-statgrid.act{grid-template-columns:repeat(2,1fr);}
 .xr-statgrid.prof{grid-template-columns:repeat(3,1fr);}
-@media(max-width:620px){.xr-statgrid.prof{grid-template-columns:repeat(3,1fr);}}
-.xr-stat{display:flex;align-items:center;gap:8px;}
-.xr-stat-ic{color:var(--spice);flex:none;}
-.xr-unit.role-veh .xr-stat-ic{color:var(--steel);}
-.xr-stat.muted .xr-stat-ic{color:var(--faint);}
-.xr-stat-body{min-width:0;line-height:1;}
-.xr-stat-val{font-family:var(--cond);font-weight:600;font-size:21px;color:var(--bone);}
-.xr-stat-rng{font-family:var(--cond);font-weight:500;font-size:12px;color:var(--ash);margin-left:3px;}
-.xr-stat.muted .xr-stat-val{color:var(--faint);}
-.xr-stat-key{font-family:var(--cond);font-weight:500;text-transform:uppercase;letter-spacing:.1em;font-size:10px;color:var(--ash);margin-top:2px;}
-.xr-free{font-style:normal;color:var(--spice-br);margin-left:5px;letter-spacing:.08em;}
+@media(max-width:520px){.xr-statgrid.prof{grid-template-columns:repeat(2,1fr);}}
+.xr-stat{display:flex;align-items:center;gap:10px;}
+.xr-stat-ic{color:var(--ink);flex:none;}
+.xr-stat.muted{opacity:.5;}
+.xr-stat-body{min-width:0;line-height:1.1;}
+.xr-stat-val{font-family:var(--display);font-weight:700;font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-stat-rng{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-left:4px;}
+.xr-stat-key{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-top:1px;}
+.xr-free{font-style:italic;color:var(--coral-ink);margin-left:6px;}
+
+/* activation discs */
+.xr-act-disc{flex:none;width:48px;height:48px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;}
+.xr-act-disc.k-atk{background:var(--coral);color:var(--ink);}
+.xr-act-disc.k-mov{background:var(--sage);color:var(--cream);}
+.xr-act-disc.k-sho{background:var(--iris);color:var(--cream);}
+.xr-act-disc.k-cou{background:var(--brass);color:var(--cream);}
+.xr-stat.muted .xr-act-disc{background:var(--paper-2);color:var(--ink-2);}
 
 /* groups */
-.xr-group{border-top:1px solid var(--edge);padding:13px 14px;}
-.xr-group-bar{display:inline-flex;align-items:center;gap:7px;font-family:var(--cond);font-weight:600;text-transform:uppercase;letter-spacing:.22em;font-size:11px;color:var(--spice-br);margin-bottom:11px;}
-.xr-unit.role-veh .xr-group-bar{color:var(--steel-br);}
+.xr-group{border-top:2px solid var(--ink-18);padding:16px;}
+.xr-group-bar{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:19px;color:var(--sage);margin-bottom:12px;}
+.xr-unit.role-veh .xr-group-bar{color:var(--rust);}
 .xr-group-bar svg{color:inherit;}
 
-.xr-rules{display:flex;flex-direction:column;gap:9px;}
-.xr-defn-name{font-family:var(--cond);font-weight:600;font-size:14px;color:var(--bone);letter-spacing:.02em;}
-.xr-defn-text{font-size:13px;line-height:1.46;color:var(--bone-dim);margin:2px 0 0;}
+.xr-rules{display:flex;flex-direction:column;gap:12px;}
+.xr-defn-name{font-family:var(--display);font-weight:600;font-size:18px;color:var(--ink);}
+.xr-defn-text{font-size:16px;line-height:1.5;color:var(--ink-2);margin:3px 0 0;}
 
 /* rows (options / xeno) */
-.xr-row{border-top:1px solid #00000030;padding:8px 0;}
+.xr-row{border-top:1.5px solid var(--ink-18);padding:12px 0;}
 .xr-row:first-of-type{border-top:none;}
-.xr-row-hit{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:2px 0;}
-.xr-check{flex:none;width:18px;height:18px;border:1px solid var(--edge2);border-radius:2px;display:flex;align-items:center;justify-content:center;color:#1a1209;transition:.12s;}
-.xr-row.on .xr-check{background:var(--spice);border-color:var(--spice);}
-.xr-row-name{flex:1;font-family:var(--cond);font-weight:500;font-size:15px;color:var(--bone-dim);}
-.xr-row.on .xr-row-name{color:var(--bone);font-weight:600;}
-.xr-row-cost{font-family:var(--disp);font-weight:700;font-size:16px;color:var(--ash);min-width:34px;text-align:right;}
-.xr-row-cost.pos{color:var(--spice-br);}
-.xr-row-cost.neg{color:#8fbf6e;}
-.xr-row-text{font-size:12.5px;line-height:1.45;color:var(--ash);margin:5px 0 0 28px;}
-.xr-row.on .xr-row-text{color:var(--bone-dim);}
-.xr-row.off{opacity:.45;}
+.xr-row-hit{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:4px 0;min-height:56px;}
+.xr-row-cost{flex:none;width:52px;height:52px;border-radius:50%;border:2px solid var(--ink);background:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink-2);font-variant-numeric:tabular-nums;transition:.12s;}
+.xr-row-cost.pos{color:var(--ink);background:var(--coral);}
+.xr-row-cost.neg{color:var(--cream);background:var(--sage);border-color:var(--sage);}
+.xr-check{flex:none;width:28px;height:28px;border:2px solid var(--ink);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--cream);transition:.12s;}
+.xr-row.on .xr-check{background:var(--sage);border-color:var(--sage);}
+.xr-row.on .xr-check svg{animation:xr-check .25s cubic-bezier(.2,.8,.2,1);}
+.xr-row-name{flex:1;font-family:var(--body);font-weight:600;font-size:18px;color:var(--ink);}
+.xr-row-hit:active{transform:scale(.99);}
+.xr-row-text{font-size:16px;line-height:1.5;color:var(--ink-2);margin:6px 0 0 64px;}
+.xr-row.on .xr-row-text{color:var(--ink);}
+.xr-row.off{opacity:.5;}
 .xr-row.off .xr-row-hit{cursor:not-allowed;}
-.xr-subs{margin:8px 0 2px 28px;padding-left:12px;border-left:1px solid var(--edge2);}
-.xr-row.sub{padding:6px 0;}
-.xr-row.sub .xr-row-name{font-size:14px;}
-.xr-row.sub .xr-row-text{margin-left:28px;}
+.xr-subs{margin:10px 0 2px 64px;padding-left:14px;border-left:2px solid var(--ink-18);}
+.xr-row.sub{padding:8px 0;}
+.xr-row.sub .xr-row-name{font-size:17px;}
+.xr-row.sub .xr-row-text{margin-left:64px;}
 
-.xr-tiers{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px 28px;}
-.xr-tier{font-family:var(--cond);font-weight:500;font-size:12.5px;color:var(--bone-dim);border:1px solid var(--edge2);padding:5px 9px;border-radius:2px;transition:.12s;}
-.xr-tier i{font-style:normal;color:var(--ash);margin-left:4px;}
-.xr-tier:hover{border-color:var(--spice);}
-.xr-tier.on{background:var(--spice-soft);border-color:var(--spice);color:var(--bone);}
-.xr-tier.on i{color:var(--spice-br);}
+.xr-tiers{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 2px 64px;}
+.xr-tier{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink);border:2px solid var(--ink);padding:10px 14px;border-radius:8px;transition:.12s;min-height:48px;}
+.xr-tier i{font-style:normal;color:var(--ink-2);margin-left:6px;}
+.xr-tier:hover{background:var(--paper);}
+.xr-tier:active{transform:scale(.96);}
+.xr-tier.on{background:var(--sage);border-color:var(--sage);color:var(--cream);}
+.xr-tier.on i{color:var(--cream);}
 
 /* command */
-.xr-command{background:linear-gradient(180deg,#241d0f,#1d1709);}
-.xr-command .xr-group-bar{color:var(--gold-br);}
-.xr-cmd-tables{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
-@media(max-width:520px){.xr-cmd-tables{grid-template-columns:repeat(2,1fr);}}
-.xr-cmd-tab{font-family:var(--cond);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--bone-dim);border:1px solid var(--edge2);padding:8px 4px;border-radius:2px;transition:.12s;}
-.xr-cmd-tab:hover{border-color:var(--gold);}
-.xr-cmd-tab.on{background:var(--gold);border-color:var(--gold);color:#1a1209;}
-.xr-cmd-blurb{font-size:12.5px;color:var(--ash);margin:9px 0;font-style:italic;}
-.xr-roll{display:inline-flex;align-items:center;gap:8px;font-family:var(--cond);font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:13px;color:var(--gold-br);border:1px solid var(--gold);background:var(--gold-soft);padding:9px 15px;border-radius:2px;transition:.12s;}
-.xr-roll:hover{background:var(--gold);color:#1a1209;}
-.xr-trait{margin-top:11px;border:1px solid var(--gold-soft);border-left:3px solid var(--gold);background:#00000028;padding:10px 13px;border-radius:2px;}
-.xr-trait-name{font-family:var(--disp);font-weight:700;font-size:19px;color:var(--gold-br);letter-spacing:.02em;}
-.xr-trait-rule{font-size:13px;line-height:1.46;color:var(--bone-dim);margin:4px 0 0;}
+.xr-command{background:var(--paper);}
+.xr-command .xr-group-bar{color:var(--brass);}
+.xr-cmd-tables{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+@media(min-width:520px){.xr-cmd-tables{grid-template-columns:repeat(4,1fr);}}
+.xr-cmd-tab{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink);border:2px solid var(--ink);padding:11px 6px;border-radius:8px;transition:.12s;min-height:48px;}
+.xr-cmd-tab:hover{background:var(--paper-2);}
+.xr-cmd-tab:active{transform:scale(.96);}
+.xr-cmd-tab.on{background:var(--brass);border-color:var(--brass);color:var(--cream);}
+.xr-cmd-blurb{font-size:16px;color:var(--ink-2);margin:12px 0;font-style:italic;}
+.xr-roll{display:inline-flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:18px;color:var(--cream);border:2px solid var(--brass);background:var(--brass);padding:12px 18px;border-radius:10px;transition:.12s;min-height:48px;}
+.xr-roll:hover{background:var(--ink);border-color:var(--ink);}
+.xr-roll:active{transform:scale(.97);}
+.xr-trait{margin-top:14px;border:2px solid var(--brass);border-radius:10px;background:var(--paper-2);padding:14px;}
+.xr-trait-name{font-family:var(--display);font-weight:700;font-size:20px;color:var(--brass);}
+.xr-trait-rule{font-size:16px;line-height:1.5;color:var(--ink);margin:5px 0 0;}
+
+/* ---------- footer ---------- */
+.game-info-footer{border-top:3px solid var(--ink);background:var(--paper-3);padding:20px clamp(16px,3vw,30px);}
+.gif-inner{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:16px;color:var(--ink);}
+.gif-title{font-family:var(--display);font-weight:700;font-size:20px;margin-right:6px;}
+.game-info-footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;font-weight:600;}
+.game-info-footer a:hover{color:var(--iris);}
+.gif-builder{margin-left:auto;font-style:italic;}
+@media(max-width:640px){.gif-inner{flex-direction:column;align-items:flex-start;gap:8px;}.gif-builder{margin-left:0;}}
 
 /* ---------- print sheet ---------- */
 .xr-printsheet{display:none;}
 
 @media print{
   .xr-app{background:#fff !important;color:#000;}
-  .xr-mast,.xr-body{display:none !important;}
+  .xr-mast,.xr-body,.game-info-footer{display:none !important;}
+  .field-book{box-shadow:none;max-width:none;}
   .xr-printsheet{display:block;font-family:Georgia,'Times New Roman',serif;color:#000;padding:0;}
   .xr-pr-head{border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:14px;}
-  .xr-pr-title{font-family:var(--disp);font-weight:800;font-size:30px;text-transform:uppercase;letter-spacing:.03em;}
+  .xr-pr-title{font-family:var(--display);font-weight:700;font-size:30px;}
   .xr-pr-meta{font-size:12px;color:#333;margin-top:3px;}
   .xr-pr-unit{border:1px solid #999;border-radius:3px;padding:9px 11px;margin-bottom:9px;page-break-inside:avoid;}
   .xr-pr-unit-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:5px;}
