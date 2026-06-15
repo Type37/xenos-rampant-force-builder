@@ -1,9 +1,52 @@
 import React, { useState, useMemo, useEffect } from "react";
-import {
-  Plus, Crown, Copy, Trash2, ChevronDown, X, Dices, AlertTriangle, Check,
-  Printer, RotateCcw, Swords, Footprints, Crosshair, Flame, Sword, Shield,
-  Target, ShieldHalf, Ruler, Heart, Skull, Truck, Users,
-} from "lucide-react";
+/* Icons pulled from Iconify and bundled offline (rendered as inline SVG, so no
+   network request and no runtime): game-icons for thematic glyphs, tabler for controls. */
+import icCrossedSwords from "@iconify-icons/game-icons/crossed-swords";
+import icRun from "@iconify-icons/game-icons/run";
+import icCrossedPistols from "@iconify-icons/game-icons/crossed-pistols";
+import icBugle from "@iconify-icons/game-icons/bugle-call";
+import icBroadsword from "@iconify-icons/game-icons/broadsword";
+import icShield from "@iconify-icons/game-icons/shield";
+import icBullseye from "@iconify-icons/game-icons/bullseye";
+import icArmorVest from "@iconify-icons/game-icons/armor-vest";
+import icPathDistance from "@iconify-icons/game-icons/path-distance";
+import icHealth from "@iconify-icons/game-icons/health-normal";
+import icCrown from "@iconify-icons/game-icons/crown";
+import icDarkSquad from "@iconify-icons/game-icons/dark-squad";
+import icAlienSkull from "@iconify-icons/game-icons/alien-skull";
+import icBattleTank from "@iconify-icons/game-icons/battle-tank";
+import icDice from "@iconify-icons/game-icons/rolling-dices";
+import icPlus from "@iconify-icons/tabler/plus";
+import icCopy from "@iconify-icons/tabler/copy";
+import icTrash from "@iconify-icons/tabler/trash";
+import icCheck from "@iconify-icons/tabler/check";
+import icAlert from "@iconify-icons/tabler/alert-triangle";
+import icPrinter from "@iconify-icons/tabler/printer";
+import icRotate from "@iconify-icons/tabler/rotate";
+import icX from "@iconify-icons/tabler/x";
+import icChevron from "@iconify-icons/tabler/chevron-down";
+
+const mk = (data) => function Ic({ size, width, height, className, strokeWidth, ...rest }) {
+  const s = size || width || height || 18;
+  return (
+    <svg
+      className={className}
+      width={s}
+      height={s}
+      viewBox={`0 0 ${data.width || 24} ${data.height || 24}`}
+      aria-hidden="true"
+      dangerouslySetInnerHTML={{ __html: data.body }}
+      {...rest}
+    />
+  );
+};
+const Plus = mk(icPlus), Crown = mk(icCrown), Copy = mk(icCopy), Trash2 = mk(icTrash),
+  ChevronDown = mk(icChevron), X = mk(icX), Dices = mk(icDice), AlertTriangle = mk(icAlert),
+  Check = mk(icCheck), Printer = mk(icPrinter), RotateCcw = mk(icRotate),
+  Swords = mk(icCrossedSwords), Footprints = mk(icRun), Crosshair = mk(icCrossedPistols),
+  Flame = mk(icBugle), Sword = mk(icBroadsword), Shield = mk(icShield), Target = mk(icBullseye),
+  ShieldHalf = mk(icArmorVest), Ruler = mk(icPathDistance), Heart = mk(icHealth),
+  Skull = mk(icAlienSkull), Truck = mk(icBattleTank), Users = mk(icDarkSquad);
 import {
   INFANTRY, VEHICLE, UNIT_TYPES, XENO_RULES, SPECIAL_RULES,
   COMMANDER_TABLES, BUDGET_PRESETS, UNIT_BY_ID, XENO_BY_ID,

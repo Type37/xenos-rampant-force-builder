@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@iconify-icons/game-icons": "^1.2.1",
+    "@iconify-icons/tabler": "^1.2.95",
     "lucide-react": "^0.400.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
