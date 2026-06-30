@@ -524,7 +524,8 @@ function SiteFooter() {
         <a href="https://www.ospreypublishing.com/us/xenos-rampant-9781472852366/" target="_blank" rel="noopener">Buy the game</a>
         <a href="https://jetwong.neocities.org/wargaming" target="_blank" rel="noopener">More WarLore tools</a>
         <a href="https://github.com/Type37/xenos-rampant-force-builder" target="_blank" rel="noopener">Source on GitHub</a>
-        <span className="gif-builder">Force builder by <a href="https://linktr.ee/warlore" target="_blank" rel="noopener">WarLore</a></span>
+        <a href="mailto:warlore1@outlook.com">Send feedback</a>
+        <span className="gif-builder">Force builder by <a className="warlore-mark warlore-mark-inline" href="https://linktr.ee/warlore" target="_blank" rel="noopener" title="WarLore">War<span className="wl-lore">Lore</span></a></span>
       </div>
     </footer>
   );
@@ -712,6 +713,9 @@ export default function App() {
  * ================================================================== */
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+/* Terminal Grotesque Open (Velvetyne, OFL), bundled locally. Used only for the
+   gold WarLore wordmark in the footer, the standing brand mark across WarLore builders. */
+@font-face{font-family:'Terminal Grotesque Open';src:url('${import.meta.env.BASE_URL}fonts/terminal-grotesque-open.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
 
 .xr-app{
   --paper:#F4ECD8; --paper-2:#EFE4CB; --paper-3:#ECDFC0;
@@ -949,6 +953,12 @@ const CSS = `
 .game-info-footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;font-weight:600;}
 .game-info-footer a:hover{color:var(--iris);}
 .gif-builder{margin-left:auto;font-style:italic;}
+/* WarLore wordmark, gold-on-black Terminal Grotesque, inverts on hover. Standing brand mark. */
+.warlore-mark{display:inline-block;font-family:'Terminal Grotesque Open','Zilla Slab',serif;background:#000;line-height:1;transition:color .12s,background .12s;}
+.warlore-mark .wl-lore{font:inherit;}
+.warlore-mark.warlore-mark-inline{font-size:18px;padding:1px 7px;vertical-align:-2px;}
+.game-info-footer a.warlore-mark{color:#FFCC00;text-decoration:none;font-weight:400;}
+.game-info-footer a.warlore-mark:hover{color:#000;background:#FFCC00;}
 @media(max-width:640px){.gif-inner{flex-direction:column;align-items:flex-start;gap:8px;}.gif-builder{margin-left:0;}}
 
 /* ---------- print sheet ---------- */
