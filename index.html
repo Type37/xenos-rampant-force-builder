@@ -4,11 +4,50 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#F4ECD8" />
-    <meta name="description" content="A force builder for Xenos Rampant. Build a legal detachment, track points, roll Commander traits." />
-    <title>Xenos Rampant Force Builder</title>
+
+    <title>Xenos Rampant Army Builder and Force Builder | Free List Tool</title>
+    <meta name="description" content="Free online army builder for Xenos Rampant. Build a legal detachment, track points live, configure xeno rules and loadouts, roll Commander traits, and print your roster." />
+    <link rel="canonical" href="https://type37.github.io/xenos-rampant-force-builder/" />
+    <meta name="keywords" content="Xenos Rampant, army builder, force builder, army list builder, roster, points calculator, detachment, Osprey Games, sci-fi wargame" />
+    <meta name="author" content="WarLore" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Xenos Rampant Army Builder and Force Builder" />
+    <meta property="og:description" content="Build a legal Xenos Rampant detachment, track points live, configure xeno rules, and print your roster. Free, no login." />
+    <meta property="og:url" content="https://type37.github.io/xenos-rampant-force-builder/" />
+    <meta property="og:site_name" content="WarLore" />
+    <!-- TODO: add a 1200x630 og-image.png in public/ and restore og:image + twitter:image for rich link previews. -->
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Xenos Rampant Army Builder and Force Builder" />
+    <meta name="twitter:description" content="Build a legal Xenos Rampant detachment, track points live, and print your roster. Free, no login." />
+
+    <!-- Structured data: this page is the web app itself -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Xenos Rampant Army Builder",
+      "alternateName": "Xenos Rampant Force Builder",
+      "url": "https://type37.github.io/xenos-rampant-force-builder/",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any (web browser)",
+      "browserRequirements": "Requires JavaScript",
+      "description": "Free online army builder for the tabletop wargame Xenos Rampant (Osprey Games, 2022). Build a legal detachment, track points, configure xeno rules and loadouts, roll Commander traits, and print a roster.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Organization", "name": "WarLore", "url": "https://jetwong.neocities.org/wargaming" },
+      "about": { "@type": "Game", "name": "Xenos Rampant", "publisher": "Osprey Games" }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <h1>Xenos Rampant Army Builder</h1>
+      <p>A free online army and force builder for Xenos Rampant, the sci-fi skirmish wargame by Daniel Mersey and Richard Cowen (Osprey Games, 2022). Build a legal detachment, track points, configure xeno rules and loadouts, roll Commander traits, and print a roster. This tool needs JavaScript enabled to run.</p>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

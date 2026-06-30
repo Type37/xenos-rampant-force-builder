@@ -1,18 +1,21 @@
 import React, { useState, useMemo, useEffect } from "react";
 /* Icons pulled from Iconify and bundled offline (rendered as inline SVG, so no
    network request and no runtime): game-icons for thematic glyphs, tabler for controls. */
-import icCrossedSwords from "@iconify-icons/game-icons/crossed-swords";
+/* Stat and category glyphs use sci-fi versions from game-icons. The alias names
+   below (Swords, Crosshair, Flame, etc.) are kept so the rest of the file is
+   untouched; only the underlying icon each alias points at changed. */
+import icEnergySword from "@iconify-icons/game-icons/energy-sword";
 import icRun from "@iconify-icons/game-icons/run";
-import icCrossedPistols from "@iconify-icons/game-icons/crossed-pistols";
-import icBugle from "@iconify-icons/game-icons/bugle-call";
-import icBroadsword from "@iconify-icons/game-icons/broadsword";
-import icShield from "@iconify-icons/game-icons/shield";
-import icBullseye from "@iconify-icons/game-icons/bullseye";
-import icArmorVest from "@iconify-icons/game-icons/armor-vest";
+import icLaserGun from "@iconify-icons/game-icons/laser-gun";
+import icPowerLightning from "@iconify-icons/game-icons/power-lightning";
+import icSaberSlash from "@iconify-icons/game-icons/saber-slash";
+import icEnergyShield from "@iconify-icons/game-icons/energy-shield";
+import icLaserPrecision from "@iconify-icons/game-icons/laser-precision";
+import icShoulderArmor from "@iconify-icons/game-icons/shoulder-armor";
 import icPathDistance from "@iconify-icons/game-icons/path-distance";
-import icHealth from "@iconify-icons/game-icons/health-normal";
+import icHeartBattery from "@iconify-icons/game-icons/heart-battery";
 import icCrown from "@iconify-icons/game-icons/crown";
-import icDarkSquad from "@iconify-icons/game-icons/dark-squad";
+import icSpaceSuit from "@iconify-icons/game-icons/space-suit";
 import icAlienSkull from "@iconify-icons/game-icons/alien-skull";
 import icBattleTank from "@iconify-icons/game-icons/battle-tank";
 import icDice from "@iconify-icons/game-icons/rolling-dices";
@@ -43,10 +46,10 @@ const mk = (data) => function Ic({ size, width, height, className, strokeWidth, 
 const Plus = mk(icPlus), Crown = mk(icCrown), Copy = mk(icCopy), Trash2 = mk(icTrash),
   ChevronDown = mk(icChevron), X = mk(icX), Dices = mk(icDice), AlertTriangle = mk(icAlert),
   Check = mk(icCheck), Printer = mk(icPrinter), RotateCcw = mk(icRotate),
-  Swords = mk(icCrossedSwords), Footprints = mk(icRun), Crosshair = mk(icCrossedPistols),
-  Flame = mk(icBugle), Sword = mk(icBroadsword), Shield = mk(icShield), Target = mk(icBullseye),
-  ShieldHalf = mk(icArmorVest), Ruler = mk(icPathDistance), Heart = mk(icHealth),
-  Skull = mk(icAlienSkull), Truck = mk(icBattleTank), Users = mk(icDarkSquad);
+  Swords = mk(icEnergySword), Footprints = mk(icRun), Crosshair = mk(icLaserGun),
+  Flame = mk(icPowerLightning), Sword = mk(icSaberSlash), Shield = mk(icEnergyShield), Target = mk(icLaserPrecision),
+  ShieldHalf = mk(icShoulderArmor), Ruler = mk(icPathDistance), Heart = mk(icHeartBattery),
+  Skull = mk(icAlienSkull), Truck = mk(icBattleTank), Users = mk(icSpaceSuit);
 import {
   INFANTRY, VEHICLE, UNIT_TYPES, XENO_RULES, SPECIAL_RULES,
   COMMANDER_TABLES, BUDGET_PRESETS, UNIT_BY_ID, XENO_BY_ID,
@@ -737,8 +740,8 @@ const CSS = `
 @keyframes xr-pulse{0%{transform:scale(1);}40%{transform:scale(1.05);}100%{transform:scale(1);}}
 @keyframes xr-check{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
 
-/* centered book shell */
-.field-book{max-width:1100px;margin-inline:auto;background:var(--paper);box-shadow:var(--shadow-page);min-height:100vh;}
+/* full-width book shell (was capped at 1100px and centered; opened to full viewport per request) */
+.field-book{max-width:none;margin-inline:0;background:var(--paper);box-shadow:var(--shadow-page);min-height:100vh;}
 
 /* ---------- masthead ---------- */
 .xr-mast{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:3px solid var(--ink);padding:18px clamp(16px,3vw,30px) 16px;}
