@@ -5,3 +5,11 @@ dist-ssr
 .DS_Store
 .vite
 npm-debug.log*
+
+# Local reference material kept on disk only, never committed to this public repo.
+# Rulebook scans, FAQ and errata PDFs, and any working documents live here.
+documents/
+docs-local/
+*.pdf
+*.docx
+*.epub
