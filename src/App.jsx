@@ -716,6 +716,11 @@ const CSS = `
 /* Terminal Grotesque Open (Velvetyne, OFL), bundled locally. Used only for the
    gold WarLore wordmark in the footer, the standing brand mark across WarLore builders. */
 @font-face{font-family:'Terminal Grotesque Open';src:url('${import.meta.env.BASE_URL}fonts/terminal-grotesque-open.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
+/* Hyper Scrypt (Jeremy Landes, Velvetyne, OFL), stencil web cut. The Xenos Rampant title. */
+@font-face{font-family:'Hyper Scrypt';src:url('${import.meta.env.BASE_URL}fonts/HyperScrypt-Stencil.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
+/* Sligoil Micro (Ariel Martin Perez, Velvetyne, OFL), a technical mono used for stat readouts. */
+@font-face{font-family:'Sligoil Micro';src:url('${import.meta.env.BASE_URL}fonts/Sligoil-Micro.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:'Sligoil Micro';src:url('${import.meta.env.BASE_URL}fonts/Sligoil-MicroBold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;}
 
 .xr-app{
   --paper:#F4ECD8; --paper-2:#EFE4CB; --paper-3:#ECDFC0;
@@ -725,6 +730,8 @@ const CSS = `
   --sage:#5C7A52; --iris:#6A4A8C; --rust:#B06A2C; --brass:#8A6A1F;
   --display:'Zilla Slab',Georgia,serif;
   --body:'Source Serif 4',Georgia,serif;
+  --title:'Hyper Scrypt','Zilla Slab',Georgia,serif;
+  --mono:'Sligoil Micro',ui-monospace,Consolas,monospace;
   --r-card:14px; --r-stamp:50%;
   --shadow-page:0 2px 18px rgba(31,61,46,.10);
   --shadow-card:0 6px 16px -8px rgba(31,61,46,.32);
@@ -751,7 +758,7 @@ const CSS = `
 .xr-mast{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:3px solid var(--ink);padding:18px clamp(16px,3vw,30px) 16px;}
 .xr-mast-row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;}
 .xr-brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
-.xr-word{font-family:var(--display);font-weight:700;font-size:clamp(30px,5vw,48px);letter-spacing:-.01em;line-height:.95;margin:0;color:var(--ink);}
+.xr-word{font-family:var(--title);font-weight:400;font-size:clamp(34px,5.6vw,56px);letter-spacing:.02em;line-height:1.02;margin:0;color:var(--ink);}
 .xr-sub{font-family:var(--body);font-style:italic;font-weight:400;letter-spacing:.01em;font-size:clamp(16px,1.6vw,19px);color:var(--coral-ink);}
 .xr-mast-right{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
 .xr-actions{display:flex;gap:10px;flex-wrap:wrap;}
@@ -764,7 +771,7 @@ const CSS = `
 .xr-muster{min-width:240px;}
 .xr-muster-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;gap:10px;}
 .xr-muster-label{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);}
-.xr-muster-read{font-family:var(--display);font-weight:700;line-height:1;font-variant-numeric:tabular-nums;}
+.xr-muster-read{font-family:var(--mono);font-weight:700;line-height:1;font-variant-numeric:tabular-nums;}
 .xr-muster-read b{font-size:30px;color:var(--ink);}
 .xr-muster-slash{font-size:22px;color:var(--ink-2);margin:0 3px;}
 .xr-muster-budget{font-size:24px;color:var(--ink-2);}
@@ -853,7 +860,7 @@ const CSS = `
 .xr-unit-type{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-top:4px;}
 .xr-tag-cmd{color:var(--cream);background:var(--brass);margin-right:9px;padding:2px 8px;border-radius:6px;font-weight:700;}
 .xr-unit-readout{text-align:right;flex:none;}
-.xr-ro-pts{font-family:var(--display);font-weight:700;font-size:32px;line-height:.9;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-ro-pts{font-family:var(--mono);font-weight:700;font-size:32px;line-height:.9;color:var(--ink);font-variant-numeric:tabular-nums;}
 .xr-ro-pts i{font-family:var(--body);font-weight:600;font-style:normal;font-size:15px;color:var(--ink-2);margin-left:4px;}
 .xr-ro-sp{display:inline-flex;align-items:center;gap:4px;font-family:var(--body);font-weight:600;font-size:16px;color:var(--sage);margin-top:3px;}
 .xr-unit.role-veh .xr-ro-sp{color:var(--rust);}
@@ -877,9 +884,9 @@ const CSS = `
 .xr-stat-ic{color:var(--ink);flex:none;}
 .xr-stat.muted{opacity:.5;}
 .xr-stat-body{min-width:0;line-height:1.1;}
-.xr-stat-val{font-family:var(--display);font-weight:700;font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums;}
-.xr-stat-rng{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-left:4px;}
-.xr-stat-key{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-top:1px;}
+.xr-stat-val{font-family:var(--mono);font-weight:700;font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-stat-rng{font-family:var(--mono);font-weight:400;font-size:16px;color:var(--ink-2);margin-left:4px;}
+.xr-stat-key{font-family:var(--mono);font-weight:400;font-size:16px;letter-spacing:.02em;color:var(--ink-2);margin-top:1px;}
 .xr-free{font-style:italic;color:var(--coral-ink);margin-left:6px;}
 
 /* activation discs */

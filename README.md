@@ -1,4 +1,4 @@
-# Xenos Rampant — Force Builder
+# Xenos Rampant Force Builder
 
 A force builder for [Xenos Rampant](https://ospreypublishing.com/) (Osprey Games, 2022), built as a UX flow study. Pick units from the catalog, configure loadouts inline, watch the points gauge, and keep the detachment legal as you go.
 
@@ -17,7 +17,15 @@ A force builder for [Xenos Rampant](https://ospreypublishing.com/) (Osprey Games
 
 ## Stack
 
-Vite, React 18, lucide-react. Styling is self contained in the component. Fonts (Chakra Petch, Inter, JetBrains Mono) load from Google Fonts.
+Vite, React 18. Icons are Iconify (game-icons and tabler), bundled offline as inline SVG. Styling is self contained in the component. Zilla Slab and Source Serif 4 load from Google Fonts; three Velvetyne typefaces are bundled locally (see Typefaces below).
+
+## Typefaces
+
+This build uses open source typefaces from [Velvetyne](https://velvetyne.fr), each under the SIL Open Font License. License texts ship alongside the fonts in `public/fonts/`.
+
+- Hyper Scrypt by Jérémy Landes. Distributed by velvetyne.fr.
+- Sligoil by Ariel Martín Pérez, with the contribution of Đông Trúc Nguyễn. Distributed by velvetyne.fr.
+- Terminal Grotesque Open, based on Terminal Grotesque by Raphaël Bastide. Distributed by velvetyne.fr.
 
 ## Local development
 
