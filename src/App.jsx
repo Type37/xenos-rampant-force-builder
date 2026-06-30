@@ -43,12 +43,18 @@ const mk = (data) => function Ic({ size, width, height, className, strokeWidth, 
     />
   );
 };
+/* Custom inline icons recreated from the user's supplied art, for Shoot (targeting
+   reticle), Strength (squad), and Move (double chevron). Authored as SVG so they
+   recolor via currentColor and scale with the rest of the icon set. */
+const icShoot = { width: 24, height: 24, body: `<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l7 7-7 7-7-7z"/><path d="M4 7.5V4h3.5M16.5 4H20v3.5M20 16.5V20h-3.5M7.5 20H4v-3.5"/></g><path d="M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z" fill="currentColor"/><g fill="currentColor"><circle cx="12" cy="2.6" r="1"/><circle cx="21.4" cy="12" r="1"/><circle cx="12" cy="21.4" r="1"/><circle cx="2.6" cy="12" r="1"/></g>` };
+const icStrength = { width: 24, height: 24, body: `<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="2.6"/><circle cx="15.5" cy="8" r="2.6"/><path d="M3.5 19v-.4a4.6 4.6 0 0 1 7.7-3.4"/><path d="M12.8 15.2a4.6 4.6 0 0 1 7.7 3.4v.4"/></g>` };
+const icMove = { width: 24, height: 24, body: `<path d="M5 5l7 7-7 7M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` };
 const Plus = mk(icPlus), Crown = mk(icCrown), Copy = mk(icCopy), Trash2 = mk(icTrash),
   ChevronDown = mk(icChevron), X = mk(icX), Dices = mk(icDice), AlertTriangle = mk(icAlert),
   Check = mk(icCheck), Printer = mk(icPrinter), RotateCcw = mk(icRotate),
-  Swords = mk(icEnergySword), Footprints = mk(icRun), Crosshair = mk(icLaserGun),
-  Flame = mk(icPowerLightning), Sword = mk(icSaberSlash), Shield = mk(icEnergyShield), Target = mk(icLaserPrecision),
-  ShieldHalf = mk(icShoulderArmor), Ruler = mk(icPathDistance), Heart = mk(icHeartBattery),
+  Swords = mk(icEnergySword), Footprints = mk(icMove), Crosshair = mk(icShoot),
+  Flame = mk(icPowerLightning), Sword = mk(icSaberSlash), Shield = mk(icEnergyShield), Target = mk(icShoot),
+  ShieldHalf = mk(icShoulderArmor), Ruler = mk(icMove), Heart = mk(icStrength),
   Skull = mk(icAlienSkull), Truck = mk(icBattleTank), Users = mk(icSpaceSuit);
 import {
   INFANTRY, VEHICLE, UNIT_TYPES, XENO_RULES, SPECIAL_RULES,
