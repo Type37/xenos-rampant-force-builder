@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -412,12 +413,13 @@ function UnitPanel({ u, index, onClose, dispatch }) {
   const sp = unitSP(u);
   const elig = useMemo(() => eligibleXenos(t), [t]);
   const topOpts = t.options.filter((o) => !o.requires);
-  const subsOf = (pid) => t.options.filter((o) => o.requires === pid);
   const stdRules = t.special.filter((s) => s !== "None");
-  const selOpts = t.options.filter((o) => u.options[o.id]).length;
-  const selXenos = Object.keys(u.xenos).length;
   const tbl = u.traitTable || "aggressive";
   const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
+  const [abilOpen, setAbilOpen] = useState(false);
+  const boughtOpts = t.options.filter((o) => u.options[o.id]);
+  const boughtXenos = XENO_RULES.filter((x) => x.id in u.xenos);
+  const hasAbilities = topOpts.length > 0 || elig.length > 0;
 
   return (
     <section className="xr-panel" aria-label="Unit editor">
@@ -451,53 +453,29 @@ function UnitPanel({ u, index, onClose, dispatch }) {
         </Section>
       )}
 
-      {topOpts.length > 0 && (
-        <Section title="Loadout" count={selOpts} defaultOpen>
-          {topOpts.map((o) => {
-            const on = !!u.options[o.id];
-            const subs = subsOf(o.id);
-            return (
-              <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
-                onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
-                {on && subs.length > 0 && (
-                  <div className="xr-subs">
-                    {subs.map((s) => (
-                      <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
-                        onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
-                    ))}
-                  </div>
-                )}
-              </OptionRow>
-            );
-          })}
-        </Section>
-      )}
-
-      {elig.length > 0 && (
-        <Section title="Xeno rules" count={selXenos}>
-          {elig.map((x) => {
-            const sel = x.id in u.xenos;
-            const reqMet = xenoReqMet(x, u);
-            const disabled = !sel && !reqMet;
-            const val = u.xenos[x.id];
-            return (
-              <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
-                text={disabled && x.requiresXeno ? `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule. ${x.text}` : x.text}
-                onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
-                {sel && x.tiers && (
-                  <div className="xr-tiers">
-                    {x.tiers.map((tier, i) => (
-                      <button key={i} className={`xr-tier ${val === i ? "on" : ""}`}
-                        onClick={() => dispatch({ type: "tier", key: u.key, xid: x.id, i })}>
-                        {tier.label} <i>{costLabel(tier.cost)}</i>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </OptionRow>
-            );
-          })}
-        </Section>
+      {hasAbilities && (
+        <div className="xr-abil">
+          <div className="xr-abil-bar">
+            <h3 className="xr-abil-h">Abilities</h3>
+            <button className="xr-btn small primary" onClick={() => setAbilOpen(true)}><Plus size={16} /> Buy abilities</button>
+          </div>
+          {boughtOpts.length + boughtXenos.length > 0 ? (
+            <div className="xr-abil-chips">
+              {boughtOpts.map((o) => (
+                <button key={o.id} className="xr-abil-chip" onClick={() => setAbilOpen(true)} title={o.text}>
+                  {o.name} <i>{costLabel(optCost(o))}</i>
+                </button>
+              ))}
+              {boughtXenos.map((x) => (
+                <button key={x.id} className="xr-abil-chip" onClick={() => setAbilOpen(true)} title={x.text}>
+                  {x.name}{x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""} <i>{costLabel(xenoCost(x, u.xenos[x.id]))}</i>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="xr-abil-empty">No abilities bought yet.</p>
+          )}
+        </div>
       )}
 
       {u.isCmd && (
@@ -521,7 +499,87 @@ function UnitPanel({ u, index, onClose, dispatch }) {
           )}
         </Section>
       )}
+
+      {abilOpen && <AbilitiesModal u={u} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
     </section>
+  );
+}
+
+/* buy-abilities modal: all loadout options and xeno rules, grouped by type */
+function AbilitiesModal({ u, dispatch, onClose }) {
+  const t = UNIT_BY_ID[u.typeId];
+  const topOpts = t.options.filter((o) => !o.requires);
+  const subsOf = (pid) => t.options.filter((o) => o.requires === pid);
+  const elig = useMemo(() => eligibleXenos(t), [t]);
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return createPortal(
+    <div className="xr-modal-backdrop" onClick={onClose}>
+      <div className="xr-modal" role="dialog" aria-modal="true" aria-label="Buy abilities" onClick={(e) => e.stopPropagation()}>
+        <div className="xr-modal-head">
+          <span className="xr-modal-title"><Plus size={22} /> {t.name} abilities</span>
+          <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
+        </div>
+        <div className="xr-modal-body">
+          {topOpts.length > 0 && (
+            <div className="xr-abil-group">
+              <h4 className="xr-abil-group-h">Loadout</h4>
+              {topOpts.map((o) => {
+                const on = !!u.options[o.id];
+                const subs = subsOf(o.id);
+                return (
+                  <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
+                    onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
+                    {on && subs.length > 0 && (
+                      <div className="xr-subs">
+                        {subs.map((s) => (
+                          <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
+                            onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
+                        ))}
+                      </div>
+                    )}
+                  </OptionRow>
+                );
+              })}
+            </div>
+          )}
+          {elig.length > 0 && (
+            <div className="xr-abil-group">
+              <h4 className="xr-abil-group-h">Xeno rules</h4>
+              {elig.map((x) => {
+                const sel = x.id in u.xenos;
+                const reqMet = xenoReqMet(x, u);
+                const disabled = !sel && !reqMet;
+                const val = u.xenos[x.id];
+                return (
+                  <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
+                    text={disabled && x.requiresXeno ? `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule. ${x.text}` : x.text}
+                    onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
+                    {sel && x.tiers && (
+                      <div className="xr-tiers">
+                        {x.tiers.map((tier, i) => (
+                          <button key={i} className={`xr-tier ${val === i ? "on" : ""}`}
+                            onClick={() => dispatch({ type: "tier", key: u.key, xid: x.id, i })}>
+                            {tier.label} <i>{costLabel(tier.cost)}</i>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </OptionRow>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <div className="xr-modal-foot">
+          <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -608,7 +666,10 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
         <div className="xr-mast-row">
           <input className="xr-detname" value={list.name} placeholder="Name your detachment"
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
-          <button className="xr-btn small" onClick={copyList}><CopyIc size={17} /> Copy text</button>
+          <div className="xr-actions">
+            <button className="xr-btn small" onClick={copyList} title="Copy the roster to the clipboard as text"><CopyIc size={17} /> Copy</button>
+            <button className="xr-btn small" onClick={() => nav("#/print")} title="Open the print sheet"><Printer size={17} /> Print</button>
+          </div>
         </div>
         <div className="xr-mast-row2">
           <div className="xr-budget" role="group" aria-label="Points budget">
@@ -616,6 +677,9 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
             {BUDGET_PRESETS.map((b) => (
               <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} onClick={() => updateList({ budget: b })}>{b}</button>
             ))}
+            <input className="xr-budget-custom" type="number" min="1" max="999" value={budget} aria-label="Custom points value"
+              title="Set any points value for your game size"
+              onChange={(e) => { const v = parseInt(e.target.value, 10); updateList({ budget: v > 0 ? Math.min(999, v) : 1 }); }} />
           </div>
           <div className={`xr-muster ${over ? "over" : pct >= 90 ? "near" : ""}`}>
             <span className="xr-muster-read"><b>{used}</b><span>/{budget} pts</span></span>
@@ -1031,9 +1095,9 @@ const CSS = `
 
 /* stat table */
 .xr-stt{padding:4px 0 0;}
-.xr-stt-head{display:grid;grid-template-columns:1fr 96px 104px;gap:6px 10px;padding:0 0 7px;border-bottom:2px solid var(--ink-30);font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.03em;font-size:15.5px;color:var(--ink-2);}
+.xr-stt-head{display:grid;grid-template-columns:168px 92px 104px;gap:6px 10px;padding:0 0 7px;border-bottom:2px solid var(--ink-30);font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.03em;font-size:15.5px;color:var(--ink-2);}
 .xr-stt-head em{font-style:italic;font-variant:normal;font-size:13.5px;}
-.xr-stt-row{display:grid;grid-template-columns:1fr 96px 104px;gap:6px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--ink-18);}
+.xr-stt-row{display:grid;grid-template-columns:168px 92px 104px;gap:6px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--ink-18);}
 .xr-stt-row:last-child{border-bottom:none;}
 .xr-stt-stat{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:600;font-size:16.5px;}
 .xr-stt-ic{color:var(--ink-2);flex:none;}
@@ -1158,6 +1222,22 @@ const CSS = `
 .xr-panel-tools{display:flex;gap:8px;flex-wrap:wrap;padding:12px 0;}
 .xr-group{margin-top:18px;}
 .xr-group-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:19px;color:var(--ink);padding-bottom:6px;border-bottom:2px solid var(--ink-30);margin-bottom:10px;}
+/* abilities summary in the unit panel */
+.xr-abil{margin-top:18px;border-top:2px solid var(--ink-30);padding-top:14px;}
+.xr-abil-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.xr-abil-h{font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:19px;color:var(--ink);}
+.xr-abil-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.xr-abil-chip{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);background:var(--paper-2);border-radius:9px;padding:7px 12px;min-height:40px;transition:.12s;}
+.xr-abil-chip:hover{border-color:var(--ink);}
+.xr-abil-chip i{font-style:normal;font-family:var(--mono);font-weight:700;color:var(--coral-ink);}
+.xr-abil-empty{font-size:16px;font-style:italic;color:var(--ink-2);}
+/* abilities modal: type groups + footer */
+.xr-abil-group{margin-bottom:18px;}
+.xr-abil-group-h{position:sticky;top:-16px;background:var(--paper);z-index:1;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:20px;color:var(--ink);padding:6px 0 8px;border-bottom:2px solid var(--ink-30);margin-bottom:6px;}
+.xr-modal-foot{padding:12px 20px;border-top:2px solid var(--ink-30);display:flex;justify-content:flex-end;}
+/* custom points value */
+.xr-budget-custom{width:66px;min-height:44px;font-family:var(--mono);font-weight:700;font-size:16px;text-align:center;color:var(--ink);background:var(--paper-2);border:2px dashed var(--ink-30);border-radius:9px;padding:6px 4px;margin-left:6px;}
+.xr-budget-custom:focus{outline:none;border-style:solid;border-color:var(--coral);}
 .xr-chips{display:flex;flex-direction:column;gap:6px;}
 .xr-chipwrap{display:flex;flex-direction:column;}
 .xr-chip{align-self:flex-start;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 12px;min-height:38px;transition:.12s;}
