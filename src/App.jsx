@@ -155,11 +155,12 @@ function sanitize(u) {
   }
   return { ...u, options, xenos };
 }
-function validate(roster, budget) {
+function validate(roster, budget, freeplay) {
   const issues = [];
   const used = roster.reduce((s, u) => s + unitPoints(u), 0);
   const count = roster.length;
-  const minU = Math.max(2, Math.round((3 * budget) / 24));
+  if (freeplay) return { issues, used, count };
+  const minU = Math.max(3, Math.round((3 * budget) / 24));
   const maxU = Math.round((10 * budget) / 24);
   const cmds = roster.filter((u) => u.isCmd).length;
   const heavyVeh = roster.filter((u) => UNIT_BY_ID[u.typeId].heavy).length;
@@ -169,7 +170,7 @@ function validate(roster, budget) {
   if (count > 0) {
     if (cmds === 0) issues.push({ lvl: "err", msg: "No Commander. Crown one unit." });
     if (cmds > 1) issues.push({ lvl: "err", msg: `${cmds} Commanders. Only one is allowed.` });
-    if (count < minU) issues.push({ lvl: "warn", msg: `Below minimum size (${minU} to ${maxU} units at ${budget} points).` });
+    if (count < minU) issues.push({ lvl: "err", msg: `Too few units. A detachment needs ${minU} to ${maxU} units at ${budget} points. Turn on Free play to ignore this.` });
     if (count > maxU) issues.push({ lvl: "err", msg: `Above maximum size (${minU} to ${maxU} units at ${budget} points).` });
     if (heavyVeh > heavyCap) issues.push({ lvl: "err", msg: `${heavyVeh} fighting/transport vehicles. The limit is ${heavyCap} (one per full 18 points).` });
     if (vehPts > budget / 2) issues.push({ lvl: "err", msg: `Vehicles are ${vehPts} points; no more than half (${Math.floor(budget / 2)}) may be vehicles.` });
@@ -207,8 +208,13 @@ function parseHash() {
 const nav = (h) => { window.location.hash = h; };
 
 /* ---------------- small shared pieces ---------------- */
-function Die({ k, children }) {
-  return <span className={`xr-die k-${k}`} title="Order value: roll 2d6 this or higher to activate this action">{children}</span>;
+function Die({ k, free, children }) {
+  return (
+    <span className={`xr-die k-${k}${free ? " free" : ""}`}
+      title={free ? "Free action: this activates on its own, no 2d6 roll needed" : "Order value: roll 2d6 this or higher to activate this action"}>
+      {children}{free && <i className="xr-die-free">free</i>}
+    </span>
+  );
 }
 function orderCell(t, key) {
   const raw = t.noAttack && key === "atk" ? "n/a" : t.act[key];
@@ -234,7 +240,7 @@ function StatTable({ t, sp }) {
           <div className="xr-stt-row" key={d.key} title={d.tip}>
             <span className="xr-stt-stat"><img className="xr-stt-ic" src={d.img} alt="" width="20" height="20" />{d.label}</span>
             <span className="xr-stt-cell">
-              {o ? <><Die k={d.key}>{o.val}</Die>{o.free && <em className="xr-free">free</em>}</> : <span className="xr-dash">-</span>}
+              {o ? <Die k={d.key} free={o.free}>{o.val}</Die> : <span className="xr-dash">-</span>}
             </span>
             <span className="xr-stt-cell">
               {v ? <><b>{v.main}</b>{v.range && <i className="xr-rng">{v.range}</i>}</> : <span className="xr-dash">-</span>}
@@ -401,7 +407,7 @@ function Dashboard({ lists, onOpen, onCreate, onDup, onDel }) {
         ) : (
           <div className="xr-home-grid">
             {arr.map((l) => {
-              const { issues, used, count } = validate(l.roster, l.budget);
+              const { issues, used, count } = validate(l.roster, l.budget, l.freeplay);
               const err = issues.some((i) => i.lvl === "err");
               return (
                 <div className="xr-list-card" key={l.id}>
@@ -478,7 +484,9 @@ function RuleChip({ name, text }) {
   const [open, setOpen] = useState(false);
   return (
     <div className={`xr-chipwrap ${open ? "open" : ""}`}>
-      <button className="xr-chip" onClick={() => setOpen((o) => !o)} aria-expanded={open}>{name}</button>
+      <button className="xr-chip" onClick={() => setOpen((o) => !o)} aria-expanded={open} title={open ? "Hide rule text" : "Show rule text"}>
+        <span>{name}</span>{text && <Caret className="xr-chip-caret" size={13} />}
+      </button>
       {open && text && <p className="xr-chip-text">{text}</p>}
     </div>
   );
@@ -673,21 +681,35 @@ function AbilitiesModal({ u, dispatch, onClose }) {
   );
 }
 
+const CATALOG_STATS = [
+  { img: icoAttack, label: "Attack", get: (t) => t.prof.atk },
+  { img: icoDefence, label: "Defence", get: (t) => t.prof.def },
+  { img: icoShoot, label: "Shoot", get: (t) => splitRange(t.prof.sho).main },
+  { img: icoArmour, label: "Armour", get: (t) => t.prof.arm },
+  { img: icoMove, label: "Move", get: (t) => t.prof.mov },
+  { img: icoStrength, label: "Strength", get: (t) => t.sp },
+];
 function CatalogCard({ t, onAdd }) {
   return (
     <button className={`xr-cat-card cat-${catOf(t)}`} onClick={() => onAdd(t.id)}>
-      <span className="xr-cat-stamp"><Plus size={16} /><b>{t.base}</b><i>pts</i></span>
-      <span className="xr-cat-main">
+      <span className="xr-cat-top">
         <span className="xr-cat-name">{t.name}</span>
-        <span className="xr-cat-role">{t.role}</span>
-        <span className="xr-cat-ribbon">
-          <span>Atk <em>{t.prof.atk}</em></span>
-          <span>Def <em>{t.prof.def}</em></span>
-          <span>Sho <em>{splitRange(t.prof.sho).main}</em></span>
-          <span>Arm <em>{t.prof.arm}</em></span>
-          <span>SP <em>{t.sp}</em></span>
-        </span>
+        <span className="xr-cat-stamp"><b>{t.base}</b><i>pts</i></span>
       </span>
+      <span className="xr-cat-role">{t.role}</span>
+      <span className="xr-cat-stats">
+        {CATALOG_STATS.map((s) => {
+          const raw = s.get(t);
+          const v = raw == null || raw === "n/a" || raw === "—" ? "-" : String(raw);
+          return (
+            <span className="xr-cat-stat" key={s.label} title={s.label}>
+              <img src={s.img} alt="" width="24" height="24" />
+              <b>{v}</b>
+            </span>
+          );
+        })}
+      </span>
+      <span className="xr-cat-add"><Plus size={16} /> Add unit</span>
     </button>
   );
 }
@@ -702,7 +724,7 @@ function AddUnitModal({ onAdd, onClose }) {
   const units = UNIT_TYPES.filter((t) => catOf(t) === cat);
   return (
     <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-tall" role="dialog" aria-modal="true" aria-label="Add unit" onClick={(e) => e.stopPropagation()}>
+      <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Add unit" onClick={(e) => e.stopPropagation()}>
         <div className="xr-modal-head">
           <span className="xr-modal-title"><Plus size={22} /> Add unit</span>
           <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
@@ -730,7 +752,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
   const [adding, setAdding] = useState(false);
   const [issuesOpen, setIssuesOpen] = useState(false);
   const [abilOpen, setAbilOpen] = useState(false);
-  const { issues, used, count } = useMemo(() => validate(roster, budget), [roster, budget]);
+  const { issues, used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const errors = issues.filter((i) => i.lvl === "err");
   const status = errors.length ? "err" : count === 0 ? "empty" : "ok";
   const selIdx = roster.findIndex((u) => u.key === selectedKey);
@@ -772,10 +794,15 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
             <span className="xr-muster-read"><b>{used}</b><span>/{budget} pts</span></span>
             <span className="xr-muster-track"><span className="xr-muster-fill" style={{ width: `${pct}%` }} /></span>
           </div>
+          <button className={`xr-freeplay ${list.freeplay ? "on" : ""}`} onClick={() => updateList({ freeplay: !list.freeplay })}
+            title={list.freeplay ? "Free play is on: composition rules are ignored" : "Turn on Free play to build without composition limits"}
+            aria-pressed={!!list.freeplay}>
+            <Dice size={16} /> Free play
+          </button>
           <div className="xr-statuswrap">
             <button className={`xr-status ${status}`} onClick={() => setIssuesOpen((o) => !o)}
               aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : undefined}>
-              {status === "ok" && <><Check size={16} /> {count} {count === 1 ? "unit" : "units"}, legal</>}
+              {status === "ok" && <><Check size={16} /> {count} {count === 1 ? "unit" : "units"}</>}
               {status === "err" && <><Warn size={16} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>}
               {status === "empty" && <>Empty</>}
             </button>
@@ -829,7 +856,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
 function PrintView({ list }) {
   const { roster, budget } = list;
   const [opts, setOpts] = useState({ stats: true, upgrades: true, glossary: true, traits: true, contrast: false, large: false });
-  const { used, count } = useMemo(() => validate(roster, budget), [roster, budget]);
+  const { used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const tog = (k) => setOpts((o) => ({ ...o, [k]: !o[k] }));
 
   const glossary = useMemo(() => {
@@ -885,7 +912,8 @@ function PrintView({ list }) {
                     <td className="l type">{t.name}</td>
                     {ACT_KEYS.map(({ key }) => {
                       const c = av(key);
-                      return <td key={key}>{c.val === "n/a" ? "-" : c.val}{c.free ? "*" : ""}</td>;
+                      if (c.val === "n/a") return <td key={key}>-</td>;
+                      return <td key={key} className={c.free ? "free" : ""}>{c.val}{c.free && <sup className="fmk">F</sup>}</td>;
                     })}
                     <td>{p.atk === "n/a" ? "-" : p.atk}</td>
                     <td>{p.def}</td>
@@ -900,7 +928,7 @@ function PrintView({ list }) {
             </tbody>
           </table>
         )}
-        {opts.stats && <p className="xr-sheet-note">* free action. Order is the 2d6 activation target; Profile is how the action resolves.</p>}
+        {opts.stats && <p className="xr-sheet-note"><b className="fmk">F</b> = free action, activates on its own. Order is the 2d6 activation target; Profile is how the action resolves.</p>}
 
         {opts.upgrades && roster.some((u) => Object.keys(u.options).length || Object.keys(u.xenos).length || (opts.traits && u.isCmd && typeof u.traitIndex === "number")) && (
           <div className="xr-sheet-units">
@@ -1195,7 +1223,8 @@ const CSS = `
 .xr-die.k-mov{background:#5C7A5222;border-color:var(--sage);}
 .xr-die.k-sho{background:#6A4A8C22;border-color:var(--iris);}
 .xr-die.k-cou{background:#8A6A1F22;border-color:var(--brass);}
-.xr-free{font-style:italic;font-weight:600;font-size:14.5px;color:var(--coral-ink);margin-left:5px;}
+.xr-die.free{border-style:dashed;border-width:2px;border-color:var(--coral-ink);box-shadow:inset 0 0 0 2px #F4604C22;padding-right:6px;}
+.xr-die-free{font-family:var(--display);font-style:italic;font-weight:700;font-size:12px;letter-spacing:.02em;color:var(--coral-ink);margin-left:6px;text-transform:lowercase;}
 .xr-dash{color:var(--ink-2);opacity:.45;}
 .xr-rng{font-family:var(--mono);font-style:normal;font-size:15px;color:var(--ink-2);margin-left:5px;}
 
@@ -1292,6 +1321,9 @@ const CSS = `
 .xr-muster-fill{display:block;height:100%;background:var(--sage);transition:width .3s;}
 .xr-muster.near .xr-muster-fill{background:var(--brass);}
 .xr-muster.over .xr-muster-fill{background:var(--coral);}
+.xr-freeplay{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:15.5px;padding:8px 13px;border-radius:9px;border:2px dashed var(--ink-30);color:var(--ink-2);background:transparent;transition:.13s;}
+.xr-freeplay:hover{border-color:var(--ink);color:var(--ink);}
+.xr-freeplay.on{border-style:solid;border-color:var(--iris);color:var(--cream);background:var(--iris);}
 .xr-status{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:16px;padding:8px 13px;border-radius:9px;border:2px solid var(--ink);}
 .xr-status.ok{color:var(--sage);border-color:var(--sage);background:var(--paper-2);}
 .xr-status.err{color:var(--coral-ink);border-color:var(--coral-ink);background:#F4604C18;}
@@ -1382,9 +1414,12 @@ const CSS = `
 .xr-field-area{resize:vertical;min-height:76px;line-height:1.5;}
 .xr-chips{display:flex;flex-direction:column;gap:6px;}
 .xr-chipwrap{display:flex;flex-direction:column;}
-.xr-chip{align-self:flex-start;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 12px;min-height:38px;transition:.12s;}
+.xr-chip{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 10px 6px 12px;min-height:38px;transition:.12s;}
 .xr-chip:hover{border-color:var(--ink);background:var(--paper-2);}
+.xr-chip-caret{color:var(--ink-2);transition:transform .15s;}
+.xr-chip:hover .xr-chip-caret{color:var(--ink);}
 .xr-chipwrap.open .xr-chip{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+.xr-chipwrap.open .xr-chip-caret{transform:rotate(180deg);color:var(--cream);}
 .xr-chip-text{font-size:16px;color:var(--ink-2);padding:8px 2px 4px;}
 
 /* option rows */
@@ -1400,8 +1435,8 @@ const CSS = `
 .xr-check{flex:none;width:26px;height:26px;border:2px solid var(--ink);border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--paper);}
 .xr-row.on .xr-check{background:var(--ink);color:var(--cream);}
 .xr-row-name{font-weight:600;font-size:16.5px;line-height:1.25;}
-.xr-row-info{flex:none;width:38px;border:none;border-radius:8px;color:var(--ink-2);font-weight:700;font-size:17px;transition:.12s;}
-.xr-row-info:hover{background:var(--paper-2);color:var(--ink);}
+.xr-row-info{flex:none;width:34px;align-self:center;height:34px;border:1.5px solid var(--ink-30);border-radius:50%;color:var(--ink-2);font-weight:700;font-size:16px;transition:.12s;}
+.xr-row-info:hover{background:var(--ink);border-color:var(--ink);color:var(--cream);}
 .xr-row-text{font-size:16px;color:var(--ink-2);padding:2px 4px 8px 60px;}
 .xr-subs{margin-left:44px;border-left:2px solid var(--ink-18);padding-left:8px;}
 .xr-tiers{display:flex;gap:7px;flex-wrap:wrap;padding:2px 4px 10px 60px;}
@@ -1432,18 +1467,23 @@ const CSS = `
 .xr-modal-tab.cat-xeno.on{background:var(--iris);border-color:var(--iris);}
 .xr-modal-tab.cat-veh.on{background:var(--rust);border-color:var(--rust);}
 .xr-modal-body{overflow-y:auto;padding:16px 20px 24px;}
-.xr-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;}
-.xr-cat-card{display:flex;gap:12px;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:13px;border-radius:var(--r);transition:.13s;align-items:flex-start;}
+.xr-modal.xr-modal-wide{width:min(1080px,100%);height:min(780px,90vh);}
+.xr-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:13px;}
+.xr-cat-card{display:flex;flex-direction:column;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:14px 15px 12px;border-radius:var(--r);transition:.13s;}
 .xr-cat-card:hover{background:var(--paper-3);box-shadow:0 3px 10px rgba(31,61,46,.14);}
 .xr-cat-card:active{transform:scale(.98);}
-.xr-cat-stamp{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:58px;height:58px;border-radius:50%;background:var(--coral);color:var(--ink);border:2px solid var(--ink);}
-.xr-cat-stamp b{font-family:var(--mono);font-weight:700;font-size:19px;line-height:1;}
-.xr-cat-stamp i{font-style:normal;font-size:11.5px;font-weight:700;}
-.xr-cat-name{display:block;font-family:var(--display);font-weight:700;font-size:19px;line-height:1.15;}
-.xr-cat-role{display:block;font-family:var(--flavor);font-style:italic;font-size:16px;line-height:1.4;color:var(--ink-2);margin:3px 0 7px;}
-.xr-cat-ribbon{display:flex;gap:7px 13px;flex-wrap:wrap;}
-.xr-cat-ribbon span{font-weight:600;font-size:15px;color:var(--ink-2);}
-.xr-cat-ribbon em{font-style:normal;font-family:var(--mono);color:var(--ink);font-weight:700;}
+.xr-cat-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.xr-cat-stamp{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--coral);color:var(--ink);border:2px solid var(--ink);}
+.xr-cat-stamp b{font-family:var(--mono);font-weight:700;font-size:18px;line-height:1;}
+.xr-cat-stamp i{font-style:normal;font-size:11px;font-weight:700;}
+.xr-cat-name{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.15;padding-top:2px;}
+.xr-cat-role{display:block;font-family:var(--flavor);font-style:italic;font-size:15.5px;line-height:1.4;color:var(--ink-2);margin:5px 0 12px;}
+.xr-cat-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px 6px;margin-bottom:12px;}
+.xr-cat-stat{display:flex;align-items:center;gap:7px;}
+.xr-cat-stat img{flex:none;opacity:.9;}
+.xr-cat-stat b{font-family:var(--mono);font-weight:700;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-cat-add{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:var(--display);font-weight:600;font-size:15.5px;color:var(--cream);background:var(--ink);border-radius:9px;padding:8px 12px;min-height:40px;}
+.xr-cat-card:hover .xr-cat-add{background:var(--iris);}
 
 /* ---------- print ---------- */
 .xr-printview{min-height:100vh;background:var(--paper-3);padding-left:76px;}
@@ -1464,8 +1504,13 @@ const CSS = `
 .xr-sheet-table td.name{font-family:var(--body);font-weight:700;font-size:15px;}
 .xr-sheet-table td.type{font-family:var(--body);font-style:italic;}
 .xr-sheet-table td.pts{font-weight:700;}
+.xr-sheet-table td.free{font-weight:700;color:#c23a1e;text-decoration:underline;text-underline-offset:2px;}
+.xr-sheet-table td.free .fmk,.xr-sheet-note .fmk{font-family:var(--display);font-weight:700;color:#c23a1e;text-decoration:none;}
+.xr-sheet-table td .fmk{font-size:10px;margin-left:1px;}
 .xr-sheet-crown{vertical-align:-2px;margin-right:4px;}
 .xr-sheet-note{font-size:13.5px;font-style:italic;color:#444;margin-top:7px;}
+.xr-sheet-note .fmk{font-style:normal;}
+@media print{.xr-sheet-table td.free{color:#000;}.xr-sheet-table td.free .fmk,.xr-sheet-note .fmk{color:#000;}}
 .xr-sheet-units{margin-top:20px;column-count:2;column-gap:28px;}
 .xr-sheet-unit{break-inside:avoid;margin-bottom:14px;}
 .xr-sheet-unit h3{font-family:var(--display);font-size:17px;border-bottom:1.5px solid #1a1a1a;padding-bottom:2px;margin-bottom:5px;}
