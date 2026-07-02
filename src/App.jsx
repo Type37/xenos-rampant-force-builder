@@ -570,7 +570,7 @@ function SiteFooter() {
         <span className="gif-sep">|</span>
         <a href="https://www.amazon.com/Xenos-Rampant-Science-Fiction-Wargame/dp/1472852362" target="_blank" rel="noopener">Buy on Amazon</a>
         <span className="gif-sep">|</span>
-        <span className="gif-builder">Force builder by <a href="https://jetwong.neocities.org" target="_blank" rel="noopener">WarLore</a></span>
+        <span className="gif-builder">Force builder by <a className="warlore-mark" href="https://jetwong.neocities.org" target="_blank" rel="noopener" title="WarLore">War<span className="wl-lore">Lore</span></a></span>
         <span className="gif-sep">|</span>
         <a href="https://github.com/Type37/xenos-rampant-force-builder" target="_blank" rel="noopener">Source on GitHub</a>
         <span className="gif-sep">|</span>
@@ -1086,7 +1086,10 @@ const CSS = `
 .game-info-footer a{color:var(--iris);text-decoration:none;font-weight:600;}
 .game-info-footer a:hover{text-decoration:underline;}
 .gif-builder{margin-left:auto;color:var(--ink-2);}
-.gif-builder a{font-family:'Terminal Grotesque Open','Zilla Slab',monospace;font-size:16px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);font-weight:400;}
+/* WarLore wordmark: ALWAYS gold on black (standing brand rule), inverts on hover. */
+.game-info-footer a.warlore-mark{font-family:'Terminal Grotesque Open','Zilla Slab',monospace;font-size:17px;letter-spacing:.03em;color:#FFCC00;background:#000;padding:1px 8px;text-decoration:none;text-transform:none;font-weight:400;transition:color .12s,background .12s;}
+.game-info-footer a.warlore-mark:hover{color:#000;background:#FFCC00;}
+.warlore-mark .wl-lore{font:inherit;}
 @media(max-width:600px){.gif-inner{gap:6px;}.gif-sep{display:none;}.gif-builder{margin-left:0;}}
 
 /* ---------- print sheet ---------- */
