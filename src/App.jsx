@@ -63,13 +63,13 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   House = mk(icHouse), Skull = mk(icSkull), Edit = mk(icEdit), Caret = mk(icCaret);
 
 const STAT_ROWS = [
-  { key: "atk", label: "Attack", img: icoAttack, order: true, val: true },
-  { key: "mov", label: "Move", img: icoMove, order: true, val: true },
-  { key: "sho", label: "Shoot", img: icoShoot, order: true, val: true },
-  { key: "cou", label: "Courage", img: icoCourage, order: true, val: false },
-  { key: "def", label: "Defence", img: icoDefence, order: false, val: true },
-  { key: "arm", label: "Armour", img: icoArmour, order: false, val: true },
-  { key: "sp", label: "Strength", img: icoStrength, order: false, val: true },
+  { key: "atk", label: "Attack", img: icoAttack, order: true, val: true, tip: "Attack: melee to-hit value. Order is the 2d6 target to activate an Attack." },
+  { key: "mov", label: "Move", img: icoMove, order: true, val: true, tip: "Move: maximum movement distance. Order is the 2d6 target to activate a Move." },
+  { key: "sho", label: "Shoot", img: icoShoot, order: true, val: true, tip: "Shoot: ranged to-hit value and range. Order is the 2d6 target to activate a Shoot." },
+  { key: "cou", label: "Courage", img: icoCourage, order: true, val: false, tip: "Courage: the 2d6 target for Courage and Rally tests." },
+  { key: "def", label: "Defence", img: icoDefence, order: false, val: true, tip: "Defence: the value an attacker must roll to hit this unit." },
+  { key: "arm", label: "Armour", img: icoArmour, order: false, val: true, tip: "Armour: hits needed before this unit loses a Strength Point." },
+  { key: "sp", label: "Strength", img: icoStrength, order: false, val: true, tip: "Strength Points: the unit's health and model count." },
 ];
 const ACT_KEYS = [
   { key: "atk", label: "Attack" }, { key: "mov", label: "Move" },
@@ -231,7 +231,7 @@ function StatTable({ t, sp }) {
         const o = d.order ? orderCell(t, d.key) : null;
         const v = d.val ? profCellVal(t, sp, d.key) : null;
         return (
-          <div className="xr-stt-row" key={d.key}>
+          <div className="xr-stt-row" key={d.key} title={d.tip}>
             <span className="xr-stt-stat"><img className="xr-stt-ic" src={d.img} alt="" width="20" height="20" />{d.label}</span>
             <span className="xr-stt-cell">
               {o ? <><Die k={d.key}>{o.val}</Die>{o.free && <em className="xr-free">free</em>}</> : <span className="xr-dash">-</span>}
@@ -705,6 +705,7 @@ function AddUnitModal({ onAdd, onClose }) {
 function Builder({ list, selectedKey, dispatch, updateList }) {
   const { roster, budget } = list;
   const [adding, setAdding] = useState(false);
+  const [issuesOpen, setIssuesOpen] = useState(false);
   const { issues, used, count } = useMemo(() => validate(roster, budget), [roster, budget]);
   const errors = issues.filter((i) => i.lvl === "err");
   const status = errors.length ? "err" : count === 0 ? "empty" : "ok";
@@ -752,17 +753,20 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
             <span className="xr-muster-read"><b>{used}</b><span>/{budget} pts</span></span>
             <span className="xr-muster-track"><span className="xr-muster-fill" style={{ width: `${pct}%` }} /></span>
           </div>
-          <div className={`xr-status ${status}`} role="status">
-            {status === "ok" && <><Check size={16} /> {count} {count === 1 ? "unit" : "units"}, legal</>}
-            {status === "err" && <><Warn size={16} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>}
-            {status === "empty" && <>Empty</>}
+          <div className="xr-statuswrap">
+            <button className={`xr-status ${status}`} onClick={() => setIssuesOpen((o) => !o)}
+              aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : undefined}>
+              {status === "ok" && <><Check size={16} /> {count} {count === 1 ? "unit" : "units"}, legal</>}
+              {status === "err" && <><Warn size={16} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>}
+              {status === "empty" && <>Empty</>}
+            </button>
+            {issues.length > 0 && (
+              <div className={`xr-issue-pop ${issuesOpen ? "open" : ""}`} role="region" aria-label="Issues">
+                {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
+              </div>
+            )}
           </div>
         </div>
-        {issues.length > 0 && (
-          <div className="xr-issues">
-            {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
-          </div>
-        )}
       </header>
 
       <div className={`xr-build-body ${sel ? "has-sel" : ""}`}>
@@ -1250,6 +1254,12 @@ const CSS = `
 .xr-status.ok{color:var(--sage);border-color:var(--sage);background:var(--paper-2);}
 .xr-status.err{color:var(--coral-ink);border-color:var(--coral-ink);background:#F4604C18;}
 .xr-status.empty{color:var(--ink-2);border-color:var(--ink-30);}
+/* floating issues: reveal on hover, click, or tap */
+.xr-statuswrap{position:relative;}
+.xr-statuswrap .xr-status{cursor:pointer;}
+.xr-status.err,.xr-status.err *{cursor:pointer;}
+.xr-issue-pop{position:absolute;top:calc(100% + 8px);right:0;z-index:35;min-width:270px;max-width:380px;background:var(--paper);border:2px solid var(--ink);border-radius:12px;box-shadow:0 8px 26px rgba(31,61,46,.24);padding:12px;display:none;flex-direction:column;gap:8px;}
+.xr-statuswrap:hover .xr-issue-pop,.xr-issue-pop.open{display:flex;}
 .xr-issues{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
 .xr-issue{font-weight:600;font-size:15.5px;padding:6px 11px;border-radius:8px;border-left:4px solid;background:var(--paper-2);}
 .xr-issue.err{color:var(--coral-ink);border-color:var(--coral-ink);}
