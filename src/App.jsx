@@ -202,8 +202,7 @@ function validate(roster, budget) {
     .reduce((s, u) => s + unitPoints(u), 0);
 
   if (used > budget) issues.push({ lvl: "err", msg: `Over budget by ${used - budget} points.` });
-  if (count === 0) issues.push({ lvl: "warn", msg: "No units yet. Add one from the catalogue." });
-  else {
+  if (count > 0) {
     if (cmds === 0) issues.push({ lvl: "err", msg: "No Commander. Crown one unit." });
     if (cmds > 1) issues.push({ lvl: "err", msg: `${cmds} Commanders. Only one is allowed.` });
     if (count < minU) issues.push({ lvl: "warn", msg: `Below minimum size (${minU} to ${maxU} units at ${budget} points).` });
@@ -562,13 +561,22 @@ function SiteFooter() {
     <footer className="game-info-footer">
       <div className="gif-inner">
         <span className="gif-title">Xenos Rampant</span>
+        <span className="gif-sep">|</span>
         <span>Written by <a href="https://www.ospreypublishing.com/us/author/daniel-mersey/" target="_blank" rel="noopener">Daniel Mersey</a></span>
+        <span className="gif-sep">|</span>
         <span>Published by <a href="https://www.ospreypublishing.com/" target="_blank" rel="noopener">Osprey Games</a></span>
+        <span className="gif-sep">|</span>
         <a href="https://www.ospreypublishing.com/us/xenos-rampant-9781472852366/" target="_blank" rel="noopener">Buy the game</a>
-        <a href="https://jetwong.neocities.org/wargaming" target="_blank" rel="noopener">More WarLore tools</a>
+        <span className="gif-sep">|</span>
+        <a href="https://www.amazon.com/Xenos-Rampant-Science-Fiction-Wargame/dp/1472852362" target="_blank" rel="noopener">Buy on Amazon</a>
+        <span className="gif-sep">|</span>
+        <span className="gif-builder">Force builder by <a href="https://jetwong.neocities.org" target="_blank" rel="noopener">WarLore</a></span>
+        <span className="gif-sep">|</span>
         <a href="https://github.com/Type37/xenos-rampant-force-builder" target="_blank" rel="noopener">Source on GitHub</a>
+        <span className="gif-sep">|</span>
+        <a href="https://jetwong.neocities.org/wargaming" target="_blank" rel="noopener">More WarLore tools</a>
+        <span className="gif-sep">|</span>
         <a href="mailto:warlore1@outlook.com">Send feedback</a>
-        <span className="gif-builder">Force builder by <a className="warlore-mark warlore-mark-inline" href="https://linktr.ee/warlore" target="_blank" rel="noopener" title="WarLore">War<span className="wl-lore">Lore</span></a></span>
       </div>
     </footer>
   );
@@ -583,6 +591,7 @@ export default function App() {
   const [roster, setRoster] = useState([]);
   const [pulseId, setPulseId] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [pickCat, setPickCat] = useState("inf");
   useEffect(() => {
     if (!drawerOpen) return;
     const onKey = (e) => { if (e.key === "Escape") setDrawerOpen(false); };
@@ -715,8 +724,6 @@ export default function App() {
           {roster.length === 0 ? (
             <div className="xr-empty">
               <Skull size={56} strokeWidth={1.3} />
-              <p>No units yet. Muster your detachment.</p>
-              <span>Standard games are 24 points. One unit must be your Commander.</span>
               <button className="xr-add-big" onClick={() => setDrawerOpen(true)}><Plus size={22} strokeWidth={2.8} /> Add your first unit</button>
             </div>
           ) : (
@@ -740,24 +747,31 @@ export default function App() {
         </main>
       </div>
 
-      {/* slide-in catalogue drawer */}
-      <div className={`xr-drawer-backdrop ${drawerOpen ? "open" : ""}`} onClick={() => setDrawerOpen(false)} />
-      <aside className={`xr-drawer ${drawerOpen ? "open" : ""}`} role="dialog" aria-label="Add unit" aria-hidden={!drawerOpen}>
-        <div className="xr-drawer-head">
-          <span className="xr-drawer-title"><Plus size={22} strokeWidth={2.6} /> Add unit</span>
-          <button className="xr-drawer-x" onClick={() => setDrawerOpen(false)} aria-label="Close"><X size={22} strokeWidth={2.4} /></button>
-        </div>
-        <div className="xr-drawer-body">
-          {grouped.map((g) => (
-            <section className="xr-catsec" key={g.id}>
-              <div className={`xr-catsec-h cat-${g.id}`}><g.Icon size={22} strokeWidth={2.3} /> {g.label}</div>
-              <div className="xr-catsec-list">
-                {g.units.map((t) => <CatalogCard key={t.id} t={t} onAdd={addUnit} pulsing={pulseId === t.id} />)}
+      {/* add-unit modal with category tabs (pick a category, then a unit) */}
+      {drawerOpen && (
+        <div className="xr-modal-backdrop" onClick={() => setDrawerOpen(false)}>
+          <div className="xr-modal" role="dialog" aria-label="Add unit" onClick={(e) => e.stopPropagation()}>
+            <div className="xr-modal-head">
+              <span className="xr-modal-title"><Plus size={24} strokeWidth={2.6} /> Add unit</span>
+              <button className="xr-modal-x" onClick={() => setDrawerOpen(false)} aria-label="Close"><X size={24} strokeWidth={2.4} /></button>
+            </div>
+            <div className="xr-modal-tabs">
+              {CATS.map((c) => (
+                <button key={c.id} className={`xr-modal-tab cat-${c.id} ${pickCat === c.id ? "on" : ""}`} onClick={() => setPickCat(c.id)}>
+                  <c.Icon size={20} strokeWidth={2.3} /> {c.label}
+                </button>
+              ))}
+            </div>
+            <div className="xr-modal-body">
+              <div className="xr-pick-grid">
+                {(grouped.find((g) => g.id === pickCat)?.units || []).map((t) => (
+                  <CatalogCard key={t.id} t={t} onAdd={addUnit} pulsing={pulseId === t.id} />
+                ))}
               </div>
-            </section>
-          ))}
+            </div>
+          </div>
         </div>
-      </aside>
+      )}
 
       <SiteFooter />
       </div>
@@ -872,18 +886,25 @@ const CSS = `
 .xr-catalogue{position:sticky;top:190px;align-self:start;max-height:calc(100vh - 190px);overflow-y:auto;padding:20px clamp(12px,1.5vw,18px) 40px;border-right:3px solid var(--ink);}
 @media(max-width:880px){.xr-catalogue{position:static;max-height:none;border-right:none;border-bottom:3px solid var(--ink);}}
 
-/* slide-in add-unit drawer (replaces the old sidebar catalogue) */
-.xr-drawer-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.38);opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s;z-index:80;}
-.xr-drawer-backdrop.open{opacity:1;visibility:visible;}
-.xr-drawer{position:fixed;top:0;right:0;height:100vh;width:min(500px,94vw);background:var(--paper);border-left:3px solid var(--ink);box-shadow:-6px 0 24px rgba(31,61,46,.18);transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);z-index:90;display:flex;flex-direction:column;}
-.xr-drawer.open{transform:translateX(0);}
-.xr-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:3px solid var(--ink);}
-.xr-drawer-title{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:24px;color:var(--ink);}
-.xr-drawer-x{width:48px;height:48px;flex:none;border:2px solid var(--ink);border-radius:10px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.12s;}
-.xr-drawer-x:hover{background:var(--coral);color:#fff;border-color:var(--coral-ink);}
-.xr-drawer-x:active{transform:scale(.95);}
-.xr-drawer-body{flex:1;overflow-y:auto;padding:20px clamp(14px,2vw,20px) 40px;}
-@media (prefers-reduced-motion: reduce){.xr-drawer,.xr-drawer-backdrop{transition:none;}}
+/* add-unit modal: pick a category tab, then a unit from the grid */
+.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.42);display:flex;align-items:center;justify-content:center;padding:24px;z-index:90;animation:xr-fade .18s ease;}
+.xr-modal{width:min(920px,100%);max-height:86vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:0 12px 40px rgba(31,61,46,.28);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop-in .28s cubic-bezier(.2,.8,.2,1);}
+.xr-modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:3px solid var(--ink);}
+.xr-modal-title{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:26px;color:var(--ink);}
+.xr-modal .xr-modal-x{width:48px;height:48px;flex:none;border:2px solid var(--ink);border-radius:10px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.12s;}
+.xr-modal .xr-modal-x:hover{background:var(--coral);color:#fff;border-color:var(--coral-ink);}
+.xr-modal .xr-modal-x:active{transform:scale(.95);}
+.xr-modal-tabs{display:flex;gap:8px;padding:14px 22px;border-bottom:2px solid var(--ink-18);flex-wrap:wrap;}
+.xr-modal .xr-modal-tab{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:17px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:9px 16px;border-radius:10px;min-height:46px;transition:.12s;}
+.xr-modal .xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
+.xr-modal .xr-modal-tab.on{color:var(--cream);background:var(--ink);border-color:var(--ink);}
+.xr-modal .xr-modal-tab.cat-inf.on{background:var(--sage);border-color:var(--sage);}
+.xr-modal .xr-modal-tab.cat-xeno.on{background:var(--iris);border-color:var(--iris);}
+.xr-modal .xr-modal-tab.cat-veh.on{background:var(--rust);border-color:var(--rust);}
+.xr-modal-body{overflow-y:auto;padding:20px 22px 26px;}
+.xr-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+@keyframes xr-fade{from{opacity:0;}to{opacity:1;}}
+@media (prefers-reduced-motion: reduce){.xr-modal-backdrop,.xr-modal{animation:none;}}
 
 /* primary add-unit button and empty-state add */
 .xr-act.primary{background:var(--ink);color:var(--cream);border-color:var(--ink);}
@@ -1056,19 +1077,17 @@ const CSS = `
 .xr-trait-rule{font-size:16px;line-height:1.5;color:var(--ink);margin:5px 0 0;}
 
 /* ---------- footer ---------- */
-.game-info-footer{border-top:3px solid var(--ink);background:var(--paper-3);padding:20px clamp(16px,3vw,30px);}
-.gif-inner{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:16px;color:var(--ink);}
-.gif-title{font-family:var(--display);font-weight:700;font-size:20px;margin-right:6px;}
-.game-info-footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;font-weight:600;}
-.game-info-footer a:hover{color:var(--iris);}
-.gif-builder{margin-left:auto;font-style:italic;}
-/* WarLore wordmark, gold-on-black Terminal Grotesque, inverts on hover. Standing brand mark. */
-.warlore-mark{display:inline-block;font-family:'Terminal Grotesque Open','Zilla Slab',serif;background:#000;line-height:1;transition:color .12s,background .12s;}
-.warlore-mark .wl-lore{font:inherit;}
-.warlore-mark.warlore-mark-inline{font-size:18px;padding:1px 7px;vertical-align:-2px;}
-.game-info-footer a.warlore-mark{color:#FFCC00;text-decoration:none;font-weight:400;}
-.game-info-footer a.warlore-mark:hover{color:#000;background:#FFCC00;}
-@media(max-width:640px){.gif-inner{flex-direction:column;align-items:flex-start;gap:8px;}.gif-builder{margin-left:0;}}
+/* footer modelled closely on the Pacific Command builder: pipe separators, compact,
+   WarLore credit set in Terminal Grotesque small caps, pushed right. */
+.game-info-footer{border-top:1.5px solid var(--ink);background:var(--paper-3);padding:12px clamp(16px,3vw,30px);color:var(--ink-2);}
+.gif-inner{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:15px;}
+.gif-title{font-family:var(--display);font-weight:700;color:var(--ink);}
+.gif-sep{color:var(--ink-30);}
+.game-info-footer a{color:var(--iris);text-decoration:none;font-weight:600;}
+.game-info-footer a:hover{text-decoration:underline;}
+.gif-builder{margin-left:auto;color:var(--ink-2);}
+.gif-builder a{font-family:'Terminal Grotesque Open','Zilla Slab',monospace;font-size:16px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);font-weight:400;}
+@media(max-width:600px){.gif-inner{gap:6px;}.gif-sep{display:none;}.gif-builder{margin-left:0;}}
 
 /* ---------- print sheet ---------- */
 .xr-printsheet{display:none;}
