@@ -237,10 +237,9 @@ function ActCell({ def, raw }) {
   return (
     <div className={`xr-stat ${na ? "muted" : ""}`}>
       <div className={`xr-act-disc k-${def.key}`}>
-        <Icon size={24} strokeWidth={2} />
+        <span className="xr-act-num">{val}</span>
       </div>
       <div className="xr-stat-body">
-        <div className="xr-stat-val">{val}</div>
         <div className="xr-stat-key">{def.label}{free && <em className="xr-free">free</em>}</div>
       </div>
     </div>
@@ -821,7 +820,6 @@ const CSS = `
 .xr-catsec-h.cat-xeno{color:var(--iris);}
 .xr-catsec-h.cat-veh{color:var(--rust);}
 .xr-catsec-list{display:grid;grid-template-columns:1fr;gap:12px;}
-@media(min-width:1100px){.xr-catsec-list{grid-template-columns:repeat(2,1fr);}}
 
 .xr-cat-card{display:flex;gap:12px;text-align:left;border:3px solid var(--ink);background:var(--paper-2);padding:14px;border-radius:var(--r-card);transition:.14s;align-items:flex-start;}
 .xr-cat-card.cat-veh{border-color:var(--rust);}
@@ -844,7 +842,7 @@ const CSS = `
 
 /* roster */
 .xr-roster{padding:20px clamp(14px,2.5vw,28px) 60px;display:grid;grid-template-columns:1fr;gap:20px;}
-@media(min-width:1000px){.xr-roster{grid-template-columns:repeat(auto-fill,minmax(420px,1fr));}}
+@media(min-width:1000px){.xr-roster{grid-template-columns:repeat(auto-fill,minmax(460px,1fr));}}
 .xr-empty{grid-column:1/-1;border:3px dashed var(--ink-30);border-radius:var(--r-card);padding:70px 30px;text-align:center;color:var(--ink-2);margin-top:10px;}
 .xr-empty svg{color:var(--sage);margin-bottom:14px;}
 .xr-empty p{font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);margin:0 0 8px;}
@@ -860,7 +858,7 @@ const CSS = `
 .xr-crown:active{transform:scale(.95);}
 .xr-crown.on{color:var(--cream);background:var(--brass);border-color:var(--brass);}
 .xr-unit-id{flex:1;min-width:0;}
-.xr-unit-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(24px,3vw,30px);color:var(--ink);background:transparent;border:none;border-bottom:2px solid transparent;padding:0 0 2px;line-height:1.05;}
+.xr-unit-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(18px,1.8vw,24px);color:var(--ink);background:transparent;border:none;border-bottom:2px solid transparent;padding:0 0 2px;line-height:1.1;text-overflow:ellipsis;}
 .xr-unit-name::placeholder{color:var(--ink-2);opacity:.6;}
 .xr-unit-name:focus{outline:none;border-bottom-color:var(--coral);}
 .xr-unit-type{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-top:4px;}
@@ -870,7 +868,7 @@ const CSS = `
 .xr-ro-pts i{font-family:var(--body);font-weight:600;font-style:normal;font-size:15px;color:var(--ink-2);margin-left:4px;}
 .xr-ro-sp{display:inline-flex;align-items:center;gap:4px;font-family:var(--body);font-weight:600;font-size:16px;color:var(--sage);margin-top:3px;}
 .xr-unit.role-veh .xr-ro-sp{color:var(--rust);}
-.xr-unit-tools{display:flex;gap:6px;flex:none;}
+.xr-unit-tools{display:flex;flex-direction:column;gap:6px;flex:none;}
 .xr-unit-tools button{width:48px;height:48px;border:2px solid var(--ink);border-radius:10px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.12s;}
 .xr-unit-tools button:hover{background:var(--paper);}
 .xr-unit-tools button:active{transform:scale(.95);}
@@ -897,6 +895,7 @@ const CSS = `
 
 /* activation discs */
 .xr-act-disc{flex:none;width:48px;height:48px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;}
+.xr-act-num{font-family:var(--mono);font-weight:700;font-size:18px;line-height:1;}
 .xr-act-disc.k-atk{background:var(--coral);color:var(--ink);}
 .xr-act-disc.k-mov{background:var(--sage);color:var(--cream);}
 .xr-act-disc.k-sho{background:var(--iris);color:var(--cream);}
