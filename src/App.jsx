@@ -26,6 +26,14 @@ import icHouse from "@iconify-icons/ph/house-fill";
 import icSkull from "@iconify-icons/ph/skull-fill";
 import icEdit from "@iconify-icons/ph/pencil-simple-fill";
 import icCaret from "@iconify-icons/ph/caret-down-bold";
+/* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
+import icoAttack from "./assets/stat/attack.png";
+import icoMove from "./assets/stat/move.png";
+import icoShoot from "./assets/stat/shoot.png";
+import icoCourage from "./assets/stat/courage.png";
+import icoDefence from "./assets/stat/defence.png";
+import icoArmour from "./assets/stat/armour.png";
+import icoStrength from "./assets/stat/strength.png";
 
 import {
   INFANTRY, VEHICLE, UNIT_TYPES, XENO_RULES, SPECIAL_RULES,
@@ -55,13 +63,13 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   House = mk(icHouse), Skull = mk(icSkull), Edit = mk(icEdit), Caret = mk(icCaret);
 
 const STAT_ROWS = [
-  { key: "atk", label: "Attack", Icon: Sword, order: true, val: true },
-  { key: "mov", label: "Move", Icon: Move, order: true, val: true },
-  { key: "sho", label: "Shoot", Icon: Shoot, order: true, val: true },
-  { key: "cou", label: "Courage", Icon: Fire, order: true, val: false },
-  { key: "def", label: "Defence", Icon: Shield, order: false, val: true },
-  { key: "arm", label: "Armour", Icon: Armour, order: false, val: true },
-  { key: "sp", label: "Strength", Icon: Heart, order: false, val: true },
+  { key: "atk", label: "Attack", img: icoAttack, order: true, val: true },
+  { key: "mov", label: "Move", img: icoMove, order: true, val: true },
+  { key: "sho", label: "Shoot", img: icoShoot, order: true, val: true },
+  { key: "cou", label: "Courage", img: icoCourage, order: true, val: false },
+  { key: "def", label: "Defence", img: icoDefence, order: false, val: true },
+  { key: "arm", label: "Armour", img: icoArmour, order: false, val: true },
+  { key: "sp", label: "Strength", img: icoStrength, order: false, val: true },
 ];
 const ACT_KEYS = [
   { key: "atk", label: "Attack" }, { key: "mov", label: "Move" },
@@ -224,7 +232,7 @@ function StatTable({ t, sp }) {
         const v = d.val ? profCellVal(t, sp, d.key) : null;
         return (
           <div className="xr-stt-row" key={d.key}>
-            <span className="xr-stt-stat"><d.Icon className="xr-stt-ic" size={20} />{d.label}</span>
+            <span className="xr-stt-stat"><img className="xr-stt-ic" src={d.img} alt="" width="20" height="20" />{d.label}</span>
             <span className="xr-stt-cell">
               {o ? <><Die k={d.key}>{o.val}</Die>{o.free && <em className="xr-free">free</em>}</> : <span className="xr-dash">-</span>}
             </span>
