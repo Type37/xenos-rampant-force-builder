@@ -120,6 +120,7 @@ function unitPoints(u) {
     const r = XENO_BY_ID[xid];
     if (r) p += xenoCost(r, v);
   }
+  for (const c of u.custom || []) p += c.cost || 0;
   return p;
 }
 function unitSP(u) {
@@ -196,7 +197,7 @@ function rosterFromDetachment(det) {
       roster.push(sanitize({
         key: uid(), typeId: e.typeId, name: e.label || "",
         isCmd: false, traitTable: "aggressive", traitIndex: undefined,
-        options, xenos: { ...(e.xenos || {}) },
+        options, xenos: { ...(e.xenos || {}) }, custom: [],
       }));
     }
   });
@@ -582,7 +583,8 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
   const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
   const boughtOpts = t.options.filter((o) => u.options[o.id]);
   const boughtXenos = XENO_RULES.filter((x) => x.id in u.xenos);
-  const hasAbilities = topOpts.length > 0 || elig.length > 0;
+  const custom = u.custom || [];
+  const hasAbilities = true;
 
   return (
     <section className="xr-panel" aria-label="Unit editor">
@@ -631,7 +633,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
           {hasAbilities && (
             <div className="xr-abil">
               <h3 className="xr-abil-h">Abilities</h3>
-              {boughtOpts.length + boughtXenos.length > 0 ? (
+              {boughtOpts.length + boughtXenos.length + custom.length > 0 ? (
                 <div className="xr-abil-chips">
                   {boughtOpts.map((o) => (
                     <button key={o.id} className="xr-abil-chip" onClick={onBuyAbilities} title={o.text}>
@@ -641,6 +643,11 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
                   {boughtXenos.map((x) => (
                     <button key={x.id} className="xr-abil-chip" onClick={onBuyAbilities} title={x.text}>
                       {x.name}{x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""} <i>{costLabel(xenoCost(x, u.xenos[x.id]))}</i>
+                    </button>
+                  ))}
+                  {custom.map((c) => (
+                    <button key={c.id} className="xr-abil-chip custom" onClick={onBuyAbilities} title={c.text}>
+                      {c.name} <i>{costLabel(c.cost)}</i>
                     </button>
                   ))}
                 </div>
@@ -686,10 +693,12 @@ function AbilitiesModal({ u, dispatch, onClose }) {
   const elig = useMemo(() => eligibleXenos(t), [t]);
   const eligXeno = elig.filter((x) => !isPsychicRule(x));
   const eligPsy = elig.filter(isPsychicRule);
+  const custom = u.custom || [];
   const tabs = [];
   if (topOpts.length) tabs.push({ id: "load", label: "Loadout", n: topOpts.filter((o) => u.options[o.id]).length });
   if (eligXeno.length) tabs.push({ id: "xeno", label: "Xeno rules", n: eligXeno.filter((x) => x.id in u.xenos).length });
   if (eligPsy.length) tabs.push({ id: "psychic", label: "Psychic", n: eligPsy.filter((x) => x.id in u.xenos).length });
+  tabs.push({ id: "custom", label: "Custom", n: custom.length });
   const [tab, setTab] = useState(tabs[0] ? tabs[0].id : "load");
   const xenoList = tab === "psychic" ? eligPsy : tab === "xeno" ? eligXeno : [];
   useEffect(() => {
@@ -697,7 +706,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-  const bought = t.options.filter((o) => u.options[o.id]).length + Object.keys(u.xenos).length;
+  const bought = t.options.filter((o) => u.options[o.id]).length + Object.keys(u.xenos).length + custom.length;
   return (
     <div className="xr-modal-backdrop" onClick={onClose}>
       <div className="xr-modal xr-modal-tall" role="dialog" aria-modal="true" aria-label="Buy abilities" onClick={(e) => e.stopPropagation()}>
@@ -754,11 +763,79 @@ function AbilitiesModal({ u, dispatch, onClose }) {
               </OptionRow>
             );
           })}
+          {tab === "custom" && (
+            <CustomTab u={u} custom={custom} dispatch={dispatch} />
+          )}
         </div>
         <div className="xr-modal-foot">
           <span className="xr-modal-count">{bought} bought</span>
           <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* custom abilities: house-ruled options a unit can't get from the rulebook */
+function CustomTab({ u, custom, dispatch }) {
+  const [adding, setAdding] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const save = (values, id) => {
+    if (id) dispatch({ type: "customEdit", key: u.key, cid: id, patch: values });
+    else dispatch({ type: "customAdd", key: u.key, ...values });
+    setAdding(false); setEditId(null);
+  };
+  return (
+    <div className="xr-custom-tab">
+      <p className="xr-custom-intro">Add your own ability or house rule for this unit. It costs points like any other option, and shows up on the stat card, the print sheet, and the copied roster.</p>
+      {custom.map((c) => (
+        editId === c.id ? (
+          <CustomAbilityForm key={c.id} initial={c} onSave={(v) => save(v, c.id)} onCancel={() => setEditId(null)} />
+        ) : (
+          <div className="xr-custom-row" key={c.id}>
+            <div className="xr-custom-row-head">
+              <span className={`xr-row-cost ${c.cost < 0 ? "neg" : c.cost > 0 ? "pos" : ""}`}>{costLabel(c.cost)}</span>
+              <span className="xr-custom-row-name">{c.name || "Untitled ability"}</span>
+              <button className="xr-iconbtn small" onClick={() => { setEditId(c.id); setAdding(false); }} aria-label="Edit"><Edit size={16} /></button>
+              <button className="xr-iconbtn small" onClick={() => dispatch({ type: "customDel", key: u.key, cid: c.id })} aria-label="Delete"><Trash size={16} /></button>
+            </div>
+            {c.text && <p className="xr-custom-row-text">{c.text}</p>}
+          </div>
+        )
+      ))}
+      {adding ? (
+        <CustomAbilityForm onSave={(v) => save(v)} onCancel={() => setAdding(false)} />
+      ) : (
+        <button className="xr-btn small" onClick={() => { setAdding(true); setEditId(null); }}><Plus size={16} /> Add custom ability</button>
+      )}
+    </div>
+  );
+}
+function CustomAbilityForm({ initial, onSave, onCancel }) {
+  const [name, setName] = useState(initial?.name || "");
+  const [cost, setCost] = useState(typeof initial?.cost === "number" ? initial.cost : 0);
+  const [text, setText] = useState(initial?.text || "");
+  return (
+    <div className="xr-custom-form">
+      <label className="xr-field">
+        <span className="xr-field-l">Name</span>
+        <input className="xr-field-in" value={name} onChange={(e) => setName(e.target.value)} placeholder="Eg. Scavenged Plating" autoFocus spellCheck={false} />
+      </label>
+      <label className="xr-field">
+        <span className="xr-field-l">Cost <em>points, negative for a downgrade</em></span>
+        <input className="xr-field-in xr-custom-cost" type="number" value={cost}
+          onChange={(e) => setCost(parseInt(e.target.value, 10) || 0)} />
+      </label>
+      <label className="xr-field">
+        <span className="xr-field-l">Rule text <em>optional</em></span>
+        <textarea className="xr-field-in xr-field-area" value={text} onChange={(e) => setText(e.target.value)}
+          rows={3} placeholder="What it does at the table." />
+      </label>
+      <div className="xr-custom-form-foot">
+        <button className="xr-btn small" onClick={onCancel}>Cancel</button>
+        <button className="xr-btn small primary" disabled={!name.trim()} onClick={() => onSave({ name: name.trim(), cost, text: text.trim() })}>
+          <Check size={16} /> Save
+        </button>
       </div>
     </div>
   );
@@ -851,6 +928,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
       lines.push(`${u.isCmd ? "[CMD] " : ""}${unitDisplayName(u, i)} (${t.name}, ${unitPoints(u)} pts, ${unitSP(u)} SP)`);
       t.options.filter((o) => u.options[o.id]).forEach((o) => lines.push(`- ${o.name} (${costLabel(optCost(o))})`));
       XENO_RULES.filter((x) => x.id in u.xenos).forEach((x) => lines.push(`- ${x.name} (${costLabel(xenoCost(x, u.xenos[x.id]))})`));
+      (u.custom || []).forEach((c) => lines.push(`- ${c.name} (${costLabel(c.cost)})`));
       const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
       if (trait) lines.push(`- Trait: ${trait.name}`);
     });
@@ -1024,19 +1102,21 @@ function PrintView({ list }) {
         )}
         {opts.stats && <p className="xr-sheet-note"><b className="fmk">F</b> = free action, activates on its own. Order is the 2d6 activation target; Profile is how the action resolves.</p>}
 
-        {opts.upgrades && roster.some((u) => Object.keys(u.options).length || Object.keys(u.xenos).length || (opts.traits && u.isCmd && typeof u.traitIndex === "number")) && (
+        {opts.upgrades && roster.some((u) => Object.keys(u.options).length || Object.keys(u.xenos).length || (u.custom || []).length || (opts.traits && u.isCmd && typeof u.traitIndex === "number")) && (
           <div className="xr-sheet-units">
             {roster.map((u, i) => {
               const t = UNIT_BY_ID[u.typeId];
               const os = t.options.filter((o) => u.options[o.id]);
               const xs = XENO_RULES.filter((x) => x.id in u.xenos);
+              const cs = u.custom || [];
               const trait = opts.traits && u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
-              if (!os.length && !xs.length && !trait) return null;
+              if (!os.length && !xs.length && !cs.length && !trait) return null;
               return (
                 <div className="xr-sheet-unit" key={u.key}>
                   <h3>{unitDisplayName(u, i)} <em>({t.name})</em></h3>
                   {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
                   {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.text}</p>)}
+                  {cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                   {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
                 </div>
               );
@@ -1186,7 +1266,7 @@ export default function App() {
     switch (a.type) {
       case "add": {
         const key = uid();
-        setRoster((r) => [...r, { key, typeId: a.typeId, name: "", isCmd: r.length === 0, traitTable: "aggressive", traitIndex: undefined, options: {}, xenos: {} }]);
+        setRoster((r) => [...r, { key, typeId: a.typeId, name: "", isCmd: r.length === 0, traitTable: "aggressive", traitIndex: undefined, options: {}, xenos: {}, custom: [] }]);
         nav(`#/build/${key}`);
         break;
       }
@@ -1195,7 +1275,7 @@ export default function App() {
         setRoster((r) => {
           const i = r.findIndex((u) => u.key === a.key);
           if (i < 0) return r;
-          const copy = { ...r[i], key: uid(), isCmd: false, options: { ...r[i].options }, xenos: { ...r[i].xenos } };
+          const copy = { ...r[i], key: uid(), isCmd: false, options: { ...r[i].options }, xenos: { ...r[i].xenos }, custom: (r[i].custom || []).map((c) => ({ ...c, id: uid() })) };
           const next = [...r]; next.splice(i + 1, 0, copy); return next;
         });
         break;
@@ -1225,6 +1305,19 @@ export default function App() {
       case "tier": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, xenos: { ...u.xenos, [a.xid]: a.i } } : u))); break;
       case "table": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitTable: a.tbl } : u))); break;
       case "roll": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitIndex: Math.floor(Math.random() * 6) } : u))); break;
+      case "customAdd":
+        setRoster((r) => r.map((u) => (u.key === a.key
+          ? { ...u, custom: [...(u.custom || []), { id: uid(), name: a.name, cost: a.cost, text: a.text }] }
+          : u)));
+        break;
+      case "customEdit":
+        setRoster((r) => r.map((u) => (u.key === a.key
+          ? { ...u, custom: (u.custom || []).map((c) => (c.id === a.cid ? { ...c, ...a.patch } : c)) }
+          : u)));
+        break;
+      case "customDel":
+        setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, custom: (u.custom || []).filter((c) => c.id !== a.cid) } : u)));
+        break;
       default: break;
     }
   }, [setRoster]);
@@ -1280,7 +1373,7 @@ export default function App() {
  * CSS (Field Almanac: cream paper, bottle-green ink, coral stamps)
  * ================================================================== */
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
 @font-face{font-family:'Terminal Grotesque Open';src:url('${import.meta.env.BASE_URL}fonts/terminal-grotesque-open.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
 @font-face{font-family:'Hyper Scrypt';src:url('${import.meta.env.BASE_URL}fonts/HyperScrypt-Stencil.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
 @font-face{font-family:'Sligoil Micro';src:url('${import.meta.env.BASE_URL}fonts/Sligoil-Micro.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
@@ -1292,17 +1385,18 @@ const CSS = `
   --cream:#F6EFDD;
   --coral:#F4604C; --coral-ink:#BE3319;
   --sage:#5C7A52; --iris:#6A4A8C; --rust:#B06A2C; --brass:#8A6A1F;
-  --display:'Fraunces',Georgia,serif;
+  --display:'Source Serif 4',Georgia,serif;
   --body:'Source Serif 4',Georgia,serif;
-  --flavor:'Fraunces',Georgia,serif;
-  --title:'Hyper Scrypt','Fraunces',Georgia,serif;
+  --flavor:'Source Serif 4',Georgia,serif;
+  --title:'Hyper Scrypt','Source Serif 4',Georgia,serif;
   --mono:'Sligoil Micro',ui-monospace,Consolas,monospace;
+  --ui:'Lexend',ui-sans-serif,system-ui,sans-serif;
   --r:12px;
   background:var(--paper);color:var(--ink);font-family:var(--body);
   font-size:17px;line-height:1.55;min-height:100vh;
 }
 .xr-app *{box-sizing:border-box;margin:0;}
-.xr-app button{font-family:inherit;font-size:inherit;cursor:pointer;color:inherit;background:none;border:none;}
+.xr-app button{font-family:var(--ui);font-size:inherit;cursor:pointer;color:inherit;background:none;border:none;}
 .xr-app :focus-visible{outline:3px solid var(--iris);outline-offset:2px;border-radius:4px;}
 @media (prefers-reduced-motion: reduce){.xr-app *{animation:none !important;transition:none !important;}}
 
@@ -1356,9 +1450,9 @@ const CSS = `
 .xr-list-card:hover{box-shadow:0 3px 10px rgba(31,61,46,.14);}
 .xr-list-open{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:16px 16px 12px;}
 .xr-list-name{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.15;}
-.xr-list-meta{font-family:var(--mono);font-size:16px;color:var(--ink-2);}
-.xr-list-meta b{color:var(--ink);}
-.xr-list-status{font-size:15px;font-weight:600;padding:3px 10px;border-radius:8px;border:1.5px solid;}
+.xr-list-meta{font-family:var(--ui);font-weight:500;font-size:15px;color:var(--ink-2);}
+.xr-list-meta b{color:var(--ink);font-family:var(--mono);font-weight:700;font-size:16px;}
+.xr-list-status{font-family:var(--ui);font-size:14px;font-weight:600;padding:3px 10px;border-radius:8px;border:1.5px solid;}
 .xr-list-status.ok{color:var(--sage);border-color:var(--sage);}
 .xr-list-status.err{color:var(--coral-ink);border-color:var(--coral-ink);}
 .xr-list-status.empty{color:var(--ink-2);border-color:var(--ink-30);}
@@ -1431,7 +1525,7 @@ const CSS = `
 .xr-freeplay{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:15.5px;padding:8px 13px;border-radius:9px;border:2px dashed var(--ink-30);color:var(--ink-2);background:transparent;transition:.13s;}
 .xr-freeplay:hover{border-color:var(--ink);color:var(--ink);}
 .xr-freeplay.on{border-style:solid;border-color:var(--iris);color:var(--cream);background:var(--iris);}
-.xr-status{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:16px;padding:8px 13px;border-radius:9px;border:2px solid var(--ink);}
+.xr-status{display:inline-flex;align-items:center;gap:7px;font-family:var(--ui);font-weight:600;font-size:15px;padding:8px 13px;border-radius:9px;border:2px solid var(--ink);}
 .xr-status.ok{color:var(--sage);border-color:var(--sage);background:var(--paper-2);}
 .xr-status.err{color:var(--coral-ink);border-color:var(--coral-ink);background:#F4604C18;}
 .xr-status.empty{color:var(--ink-2);border-color:var(--ink-30);}
@@ -1442,7 +1536,7 @@ const CSS = `
 .xr-issue-pop{position:absolute;top:calc(100% + 8px);right:0;z-index:35;min-width:270px;max-width:380px;background:var(--paper);border:2px solid var(--ink);border-radius:12px;box-shadow:0 8px 26px rgba(31,61,46,.24);padding:12px;display:none;flex-direction:column;gap:8px;}
 .xr-statuswrap:hover .xr-issue-pop,.xr-issue-pop.open{display:flex;}
 .xr-issues{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
-.xr-issue{font-weight:600;font-size:15.5px;padding:6px 11px;border-radius:8px;border-left:4px solid;background:var(--paper-2);}
+.xr-issue{font-family:var(--ui);font-weight:600;font-size:14.5px;padding:6px 11px;border-radius:8px;border-left:4px solid;background:var(--paper-2);}
 .xr-issue.err{color:var(--coral-ink);border-color:var(--coral-ink);}
 .xr-issue.warn{color:var(--brass);border-color:var(--brass);}
 
@@ -1465,7 +1559,7 @@ const CSS = `
 .xr-urow-name{font-family:var(--display);font-weight:700;font-size:18.5px;line-height:1.15;flex:1;min-width:0;}
 .xr-urow-pts{font-family:var(--mono);font-weight:700;font-size:19px;white-space:nowrap;}
 .xr-urow-pts i{font-style:normal;font-size:14px;color:var(--ink-2);margin-left:3px;}
-.xr-urow-sub{font-size:15.5px;color:var(--ink-2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.xr-urow-sub{font-family:var(--ui);font-weight:500;font-size:14.5px;color:var(--ink-2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .xr-urow-sub em{font-style:italic;}
 
 /* unit panel */
@@ -1481,7 +1575,7 @@ const CSS = `
 .xr-panel-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(19px,2vw,24px);color:var(--ink);background:transparent;border:none;padding:0;line-height:1.1;}
 .xr-panel-name:focus{outline:none;}
 .xr-panel-name::placeholder{color:var(--ink-2);opacity:.7;}
-.xr-panel-type{font-size:15.5px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;}
+.xr-panel-type{font-family:var(--ui);font-size:14.5px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;}
 .xr-tag-cmd{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:13.5px;color:var(--cream);background:var(--brass);padding:2px 8px;border-radius:6px;}
 .xr-panel-pts{font-family:var(--mono);font-weight:700;white-space:nowrap;}
 .xr-panel-pts b{font-size:26px;}
@@ -1503,7 +1597,8 @@ const CSS = `
 .xr-abil-chip{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);background:var(--paper-2);border-radius:9px;padding:7px 12px;min-height:40px;transition:.12s;}
 .xr-abil-chip:hover{border-color:var(--ink);}
 .xr-abil-chip i{font-style:normal;font-family:var(--mono);font-weight:700;color:var(--coral-ink);}
-.xr-abil-empty{font-size:16px;font-style:italic;color:var(--ink-2);}
+.xr-abil-chip.custom{border-style:dashed;border-color:var(--iris);}
+.xr-abil-empty{font-family:var(--flavor);font-size:16px;font-style:italic;color:var(--ink-2);}
 /* abilities modal: type groups + footer */
 .xr-abil-group{margin-bottom:18px;}
 .xr-abil-group-h{position:sticky;top:-16px;background:var(--paper);z-index:1;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:20px;color:var(--ink);padding:6px 0 8px;border-bottom:2px solid var(--ink-30);margin-bottom:6px;}
@@ -1519,6 +1614,17 @@ const CSS = `
 .xr-field-in{width:100%;font-family:var(--body);font-size:17px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:10px;padding:11px 13px;min-height:48px;}
 .xr-field-in:focus{outline:none;border-color:var(--coral);}
 .xr-field-area{resize:vertical;min-height:76px;line-height:1.5;}
+/* custom abilities tab */
+.xr-custom-tab{display:flex;flex-direction:column;gap:12px;}
+.xr-custom-intro{font-family:var(--flavor);font-style:italic;font-size:15.5px;color:var(--ink-2);margin-bottom:2px;}
+.xr-custom-row{border:1.5px dashed var(--iris);border-radius:10px;padding:10px 12px;background:var(--paper-2);}
+.xr-custom-row-head{display:flex;align-items:center;gap:10px;}
+.xr-custom-row-name{flex:1;font-family:var(--ui);font-weight:600;font-size:16px;}
+.xr-custom-row-text{font-family:var(--flavor);font-style:italic;font-size:15.5px;color:var(--ink-2);margin-top:6px;}
+.xr-iconbtn.small{width:34px;height:34px;flex:none;}
+.xr-custom-form{border:1.5px solid var(--ink-30);border-radius:10px;padding:14px;background:var(--paper-2);}
+.xr-custom-cost{max-width:110px;}
+.xr-custom-form-foot{display:flex;justify-content:flex-end;gap:10px;}
 .xr-chips{display:flex;flex-direction:column;gap:6px;}
 .xr-chipwrap{display:flex;flex-direction:column;}
 .xr-chip{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 10px 6px 12px;min-height:38px;transition:.12s;}
@@ -1527,7 +1633,7 @@ const CSS = `
 .xr-chip:hover .xr-chip-caret{color:var(--ink);}
 .xr-chipwrap.open .xr-chip{background:var(--ink);color:var(--cream);border-color:var(--ink);}
 .xr-chipwrap.open .xr-chip-caret{transform:rotate(180deg);color:var(--cream);}
-.xr-chip-text{font-size:16px;color:var(--ink-2);padding:8px 2px 4px;}
+.xr-chip-text{font-family:var(--flavor);font-style:italic;font-size:16px;color:var(--ink-2);padding:8px 2px 4px;}
 
 /* option rows */
 .xr-row{border-bottom:1px solid var(--ink-18);padding:4px 0;}
@@ -1544,7 +1650,7 @@ const CSS = `
 .xr-row-name{font-weight:600;font-size:16.5px;line-height:1.25;}
 .xr-row-info{flex:none;width:34px;align-self:center;height:34px;border:1.5px solid var(--ink-30);border-radius:50%;color:var(--ink-2);font-weight:700;font-size:16px;transition:.12s;}
 .xr-row-info:hover{background:var(--ink);border-color:var(--ink);color:var(--cream);}
-.xr-row-text{font-size:16px;color:var(--ink-2);padding:2px 4px 8px 60px;}
+.xr-row-text{font-family:var(--flavor);font-style:italic;font-size:16px;color:var(--ink-2);padding:2px 4px 8px 60px;}
 .xr-subs{margin-left:44px;border-left:2px solid var(--ink-18);padding-left:8px;}
 .xr-tiers{display:flex;gap:7px;flex-wrap:wrap;padding:2px 4px 10px 60px;}
 .xr-tier{font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:42px;transition:.12s;}
@@ -1552,10 +1658,10 @@ const CSS = `
 .xr-tier.on{background:var(--ink);color:var(--cream);border-color:var(--ink);}
 .xr-tier i{font-style:normal;font-family:var(--mono);}
 .xr-cmd-tables{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
-.xr-cmd-blurb{font-size:16px;font-style:italic;color:var(--ink-2);margin-bottom:10px;}
+.xr-cmd-blurb{font-family:var(--flavor);font-size:16px;font-style:italic;color:var(--ink-2);margin-bottom:10px;}
 .xr-trait{margin-top:10px;border:2px solid var(--brass);border-radius:10px;padding:10px 14px;background:var(--paper-2);}
 .xr-trait-name{font-family:var(--display);font-weight:700;font-size:17.5px;color:var(--brass);}
-.xr-trait-rule{font-size:16px;color:var(--ink-2);}
+.xr-trait-rule{font-family:var(--flavor);font-style:italic;font-size:16px;color:var(--ink-2);}
 
 /* add-unit modal */
 .xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.42);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade .18s ease;}
@@ -1569,7 +1675,7 @@ const CSS = `
 .xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
 .xr-modal-tab.on{color:var(--cream);background:var(--ink);border-color:var(--ink);}
 .xr-tab-n{font-style:normal;font-family:var(--mono);font-weight:700;font-size:13px;background:var(--cream);color:var(--ink);border-radius:10px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;}
-.xr-modal-count{margin-right:auto;font-family:var(--mono);font-size:15px;color:var(--ink-2);}
+.xr-modal-count{margin-right:auto;font-family:var(--ui);font-weight:500;font-size:14.5px;color:var(--ink-2);}
 .xr-modal-tab.cat-inf.on{background:var(--sage);border-color:var(--sage);}
 .xr-modal-tab.cat-xeno.on{background:var(--iris);border-color:var(--iris);}
 .xr-modal-tab.cat-veh.on{background:var(--rust);border-color:var(--rust);}
@@ -1603,7 +1709,7 @@ const CSS = `
 .xr-preset-name{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.15;}
 .xr-preset-sub{font-family:var(--flavor);font-style:italic;font-size:15px;color:var(--ink-2);line-height:1.3;margin-bottom:8px;}
 .xr-preset-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;}
-.xr-preset-meta{font-family:var(--mono);font-size:14px;color:var(--ink-2);}
+.xr-preset-meta{font-family:var(--ui);font-weight:500;font-size:13.5px;color:var(--ink-2);}
 .xr-preset-load{display:inline-flex;align-items:center;gap:5px;font-family:var(--display);font-weight:600;font-size:14.5px;color:var(--cream);background:var(--ink);border-radius:8px;padding:6px 11px;}
 .xr-preset-card:hover .xr-preset-load{background:var(--iris);}
 
@@ -1618,8 +1724,9 @@ const CSS = `
 .xr-sheet{max-width:880px;margin:26px auto 60px;background:#fff;color:#1a1a1a;padding:34px 38px;box-shadow:0 4px 22px rgba(31,61,46,.2);}
 .xr-sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:3px solid #1a1a1a;padding-bottom:10px;margin-bottom:16px;}
 .xr-sheet-title{font-family:var(--display);font-weight:700;font-size:29px;}
-.xr-sheet-meta{font-family:var(--mono);font-size:16px;}
-.xr-sheet-natl{font-size:14px;line-height:1.45;margin:-6px 0 14px;padding:8px 12px;border-left:4px solid #8A6A1F;background:#8A6A1F14;}
+.xr-sheet-meta{font-family:var(--ui);font-weight:500;font-size:15px;}
+.xr-sheet-natl{font-family:var(--flavor);font-style:italic;font-size:14px;line-height:1.45;margin:-6px 0 14px;padding:8px 12px;border-left:4px solid #8A6A1F;background:#8A6A1F14;}
+.xr-sheet-natl b{font-style:normal;}
 .xr-sheet-natl b{color:#6b5218;}
 .xr-sheet-table{width:100%;border-collapse:collapse;font-size:14.5px;}
 .xr-sheet-table th{font-family:var(--display);font-weight:700;font-size:13.5px;text-align:center;border-bottom:2px solid #1a1a1a;padding:5px 6px;}
@@ -1639,10 +1746,12 @@ const CSS = `
 .xr-sheet-unit{break-inside:avoid;margin-bottom:14px;}
 .xr-sheet-unit h3{font-family:var(--display);font-size:17px;border-bottom:1.5px solid #1a1a1a;padding-bottom:2px;margin-bottom:5px;}
 .xr-sheet-unit h3 em{font-weight:400;font-style:italic;font-size:14.5px;}
-.xr-sheet-unit p{font-size:13.5px;line-height:1.45;margin-bottom:5px;}
+.xr-sheet-unit p{font-family:var(--flavor);font-style:italic;font-size:13.5px;line-height:1.45;margin-bottom:5px;}
+.xr-sheet-unit p b{font-style:normal;}
 .xr-sheet-gloss{margin-top:20px;border-top:2px solid #1a1a1a;padding-top:10px;}
 .xr-sheet-gloss h2{font-family:var(--display);font-size:19px;margin-bottom:8px;}
-.xr-sheet-gloss p{font-size:13.5px;line-height:1.45;margin-bottom:6px;}
+.xr-sheet-gloss p{font-family:var(--flavor);font-style:italic;font-size:13.5px;line-height:1.45;margin-bottom:6px;}
+.xr-sheet-gloss p b{font-style:normal;}
 .xr-sheet-foot{margin-top:22px;border-top:1px solid #bbb;padding-top:8px;font-size:12.5px;font-style:italic;color:#555;}
 .xr-printview.large .xr-sheet{font-size:17px;}
 .xr-printview.large .xr-sheet-table td,.xr-printview.large .xr-sheet-table th{font-size:16.5px;padding:8px 7px;}
