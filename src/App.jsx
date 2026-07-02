@@ -410,9 +410,11 @@ function Dashboard({ lists, onOpen, onCreate, onDup, onDel }) {
                     <span className="xr-list-meta">
                       <b>{used}</b>/{l.budget} pts, {count} {count === 1 ? "unit" : "units"}
                     </span>
-                    <span className={`xr-list-status ${count === 0 ? "empty" : err ? "err" : "ok"}`}>
-                      {count === 0 ? "Empty" : err ? "Has issues" : "Legal"}
-                    </span>
+                    {(count === 0 || err) && (
+                      <span className={`xr-list-status ${count === 0 ? "empty" : "err"}`}>
+                        {count === 0 ? "Empty" : "Has issues"}
+                      </span>
+                    )}
                   </button>
                   <div className="xr-list-tools">
                     <button onClick={() => onDup(l.id)} aria-label="Duplicate" title="Duplicate"><CopyIc size={19} /></button>
@@ -482,7 +484,7 @@ function RuleChip({ name, text }) {
   );
 }
 
-function UnitPanel({ u, index, onClose, dispatch }) {
+function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const sp = unitSP(u);
@@ -491,7 +493,6 @@ function UnitPanel({ u, index, onClose, dispatch }) {
   const stdRules = t.special.filter((s) => s !== "None");
   const tbl = u.traitTable || "aggressive";
   const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
-  const [abilOpen, setAbilOpen] = useState(false);
   const boughtOpts = t.options.filter((o) => u.options[o.id]);
   const boughtXenos = XENO_RULES.filter((x) => x.id in u.xenos);
   const hasAbilities = topOpts.length > 0 || elig.length > 0;
@@ -512,17 +513,17 @@ function UnitPanel({ u, index, onClose, dispatch }) {
       </div>
 
       <div className="xr-panel-tools">
-        <button className={`xr-btn small ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })}
-          title={u.isCmd ? "This unit is your Commander" : "Make this unit your Commander (free)"}>
-          <Crown size={17} /> {u.isCmd ? "Commander" : "Make Commander"}
-        </button>
         {hasAbilities && (
-          <button className="xr-btn primary" onClick={() => setAbilOpen(true)} title="Buy loadout options and xeno rules">
+          <button className="xr-btn primary" onClick={onBuyAbilities} title="Buy loadout options and xeno rules">
             <Plus size={17} /> Buy abilities
           </button>
         )}
         <button className="xr-btn small" onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit"><CopyIc size={17} /> Duplicate</button>
         <button className="xr-btn small danger" onClick={() => { dispatch({ type: "del", key: u.key }); onClose(); }} title="Remove this unit"><Trash size={17} /> Remove</button>
+        <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })}
+          title={u.isCmd ? "This unit is your Commander" : "Make this unit your Commander (free)"}>
+          <Crown size={17} /> {u.isCmd ? "Commander" : "Make Commander"}
+        </button>
       </div>
 
       <div className="xr-panel-cols">
@@ -546,12 +547,12 @@ function UnitPanel({ u, index, onClose, dispatch }) {
               {boughtOpts.length + boughtXenos.length > 0 ? (
                 <div className="xr-abil-chips">
                   {boughtOpts.map((o) => (
-                    <button key={o.id} className="xr-abil-chip" onClick={() => setAbilOpen(true)} title={o.text}>
+                    <button key={o.id} className="xr-abil-chip" onClick={onBuyAbilities} title={o.text}>
                       {o.name} <i>{costLabel(optCost(o))}</i>
                     </button>
                   ))}
                   {boughtXenos.map((x) => (
-                    <button key={x.id} className="xr-abil-chip" onClick={() => setAbilOpen(true)} title={x.text}>
+                    <button key={x.id} className="xr-abil-chip" onClick={onBuyAbilities} title={x.text}>
                       {x.name}{x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""} <i>{costLabel(xenoCost(x, u.xenos[x.id]))}</i>
                     </button>
                   ))}
@@ -586,7 +587,6 @@ function UnitPanel({ u, index, onClose, dispatch }) {
         </div>
       </div>
 
-      {abilOpen && <AbilitiesModal u={u} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
     </section>
   );
 }
@@ -729,6 +729,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
   const { roster, budget } = list;
   const [adding, setAdding] = useState(false);
   const [issuesOpen, setIssuesOpen] = useState(false);
+  const [abilOpen, setAbilOpen] = useState(false);
   const { issues, used, count } = useMemo(() => validate(roster, budget), [roster, budget]);
   const errors = issues.filter((i) => i.lvl === "err");
   const status = errors.length ? "err" : count === 0 ? "empty" : "ok";
@@ -808,7 +809,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
         </main>
         <div className="xr-detail">
           {sel ? (
-            <UnitPanel u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} />
+            <UnitPanel u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} />
           ) : (
             roster.length > 0 && <div className="xr-detail-hint"><Alien size={36} /><span>Select a unit</span></div>
           )}
@@ -816,6 +817,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
       </div>
 
       {adding && <AddUnitModal onAdd={(id) => { dispatch({ type: "add", typeId: id }); setAdding(false); }} onClose={() => setAdding(false)} />}
+      {abilOpen && sel && <AbilitiesModal u={sel} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
       <SiteFooter />
     </div>
   );
@@ -985,6 +987,17 @@ function PlayView({ list }) {
                   );
                 })}
               </div>
+              <div className="xr-pcard-prof">
+                {STAT_ROWS.filter((d) => d.val && d.key !== "sp").map((d) => {
+                  const v = profCellVal(t, sp, d.key);
+                  if (!v) return null;
+                  return (
+                    <span key={d.key} title={d.tip}>
+                      <img src={d.img} alt="" width="15" height="15" />{d.label} <b>{v.main}{v.range && <i>{v.range}</i>}</b>
+                    </span>
+                  );
+                })}
+              </div>
               <div className="xr-pcard-sp" role="group" aria-label={`Strength points, ${sp - s.dmg} of ${sp} left`}>
                 {Array.from({ length: sp }, (_, pi) => {
                   const lost = pi >= sp - s.dmg;
@@ -1136,7 +1149,7 @@ export default function App() {
  * CSS (Field Almanac: cream paper, bottle-green ink, coral stamps)
  * ================================================================== */
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
 @font-face{font-family:'Terminal Grotesque Open';src:url('${import.meta.env.BASE_URL}fonts/terminal-grotesque-open.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
 @font-face{font-family:'Hyper Scrypt';src:url('${import.meta.env.BASE_URL}fonts/HyperScrypt-Stencil.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
 @font-face{font-family:'Sligoil Micro';src:url('${import.meta.env.BASE_URL}fonts/Sligoil-Micro.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
@@ -1148,9 +1161,10 @@ const CSS = `
   --cream:#F6EFDD;
   --coral:#F4604C; --coral-ink:#BE3319;
   --sage:#5C7A52; --iris:#6A4A8C; --rust:#B06A2C; --brass:#8A6A1F;
-  --display:'Zilla Slab',Georgia,serif;
+  --display:'Fraunces',Georgia,serif;
   --body:'Source Serif 4',Georgia,serif;
-  --title:'Hyper Scrypt','Zilla Slab',Georgia,serif;
+  --flavor:'Fraunces',Georgia,serif;
+  --title:'Hyper Scrypt','Fraunces',Georgia,serif;
   --mono:'Sligoil Micro',ui-monospace,Consolas,monospace;
   --r:12px;
   background:var(--paper);color:var(--ink);font-family:var(--body);
@@ -1426,7 +1440,7 @@ const CSS = `
 .xr-cat-stamp b{font-family:var(--mono);font-weight:700;font-size:19px;line-height:1;}
 .xr-cat-stamp i{font-style:normal;font-size:11.5px;font-weight:700;}
 .xr-cat-name{display:block;font-family:var(--display);font-weight:700;font-size:19px;line-height:1.15;}
-.xr-cat-role{display:block;font-style:italic;font-size:15.5px;line-height:1.4;color:var(--ink-2);margin:3px 0 7px;}
+.xr-cat-role{display:block;font-family:var(--flavor);font-style:italic;font-size:16px;line-height:1.4;color:var(--ink-2);margin:3px 0 7px;}
 .xr-cat-ribbon{display:flex;gap:7px 13px;flex-wrap:wrap;}
 .xr-cat-ribbon span{font-weight:600;font-size:15px;color:var(--ink-2);}
 .xr-cat-ribbon em{font-style:normal;font-family:var(--mono);color:var(--ink);font-weight:700;}
@@ -1475,10 +1489,12 @@ const CSS = `
 .xr-play-turn{font-family:var(--mono);font-size:18px;color:var(--ink-2);}
 .xr-play-turn b{font-size:24px;color:var(--ink);}
 .xr-play-grid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;padding:20px clamp(14px,3vw,30px) 50px;align-content:start;}
-.xr-pcard{position:relative;border:3px solid var(--ink);border-left-width:8px;border-radius:var(--r);background:var(--paper-2);padding:14px 16px;display:flex;flex-direction:column;gap:12px;transition:.15s;}
-.xr-pcard.cat-inf{border-left-color:var(--sage);}
-.xr-pcard.cat-xeno{border-left-color:var(--iris);}
-.xr-pcard.cat-veh{border-left-color:var(--rust);}
+.xr-pcard{position:relative;border:3px solid var(--ink);border-radius:var(--r);background:var(--paper-2);padding:14px 16px;display:flex;flex-direction:column;gap:12px;transition:.15s;}
+.xr-pcard-prof{display:flex;flex-wrap:wrap;gap:8px 14px;padding-top:2px;border-top:1.5px solid var(--ink-18);}
+.xr-pcard-prof span{display:inline-flex;align-items:center;gap:5px;font-size:15px;color:var(--ink-2);}
+.xr-pcard-prof img{opacity:.85;}
+.xr-pcard-prof b{font-family:var(--mono);font-size:16px;color:var(--ink);}
+.xr-pcard-prof i{font-style:normal;font-family:var(--mono);font-size:13px;color:var(--ink-2);}
 .xr-pcard.acted{opacity:.62;}
 .xr-pcard.sup{background:#F4604C1E;}
 .xr-pcard-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
