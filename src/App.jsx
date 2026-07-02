@@ -308,6 +308,32 @@ function Section({ title, count, defaultOpen, children }) {
   );
 }
 
+/* budget picker: presets (24 marked recommended) plus a click-to-open Custom field */
+function BudgetPicker({ budget, onChange }) {
+  const isCustom = !BUDGET_PRESETS.includes(budget);
+  const [editing, setEditing] = useState(isCustom);
+  return (
+    <div className="xr-budget" role="group" aria-label="Game size">
+      {BUDGET_PRESETS.map((b) => (
+        <button key={b} className={`xr-budget-b ${b === 24 ? "rec" : ""} ${budget === b ? "on" : ""}`}
+          title={b === 24 ? "Standard game size, recommended" : `${b}-point game`}
+          onClick={() => { onChange(b); setEditing(false); }}>
+          {b}{b === 24 && <span className="xr-budget-rec" aria-hidden="true">★</span>}
+        </button>
+      ))}
+      {editing || isCustom ? (
+        <label className={`xr-budget-cust ${isCustom ? "on" : ""}`}>
+          <span className="xr-budget-cust-l">Custom</span>
+          <input type="number" min="1" max="999" value={budget} autoFocus aria-label="Custom points value"
+            onChange={(e) => { const v = parseInt(e.target.value, 10); onChange(v > 0 ? Math.min(999, v) : 1); }} />
+        </label>
+      ) : (
+        <button className="xr-budget-b xr-budget-cbtn" onClick={() => setEditing(true)} title="Set any points value">Custom</button>
+      )}
+    </div>
+  );
+}
+
 /* new-army creation modal */
 function NewArmyModal({ onCreate, onClose }) {
   const [name, setName] = useState("");
@@ -334,13 +360,7 @@ function NewArmyModal({ onCreate, onClose }) {
           </label>
           <div className="xr-field">
             <span className="xr-field-l">Game size</span>
-            <div className="xr-budget">
-              {BUDGET_PRESETS.map((b) => (
-                <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} onClick={() => setBudget(b)}>{b}</button>
-              ))}
-              <input className="xr-budget-custom" type="number" min="1" max="999" value={budget} aria-label="Custom points" title="Custom points value"
-                onChange={(e) => { const v = parseInt(e.target.value, 10); setBudget(v > 0 ? Math.min(999, v) : 1); }} />
-            </div>
+            <BudgetPicker budget={budget} onChange={setBudget} />
           </div>
           <label className="xr-field">
             <span className="xr-field-l">Description <em>optional</em></span>
@@ -481,8 +501,11 @@ function UnitPanel({ u, index, onClose, dispatch }) {
       <div className="xr-panel-head">
         <button className="xr-iconbtn xr-panel-back" onClick={onClose} aria-label="Close unit"><Back size={20} /></button>
         <div className="xr-panel-id">
-          <input className="xr-panel-name" value={u.name} placeholder={`${t.name} ${index + 1}`}
-            onChange={(e) => dispatch({ type: "name", key: u.key, name: e.target.value })} spellCheck={false} />
+          <label className="xr-namefield">
+            <span className="xr-namefield-l">Unit name</span>
+            <input className="xr-panel-name" value={u.name} placeholder={`${t.name} ${index + 1}`}
+              onChange={(e) => dispatch({ type: "name", key: u.key, name: e.target.value })} spellCheck={false} />
+          </label>
           <span className="xr-panel-type">{u.isCmd && <b className="xr-tag-cmd"><Crown size={13} /> Commander</b>} {t.name}</span>
         </div>
         <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
@@ -740,14 +763,9 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
           </div>
         </div>
         <div className="xr-mast-row2">
-          <div className="xr-budget" role="group" aria-label="Points budget">
+          <div className="xr-budgetrow">
             <span className="xr-budget-l">Budget</span>
-            {BUDGET_PRESETS.map((b) => (
-              <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} title={`${b}-point game`} onClick={() => updateList({ budget: b })}>{b}</button>
-            ))}
-            <input className="xr-budget-custom" type="number" min="1" max="999" value={budget} aria-label="Custom points value"
-              title="Set any points value for your game size"
-              onChange={(e) => { const v = parseInt(e.target.value, 10); updateList({ budget: v > 0 ? Math.min(999, v) : 1 }); }} />
+            <BudgetPicker budget={budget} onChange={(b) => updateList({ budget: b })} />
           </div>
           <div className={`xr-muster ${over ? "over" : pct >= 90 ? "near" : ""}`}>
             <span className="xr-muster-read"><b>{used}</b><span>/{budget} pts</span></span>
@@ -1242,6 +1260,16 @@ const CSS = `
 .xr-budget-b{font-family:var(--mono);font-weight:600;font-size:16px;border:2px solid var(--ink);min-width:46px;min-height:44px;padding:6px 8px;border-radius:9px;transition:.12s;}
 .xr-budget-b:hover{background:var(--paper-2);}
 .xr-budget-b.on{background:var(--ink);color:var(--cream);}
+.xr-budgetrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.xr-budget-b.rec{position:relative;}
+.xr-budget-rec{position:absolute;top:-6px;right:-5px;font-size:11px;line-height:1;color:var(--brass);}
+.xr-budget-b.rec.on .xr-budget-rec{color:#E8C860;}
+.xr-budget-cbtn{font-family:var(--display);font-size:15px;font-weight:600;border-style:dashed;border-color:var(--ink-30);color:var(--ink-2);}
+.xr-budget-cbtn:hover{border-color:var(--ink);color:var(--ink);}
+.xr-budget-cust{position:relative;display:inline-flex;flex-direction:column;justify-content:center;gap:1px;min-width:70px;min-height:44px;border:2px solid var(--coral);border-radius:9px;padding:3px 8px;background:var(--paper);}
+.xr-budget-cust-l{font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.04em;font-size:11px;line-height:1;color:var(--coral-ink);}
+.xr-budget-cust input{width:58px;font-family:var(--mono);font-weight:700;font-size:16px;color:var(--ink);background:transparent;border:none;padding:0;}
+.xr-budget-cust input:focus{outline:none;}
 .xr-muster{display:flex;align-items:center;gap:12px;flex:1;min-width:200px;}
 .xr-muster-read{font-family:var(--mono);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;}
 .xr-muster-read b{font-size:24px;}
@@ -1292,8 +1320,14 @@ const CSS = `
 .xr-panel-head{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:2px solid var(--ink-30);}
 .xr-panel-back{display:none;}
 .xr-panel-id{flex:1;min-width:0;}
-.xr-panel-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(19px,2vw,24px);color:var(--ink);background:transparent;border:none;border-bottom:2px solid transparent;padding:0 0 2px;}
-.xr-panel-name:focus{outline:none;border-bottom-color:var(--coral);}
+.xr-namefield{position:relative;display:block;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);padding:17px 12px 6px;cursor:text;transition:border-color .12s;}
+.xr-namefield:hover{border-color:var(--ink);}
+.xr-namefield:focus-within{border-color:var(--coral);background:var(--paper);}
+.xr-namefield-l{position:absolute;top:5px;left:13px;font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.03em;font-size:12px;line-height:1;color:var(--ink-2);}
+.xr-namefield:focus-within .xr-namefield-l{color:var(--coral-ink);}
+.xr-panel-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(19px,2vw,24px);color:var(--ink);background:transparent;border:none;padding:0;line-height:1.1;}
+.xr-panel-name:focus{outline:none;}
+.xr-panel-name::placeholder{color:var(--ink-2);opacity:.7;}
 .xr-panel-type{font-size:15.5px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;}
 .xr-tag-cmd{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:13.5px;color:var(--cream);background:var(--brass);padding:2px 8px;border-radius:6px;}
 .xr-panel-pts{font-family:var(--mono);font-weight:700;white-space:nowrap;}
