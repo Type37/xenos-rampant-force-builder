@@ -1676,3 +1676,17 @@ export const BUDGET_PRESETS = [12, 18, 24, 30, 36];
 
 export const UNIT_BY_ID = Object.fromEntries(UNIT_TYPES.map((u) => [u.id, u]));
 export const XENO_BY_ID = Object.fromEntries(XENO_RULES.map((x) => [x.id, x]));
+
+/* National traits: an optional per-detachment rule for the Weird War setting.
+   Rules are the mechanical effect from Operation Werwolf (pp. 126-129). */
+export const NATIONAL_TRAITS = [
+  { id: "usa", name: "USA: Fire and Manoeuvre", rule: "All American infantry units have the Skirmish rule; units that can already Skirmish do so without the usual penalty. American vehicles add +1 to their activation tests to Move and Shoot in the same action." },
+  { id: "ussr", name: "USSR: Quantity Has A Quality All Of Its Own", rule: "Whenever a Soviet unit is routed or destroyed, but not if it leaves the board willingly, roll a die. If the result is equal to or greater than that unit's points cost, the Detachment gains an identical, full-strength unit as reinforcements, which may enter play during the next Soviet activation phase." },
+  { id: "british", name: "British Empire: Rifle Drill", rule: "A British unit can re-roll a single missed die in any Shoot action or Firefight reaction it takes. Applies to all troops of the British Empire and Commonwealth." },
+  { id: "germany", name: "Germany: Prussian Efficiency", rule: "The first time each turn that an Imperial German unit fails an ordered activation test, its player may re-roll that test once. If the re-roll succeeds it no longer counts as failed and does not end the activation phase. Only one unit may attempt this re-roll each turn." },
+  { id: "third-reich", name: "The Third Reich: The Dying Days", rule: "Against a Commander from the Western Allies, German units test Courage on one die only, but improve their Defence Value by one (home turf). Against Soviet, Werwolf, or other German Commanders, or when led by a Werwolf Commander, they keep the +1 Defence, test Courage as normal, and may re-roll failed Courage tests once per test." },
+  { id: "werwolf", name: "Werwolf: Cornered Wolves", rule: "Werwolf units may re-roll any failed Courage test (once per test). They may not benefit from Courage or activation bonuses from a Commander whose national trait is not Werwolf (including regular Third Reich Commanders), nor are they affected by their Commander Traits." },
+  { id: "japanese", name: "Japanese: Banzai!", rule: "Japanese units suffer from Wild Charge, but only ever make Courage tests on two dice; casualties do not reduce them to one die." },
+  { id: "france", name: "France: Elan", rule: "French units gain a +1 bonus to Attack activation tests and count as having +1 Courage during Attacks in which they are the Attacker." },
+];
+export const NATIONAL_BY_ID = Object.fromEntries(NATIONAL_TRAITS.map((n) => [n.id, n]));

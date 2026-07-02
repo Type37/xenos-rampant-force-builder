@@ -26,6 +26,7 @@ import icHouse from "@iconify-icons/ph/house-fill";
 import icSkull from "@iconify-icons/ph/skull-fill";
 import icEdit from "@iconify-icons/ph/pencil-simple-fill";
 import icCaret from "@iconify-icons/ph/caret-down-bold";
+import icBook from "@iconify-icons/ph/book-open-fill";
 /* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
 import icoAttack from "./assets/stat/attack.png";
 import icoMove from "./assets/stat/move.png";
@@ -38,7 +39,9 @@ import icoStrength from "./assets/stat/strength.png";
 import {
   INFANTRY, VEHICLE, UNIT_TYPES, XENO_RULES, SPECIAL_RULES,
   COMMANDER_TABLES, BUDGET_PRESETS, UNIT_BY_ID, XENO_BY_ID,
+  NATIONAL_TRAITS, NATIONAL_BY_ID,
 } from "./data.js";
+import { SETTINGS } from "./premade.js";
 
 /* ================================================================== *
  * XENOS RAMPANT: FORCE BUILDER
@@ -60,7 +63,8 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   Crown = mk(icCrown), Dice = mk(icDice), Printer = mk(icPrinter), CopyIc = mk(icCopy),
   Trash = mk(icTrash), Plus = mk(icPlus), XIc = mk(icX), Check = mk(icCheck),
   Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
-  House = mk(icHouse), Skull = mk(icSkull), Edit = mk(icEdit), Caret = mk(icCaret);
+  House = mk(icHouse), Skull = mk(icSkull), Edit = mk(icEdit), Caret = mk(icCaret),
+  Book = mk(icBook);
 
 const STAT_ROWS = [
   { key: "atk", label: "Attack", img: icoAttack, order: true, val: true, tip: "Attack: melee to-hit value. Order is the 2d6 target to activate an Attack." },
@@ -179,6 +183,28 @@ function validate(roster, budget, freeplay) {
   return { issues, used, count };
 }
 const unitDisplayName = (u, i) => u.name || `${UNIT_BY_ID[u.typeId].name} ${i + 1}`;
+
+/* build a roster from a pre-made detachment: expand counts, apply options and
+   xeno rules, sanitize, and crown the first unit as Commander. */
+function rosterFromDetachment(det) {
+  const roster = [];
+  det.units.forEach((e) => {
+    const n = e.count || 1;
+    for (let c = 0; c < n; c++) {
+      const options = {};
+      (e.options || []).forEach((id) => { options[id] = true; });
+      roster.push(sanitize({
+        key: uid(), typeId: e.typeId, name: e.label || "",
+        isCmd: false, traitTable: "aggressive", traitIndex: undefined,
+        options, xenos: { ...(e.xenos || {}) },
+      }));
+    }
+  });
+  if (roster.length) roster[0].isCmd = true;
+  return roster;
+}
+const detachmentPoints = (det) => det.units.reduce((n, e) => n + (e.points || 0) * (e.count || 1), 0);
+const detachmentUnits = (det) => det.units.reduce((n, e) => n + (e.count || 1), 0);
 
 /* ---------------- storage ---------------- */
 const LS_LISTS = "xrb.lists";
@@ -383,11 +409,57 @@ function NewArmyModal({ onCreate, onClose }) {
   );
 }
 
+/* load-a-preset modal: pick a genre setting, then a ready-made detachment */
+function LoadPresetModal({ onLoad, onClose }) {
+  const [sid, setSid] = useState(SETTINGS[0] ? SETTINGS[0].id : null);
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const setting = SETTINGS.find((s) => s.id === sid) || SETTINGS[0];
+  if (!setting) return null;
+  return (
+    <div className="xr-modal-backdrop" onClick={onClose}>
+      <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Load a preset detachment" onClick={(e) => e.stopPropagation()}>
+        <div className="xr-modal-head">
+          <span className="xr-modal-title"><Book size={22} /> Load a preset</span>
+          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        </div>
+        <div className="xr-modal-tabs" role="tablist">
+          {SETTINGS.map((s) => (
+            <button key={s.id} role="tab" aria-selected={sid === s.id} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} onClick={() => setSid(s.id)}>
+              {s.name.split(":")[0]}
+            </button>
+          ))}
+        </div>
+        <div className="xr-modal-body">
+          <p className="xr-preset-blurb"><b>{setting.name}.</b> {setting.blurb}
+            {setting.nationalTraits && " This setting has national traits you can add once it's loaded."}</p>
+          <div className="xr-preset-grid">
+            {setting.detachments.map((d) => (
+              <button className="xr-preset-card" key={d.n} onClick={() => onLoad(d, setting)}>
+                <span className="xr-preset-name">{d.name}</span>
+                {d.subtitle && <span className="xr-preset-sub">{d.subtitle}</span>}
+                <span className="xr-preset-foot">
+                  <span className="xr-preset-meta">{detachmentUnits(d)} units · {detachmentPoints(d)} pts</span>
+                  <span className="xr-preset-load"><Plus size={15} /> Load</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ================================================================== *
  * DASHBOARD (saved detachments)
  * ================================================================== */
-function Dashboard({ lists, onOpen, onCreate, onDup, onDel }) {
+function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
   const [creating, setCreating] = useState(false);
+  const [loading, setLoading] = useState(false);
   const arr = Object.values(lists).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   return (
     <div className="xr-home">
@@ -398,7 +470,12 @@ function Dashboard({ lists, onOpen, onCreate, onDup, onDel }) {
       <main className="xr-home-body">
         <div className="xr-home-bar">
           <h2 className="xr-home-h">Detachments</h2>
-          <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={20} /> New detachment</button>
+          <div className="xr-home-bar-btns">
+            {SETTINGS.length > 0 && (
+              <button className="xr-btn" onClick={() => setLoading(true)} title="Start from a ready-made detachment out of the rulebook"><Book size={19} /> Load a preset</button>
+            )}
+            <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={20} /> New detachment</button>
+          </div>
         </div>
         {arr.length === 0 ? (
           <button className="xr-home-empty" onClick={() => setCreating(true)}>
@@ -434,6 +511,7 @@ function Dashboard({ lists, onOpen, onCreate, onDup, onDel }) {
         )}
       </main>
       {creating && <NewArmyModal onCreate={(opts) => { onCreate(opts); setCreating(false); }} onClose={() => setCreating(false)} />}
+      {loading && <LoadPresetModal onLoad={(det, setting) => { onLoadPreset(det, setting); setLoading(false); }} onClose={() => setLoading(false)} />}
       <SiteFooter />
     </div>
   );
@@ -767,6 +845,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
 
   const copyList = () => {
     const lines = [`${list.name || "Untitled detachment"} (${used}/${budget} pts, ${count} units)`];
+    if (list.nationalTrait && NATIONAL_BY_ID[list.nationalTrait]) lines.push(`National trait: ${NATIONAL_BY_ID[list.nationalTrait].name}`);
     roster.forEach((u, i) => {
       const t = UNIT_BY_ID[u.typeId];
       lines.push(`${u.isCmd ? "[CMD] " : ""}${unitDisplayName(u, i)} (${t.name}, ${unitPoints(u)} pts, ${unitSP(u)} SP)`);
@@ -799,6 +878,13 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
             <span className="xr-muster-read"><b>{used}</b><span>/{budget} pts</span></span>
             <span className="xr-muster-track"><span className="xr-muster-fill" style={{ width: `${pct}%` }} /></span>
           </div>
+          <label className="xr-natl" title="Weird War optional rule: a national trait for the whole detachment">
+            <span className="xr-natl-l">Nation</span>
+            <select className="xr-natl-sel" value={list.nationalTrait || ""} onChange={(e) => updateList({ nationalTrait: e.target.value || undefined })}>
+              <option value="">None</option>
+              {NATIONAL_TRAITS.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
+            </select>
+          </label>
           <button className={`xr-freeplay ${list.freeplay ? "on" : ""}`} onClick={() => updateList({ freeplay: !list.freeplay })}
             title={list.freeplay ? "Free play is on: composition rules are ignored" : "Turn on Free play to build without composition limits"}
             aria-pressed={!!list.freeplay}>
@@ -895,6 +981,9 @@ function PrintView({ list }) {
           <h1 className="xr-sheet-title">{list.name || "Untitled detachment"}</h1>
           <div className="xr-sheet-meta">Xenos Rampant &nbsp; {used}/{budget} pts &nbsp; {count} {count === 1 ? "unit" : "units"}</div>
         </div>
+        {list.nationalTrait && NATIONAL_BY_ID[list.nationalTrait] && (
+          <p className="xr-sheet-natl"><b>National trait, {NATIONAL_BY_ID[list.nationalTrait].name}:</b> {NATIONAL_BY_ID[list.nationalTrait].rule}</p>
+        )}
 
         {opts.stats && (
           <table className="xr-sheet-table">
@@ -1146,6 +1235,15 @@ export default function App() {
     setCurrentId(id);
     nav("#/build");
   };
+  const loadPreset = (det, setting) => {
+    const id = uid();
+    const roster = rosterFromDetachment(det);
+    const bookPts = detachmentPoints(det);
+    const budget = BUDGET_PRESETS.find((b) => b >= bookPts) || BUDGET_PRESETS[BUDGET_PRESETS.length - 1] || 24;
+    setLists((ls) => ({ ...ls, [id]: { id, name: det.name, budget, description: det.subtitle || "", roster, setting: setting.id, nationalTrait: undefined, updated: Date.now() } }));
+    setCurrentId(id);
+    nav("#/build");
+  };
   const openList = (id) => { setCurrentId(id); nav("#/build"); };
   const dupList = (id) => {
     const src = lists[id];
@@ -1163,14 +1261,14 @@ export default function App() {
   /* guard: build/print/play need a current list */
   if (route.view !== "home" && !current) {
     return <div className="xr-app"><style>{CSS}</style>
-      <Dashboard lists={lists} onOpen={openList} onCreate={createList} onDup={dupList} onDel={delList} />
+      <Dashboard lists={lists} onOpen={openList} onCreate={createList} onLoadPreset={loadPreset} onDup={dupList} onDel={delList} />
     </div>;
   }
 
   return (
     <div className="xr-app">
       <style>{CSS}</style>
-      {route.view === "home" && <Dashboard lists={lists} onOpen={openList} onCreate={createList} onDup={dupList} onDel={delList} />}
+      {route.view === "home" && <Dashboard lists={lists} onOpen={openList} onCreate={createList} onLoadPreset={loadPreset} onDup={dupList} onDel={delList} />}
       {route.view === "build" && <Builder list={current} selectedKey={route.unitKey} dispatch={dispatch} updateList={updateList} />}
       {route.view === "print" && <PrintView list={current} />}
       {route.view === "play" && <PlayView list={current} />}
@@ -1326,6 +1424,10 @@ const CSS = `
 .xr-muster-fill{display:block;height:100%;background:var(--sage);transition:width .3s;}
 .xr-muster.near .xr-muster-fill{background:var(--brass);}
 .xr-muster.over .xr-muster-fill{background:var(--coral);}
+.xr-natl{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14.5px;color:var(--ink-2);}
+.xr-natl-l{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;}
+.xr-natl-sel{font-family:var(--body);font-size:15px;font-weight:600;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:7px 9px;min-height:40px;max-width:190px;cursor:pointer;}
+.xr-natl-sel:focus{outline:none;border-color:var(--coral);}
 .xr-freeplay{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:15.5px;padding:8px 13px;border-radius:9px;border:2px dashed var(--ink-30);color:var(--ink-2);background:transparent;transition:.13s;}
 .xr-freeplay:hover{border-color:var(--ink);color:var(--ink);}
 .xr-freeplay.on{border-style:solid;border-color:var(--iris);color:var(--cream);background:var(--iris);}
@@ -1489,6 +1591,21 @@ const CSS = `
 .xr-cat-stat b{font-family:var(--mono);font-weight:700;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;}
 .xr-cat-add{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:var(--display);font-weight:600;font-size:15.5px;color:var(--cream);background:var(--ink);border-radius:9px;padding:8px 12px;min-height:40px;}
 .xr-cat-card:hover .xr-cat-add{background:var(--iris);}
+/* dashboard action buttons */
+.xr-home-bar-btns{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+/* load-a-preset modal */
+.xr-preset-blurb{font-size:16px;line-height:1.45;color:var(--ink-2);margin-bottom:14px;}
+.xr-preset-blurb b{font-family:var(--display);color:var(--ink);}
+.xr-preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px;}
+.xr-preset-card{display:flex;flex-direction:column;gap:3px;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:13px 15px 11px;border-radius:var(--r);transition:.13s;}
+.xr-preset-card:hover{background:var(--paper-3);box-shadow:0 3px 10px rgba(31,61,46,.14);}
+.xr-preset-card:active{transform:scale(.98);}
+.xr-preset-name{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.15;}
+.xr-preset-sub{font-family:var(--flavor);font-style:italic;font-size:15px;color:var(--ink-2);line-height:1.3;margin-bottom:8px;}
+.xr-preset-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;}
+.xr-preset-meta{font-family:var(--mono);font-size:14px;color:var(--ink-2);}
+.xr-preset-load{display:inline-flex;align-items:center;gap:5px;font-family:var(--display);font-weight:600;font-size:14.5px;color:var(--cream);background:var(--ink);border-radius:8px;padding:6px 11px;}
+.xr-preset-card:hover .xr-preset-load{background:var(--iris);}
 
 /* ---------- print ---------- */
 .xr-printview{min-height:100vh;background:var(--paper-3);padding-left:76px;}
@@ -1502,6 +1619,8 @@ const CSS = `
 .xr-sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:3px solid #1a1a1a;padding-bottom:10px;margin-bottom:16px;}
 .xr-sheet-title{font-family:var(--display);font-weight:700;font-size:29px;}
 .xr-sheet-meta{font-family:var(--mono);font-size:16px;}
+.xr-sheet-natl{font-size:14px;line-height:1.45;margin:-6px 0 14px;padding:8px 12px;border-left:4px solid #8A6A1F;background:#8A6A1F14;}
+.xr-sheet-natl b{color:#6b5218;}
 .xr-sheet-table{width:100%;border-collapse:collapse;font-size:14.5px;}
 .xr-sheet-table th{font-family:var(--display);font-weight:700;font-size:13.5px;text-align:center;border-bottom:2px solid #1a1a1a;padding:5px 6px;}
 .xr-sheet-table th.l,.xr-sheet-table td.l{text-align:left;}
