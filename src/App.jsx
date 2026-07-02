@@ -82,6 +82,19 @@ const PROF_DEFS = [
   { key: "sp", label: "Strength", Icon: Heart },
 ];
 
+/* Unified per-unit stats: one row per stat, no duplication. Attack, Move, and Shoot
+   each carry an Order roll (the 2d6 activation target) AND a Profile value; the rest
+   carry only one. This is the single source of truth for the stat table on a card. */
+const STAT_ROWS = [
+  { key: "atk", label: "Attack",   Icon: Sword,      order: true,  val: true },
+  { key: "mov", label: "Move",     Icon: Ruler,      order: true,  val: true },
+  { key: "sho", label: "Shoot",    Icon: Target,     order: true,  val: true },
+  { key: "cou", label: "Courage",  Icon: Flame,      order: true,  val: false },
+  { key: "def", label: "Defence",  Icon: Shield,     order: false, val: true },
+  { key: "arm", label: "Armour",   Icon: ShieldHalf, order: false, val: true },
+  { key: "sp",  label: "Strength", Icon: Heart,      order: false, val: true },
+];
+
 const CATS = [
   { id: "inf", label: "Infantry", Icon: Users },
   { id: "xeno", label: "Xenomorphs", Icon: Skull },
@@ -263,6 +276,46 @@ function ProfCell({ def, prof, sp }) {
   );
 }
 
+/* Unified stat table: one row per stat, Order column (2d6 activation) + Profile column. */
+function orderCell(t, key) {
+  const raw = t.noAttack && key === "atk" ? "—" : t.act[key];
+  const { val, free } = parseAct(raw);
+  return val === "n/a" ? null : { val, free };
+}
+function profCellVal(t, sp, key) {
+  if (key === "sp") return { main: String(sp) };
+  if (key === "sho") { const r = splitRange(t.prof.sho); return r.main === "n/a" ? null : r; }
+  const v = t.prof[key];
+  return v == null || v === "n/a" || v === "—" ? null : { main: String(v) };
+}
+function UnitStatTable({ t, sp }) {
+  return (
+    <div className="xr-stt">
+      <div className="xr-stt-head">
+        <span className="xr-stt-hstat">Stat</span>
+        <span className="xr-stt-hcol">Order <em>2d6</em></span>
+        <span className="xr-stt-hcol">Profile</span>
+      </div>
+      {STAT_ROWS.map((d) => {
+        const { Icon } = d;
+        const o = d.order ? orderCell(t, d.key) : null;
+        const v = d.val ? profCellVal(t, sp, d.key) : null;
+        return (
+          <div className="xr-stt-row" key={d.key}>
+            <span className="xr-stt-stat"><Icon className="xr-stt-ic" size={24} strokeWidth={2} />{d.label}</span>
+            <span className="xr-stt-cell">
+              {o ? <><b>{o.val}</b>{o.free && <em className="xr-free">free</em>}</> : <span className="xr-stt-dash">–</span>}
+            </span>
+            <span className="xr-stt-cell">
+              {v ? <><b>{v.main}</b>{v.range && <i className="xr-stt-rng">{v.range}</i>}</> : <span className="xr-stt-dash">–</span>}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ---------------- catalogue card ---------------- */
 function CatalogCard({ t, onAdd, pulsing }) {
   const cat = catOf(t);
@@ -375,22 +428,7 @@ function UnitCard({ u, index, onName, onCmd, onDup, onDel, onOpt, onXeno, onTier
 
       {/* stat groups */}
       <div className="xr-stats">
-        <div className="xr-statgroup">
-          <div className="xr-statgroup-h">Activation <em>2d6</em></div>
-          <div className="xr-statgrid act">
-            {ACT_DEFS.map((d) => (
-              <ActCell key={d.key} def={d} raw={t.noAttack && d.key === "atk" ? "—" : t.act[d.key]} />
-            ))}
-          </div>
-        </div>
-        <div className="xr-statgroup">
-          <div className="xr-statgroup-h">Profile</div>
-          <div className="xr-statgrid prof">
-            {PROF_DEFS.map((d) => (
-              <ProfCell key={d.key} def={d} prof={t.prof} sp={sp} />
-            ))}
-          </div>
-        </div>
+        <UnitStatTable t={t} sp={sp} />
       </div>
 
       {/* standard rules */}
@@ -631,27 +669,27 @@ export default function App() {
             <h1 className="xr-word">Xenos Rampant</h1>
             <span className="xr-sub">Force Builder</span>
           </div>
-          <div className="xr-mast-right">
-            <Muster used={used} budget={budget} />
-            <div className="xr-actions">
-              <button className="xr-act" onClick={() => window.print()}><Printer size={20} strokeWidth={2.2} /> Print</button>
-              <button className="xr-act" onClick={copyList}><Copy size={20} strokeWidth={2.2} /> Copy</button>
-              <button className="xr-act danger" onClick={clearAll}><RotateCcw size={20} strokeWidth={2.2} /> Clear</button>
-            </div>
+          <div className="xr-actions">
+            <button className="xr-act" onClick={() => window.print()}><Printer size={20} strokeWidth={2.2} /> Print</button>
+            <button className="xr-act" onClick={copyList}><Copy size={20} strokeWidth={2.2} /> Copy</button>
+            <button className="xr-act danger" onClick={clearAll}><RotateCcw size={20} strokeWidth={2.2} /> Clear</button>
           </div>
         </div>
         <div className="xr-mast-row2">
           <input className="xr-detname" value={det} placeholder="Name your detachment" onChange={(e) => setDet(e.target.value)} spellCheck={false} />
-          <div className="xr-budget">
-            <span className="xr-budget-l">Budget</span>
-            {BUDGET_PRESETS.map((b) => (
-              <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} onClick={() => setBudget(b)}>{b}</button>
-            ))}
-          </div>
-          <div className={`xr-status ${status}`}>
-            {status === "ok" && (<><Check size={18} strokeWidth={3} /> {count} units, legal</>)}
-            {status === "err" && (<><AlertTriangle size={18} strokeWidth={2.6} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>)}
-            {status === "empty" && (<>Empty detachment</>)}
+          <div className="xr-points">
+            <div className="xr-budget">
+              <span className="xr-budget-l">Budget</span>
+              {BUDGET_PRESETS.map((b) => (
+                <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} onClick={() => setBudget(b)}>{b}</button>
+              ))}
+            </div>
+            <Muster used={used} budget={budget} />
+            <div className={`xr-status ${status}`}>
+              {status === "ok" && (<><Check size={18} strokeWidth={3} /> {count} units, legal</>)}
+              {status === "err" && (<><AlertTriangle size={18} strokeWidth={2.6} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>)}
+              {status === "empty" && (<>Empty detachment</>)}
+            </div>
           </div>
         </div>
         {issues.length > 0 && (
@@ -766,7 +804,10 @@ const CSS = `
 .xr-word{font-family:var(--title);font-weight:400;font-size:clamp(34px,5.6vw,56px);letter-spacing:.02em;line-height:1.02;margin:0;color:var(--ink);}
 .xr-sub{font-family:var(--body);font-style:italic;font-weight:400;letter-spacing:.01em;font-size:clamp(16px,1.6vw,19px);color:var(--coral-ink);}
 .xr-mast-right{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
-.xr-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.xr-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.xr-act.danger{margin-left:16px;}
+/* points cluster: budget presets, muster gauge, and legality read together */
+.xr-points{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
 .xr-act{display:inline-flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink);border:2px solid var(--ink);background:var(--paper-2);padding:11px 16px;border-radius:10px;transition:.13s;min-height:48px;}
 .xr-act:hover{background:var(--sage);color:var(--cream);border-color:var(--sage);}
 .xr-act:active{transform:scale(.97);}
@@ -896,6 +937,19 @@ const CSS = `
 /* activation discs */
 .xr-act-disc{flex:none;width:48px;height:48px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;}
 .xr-act-num{font-family:var(--mono);font-weight:700;font-size:18px;line-height:1;}
+/* unified stat table (one row per stat, Order + Profile columns) */
+.xr-stt{padding:14px 16px 4px;}
+.xr-stt-head{display:grid;grid-template-columns:1fr 92px 108px;gap:8px 12px;align-items:end;padding-bottom:8px;border-bottom:2px solid var(--ink-30);}
+.xr-stt-hstat,.xr-stt-hcol{font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.03em;font-size:16px;color:var(--ink-2);}
+.xr-stt-hcol em{font-style:italic;font-variant:normal;font-size:14px;margin-left:3px;color:var(--ink-2);}
+.xr-stt-row{display:grid;grid-template-columns:1fr 92px 108px;gap:8px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--ink-18);}
+.xr-stt-row:last-child{border-bottom:none;}
+.xr-stt-stat{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:18px;color:var(--ink);}
+.xr-stt-ic{color:var(--ink);flex:none;}
+.xr-stt-cell b{font-family:var(--mono);font-weight:700;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-stt-rng{font-family:var(--mono);font-style:normal;font-size:16px;color:var(--ink-2);margin-left:5px;}
+.xr-stt-dash{color:var(--ink-2);opacity:.45;font-size:18px;}
+.xr-free{font-family:var(--body);font-style:italic;font-weight:600;font-size:15px;color:var(--coral-ink);margin-left:5px;}
 .xr-act-disc.k-atk{background:var(--coral);color:var(--ink);}
 .xr-act-disc.k-mov{background:var(--sage);color:var(--cream);}
 .xr-act-disc.k-sho{background:var(--iris);color:var(--cream);}
