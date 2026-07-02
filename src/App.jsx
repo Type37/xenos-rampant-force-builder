@@ -136,6 +136,7 @@ function eligibleXenos(t) {
     return true;
   });
 }
+const isPsychicRule = (x) => x.id === "psychic" || x.id.startsWith("psychic-");
 function xenoReqMet(rule, u) {
   if (rule.requiresXeno && !(rule.requiresXeno in u.xenos)) return false;
   if (rule.requiresAny && !rule.requiresAny.some((r) => r in u.xenos)) return false;
@@ -605,10 +606,14 @@ function AbilitiesModal({ u, dispatch, onClose }) {
   const topOpts = t.options.filter((o) => !o.requires);
   const subsOf = (pid) => t.options.filter((o) => o.requires === pid);
   const elig = useMemo(() => eligibleXenos(t), [t]);
+  const eligXeno = elig.filter((x) => !isPsychicRule(x));
+  const eligPsy = elig.filter(isPsychicRule);
   const tabs = [];
   if (topOpts.length) tabs.push({ id: "load", label: "Loadout", n: topOpts.filter((o) => u.options[o.id]).length });
-  if (elig.length) tabs.push({ id: "xeno", label: "Xeno rules", n: Object.keys(u.xenos).length });
+  if (eligXeno.length) tabs.push({ id: "xeno", label: "Xeno rules", n: eligXeno.filter((x) => x.id in u.xenos).length });
+  if (eligPsy.length) tabs.push({ id: "psychic", label: "Psychic", n: eligPsy.filter((x) => x.id in u.xenos).length });
   const [tab, setTab] = useState(tabs[0] ? tabs[0].id : "load");
+  const xenoList = tab === "psychic" ? eligPsy : tab === "xeno" ? eligXeno : [];
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -649,7 +654,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
               </OptionRow>
             );
           })}
-          {tab === "xeno" && elig.map((x) => {
+          {(tab === "xeno" || tab === "psychic") && xenoList.map((x) => {
             const sel = x.id in u.xenos;
             const reqMet = xenoReqMet(x, u);
             const disabled = !sel && !reqMet;
