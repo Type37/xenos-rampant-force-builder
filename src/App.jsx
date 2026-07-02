@@ -1,137 +1,95 @@
-import React, { useState, useMemo, useEffect } from "react";
-/* Icons pulled from Iconify and bundled offline (rendered as inline SVG, so no
-   network request and no runtime): game-icons for thematic glyphs, tabler for controls. */
-/* Stat and category glyphs use sci-fi versions from game-icons. The alias names
-   below (Swords, Crosshair, Flame, etc.) are kept so the rest of the file is
-   untouched; only the underlying icon each alias points at changed. */
-import icEnergySword from "@iconify-icons/game-icons/energy-sword";
-import icRun from "@iconify-icons/game-icons/run";
-import icLaserGun from "@iconify-icons/game-icons/laser-gun";
-import icPowerLightning from "@iconify-icons/game-icons/power-lightning";
-import icSaberSlash from "@iconify-icons/game-icons/saber-slash";
-import icEnergyShield from "@iconify-icons/game-icons/energy-shield";
-import icLaserPrecision from "@iconify-icons/game-icons/laser-precision";
-import icShoulderArmor from "@iconify-icons/game-icons/shoulder-armor";
-import icPathDistance from "@iconify-icons/game-icons/path-distance";
-import icHeartBattery from "@iconify-icons/game-icons/heart-battery";
-import icCrown from "@iconify-icons/game-icons/crown";
-import icSpaceSuit from "@iconify-icons/game-icons/space-suit";
-import icAlienSkull from "@iconify-icons/game-icons/alien-skull";
-import icBattleTank from "@iconify-icons/game-icons/battle-tank";
-import icDice from "@iconify-icons/game-icons/rolling-dices";
-import icPlus from "@iconify-icons/tabler/plus";
-import icCopy from "@iconify-icons/tabler/copy";
-import icTrash from "@iconify-icons/tabler/trash";
-import icCheck from "@iconify-icons/tabler/check";
-import icAlert from "@iconify-icons/tabler/alert-triangle";
-import icPrinter from "@iconify-icons/tabler/printer";
-import icRotate from "@iconify-icons/tabler/rotate";
-import icX from "@iconify-icons/tabler/x";
-import icChevron from "@iconify-icons/tabler/chevron-down";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+/* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
+import icSword from "@iconify-icons/ph/sword-fill";
+import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
+import icShoot from "@iconify-icons/ph/crosshair-simple-fill";
+import icFire from "@iconify-icons/ph/fire-fill";
+import icShield from "@iconify-icons/ph/shield-fill";
+import icArmour from "@iconify-icons/ph/shield-checkered-fill";
+import icHeart from "@iconify-icons/ph/heart-fill";
+import icInfantry from "@iconify-icons/ph/users-three-fill";
+import icAlien from "@iconify-icons/ph/alien-fill";
+import icTruck from "@iconify-icons/ph/truck-fill";
+import icCrown from "@iconify-icons/ph/crown-simple-fill";
+import icDice from "@iconify-icons/ph/dice-six-fill";
+import icPrinter from "@iconify-icons/ph/printer-fill";
+import icCopy from "@iconify-icons/ph/copy-fill";
+import icTrash from "@iconify-icons/ph/trash-fill";
+import icPlus from "@iconify-icons/ph/plus-bold";
+import icX from "@iconify-icons/ph/x-bold";
+import icCheck from "@iconify-icons/ph/check-bold";
+import icWarn from "@iconify-icons/ph/warning-fill";
+import icPlay from "@iconify-icons/ph/play-fill";
+import icBack from "@iconify-icons/ph/arrow-left-bold";
+import icReset from "@iconify-icons/ph/arrow-counter-clockwise-bold";
+import icHouse from "@iconify-icons/ph/house-fill";
+import icSkull from "@iconify-icons/ph/skull-fill";
 
-const mk = (data) => function Ic({ size, width, height, className, strokeWidth, ...rest }) {
-  const s = size || width || height || 18;
-  return (
-    <svg
-      className={className}
-      width={s}
-      height={s}
-      viewBox={`0 0 ${data.width || 24} ${data.height || 24}`}
-      aria-hidden="true"
-      dangerouslySetInnerHTML={{ __html: data.body }}
-      {...rest}
-    />
-  );
-};
-/* Custom inline icons recreated from the user's supplied art, for Shoot (targeting
-   reticle), Strength (squad), and Move (double chevron). Authored as SVG so they
-   recolor via currentColor and scale with the rest of the icon set. */
-const icShoot = { width: 24, height: 24, body: `<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l7 7-7 7-7-7z"/><path d="M4 7.5V4h3.5M16.5 4H20v3.5M20 16.5V20h-3.5M7.5 20H4v-3.5"/></g><path d="M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z" fill="currentColor"/><g fill="currentColor"><circle cx="12" cy="2.6" r="1"/><circle cx="21.4" cy="12" r="1"/><circle cx="12" cy="21.4" r="1"/><circle cx="2.6" cy="12" r="1"/></g>` };
-const icStrength = { width: 24, height: 24, body: `<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="2.6"/><circle cx="15.5" cy="8" r="2.6"/><path d="M3.5 19v-.4a4.6 4.6 0 0 1 7.7-3.4"/><path d="M12.8 15.2a4.6 4.6 0 0 1 7.7 3.4v.4"/></g>` };
-const icMove = { width: 24, height: 24, body: `<path d="M5 5l7 7-7 7M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` };
-const Plus = mk(icPlus), Crown = mk(icCrown), Copy = mk(icCopy), Trash2 = mk(icTrash),
-  ChevronDown = mk(icChevron), X = mk(icX), Dices = mk(icDice), AlertTriangle = mk(icAlert),
-  Check = mk(icCheck), Printer = mk(icPrinter), RotateCcw = mk(icRotate),
-  Swords = mk(icEnergySword), Footprints = mk(icMove), Crosshair = mk(icShoot),
-  Flame = mk(icPowerLightning), Sword = mk(icSaberSlash), Shield = mk(icEnergyShield), Target = mk(icShoot),
-  ShieldHalf = mk(icShoulderArmor), Ruler = mk(icMove), Heart = mk(icStrength),
-  Skull = mk(icAlienSkull), Truck = mk(icBattleTank), Users = mk(icSpaceSuit);
 import {
   INFANTRY, VEHICLE, UNIT_TYPES, XENO_RULES, SPECIAL_RULES,
   COMMANDER_TABLES, BUDGET_PRESETS, UNIT_BY_ID, XENO_BY_ID,
 } from "./data.js";
 
 /* ================================================================== *
- * XENOS RAMPANT — FORCE BUILDER
- * A UX flow study. Profiles transcribed from Xenos Rampant
- * (Osprey Games, 2022). Not an official product.
+ * XENOS RAMPANT: FORCE BUILDER
+ * Profiles transcribed from Xenos Rampant (Osprey Games, 2022).
+ * Not an official product. Built by WarLore.
  * ================================================================== */
 
-const ACT_DEFS = [
-  { key: "atk", label: "Attack", Icon: Swords },
-  { key: "mov", label: "Move", Icon: Footprints },
-  { key: "sho", label: "Shoot", Icon: Crosshair },
-  { key: "cou", label: "Courage", Icon: Flame },
-];
-const PROF_DEFS = [
-  { key: "atk", label: "Attack", Icon: Sword },
-  { key: "def", label: "Defence", Icon: Shield },
-  { key: "sho", label: "Shoot", Icon: Target },
-  { key: "arm", label: "Armour", Icon: ShieldHalf },
-  { key: "mov", label: "Move", Icon: Ruler },
-  { key: "sp", label: "Strength", Icon: Heart },
-];
+const mk = (data) => function Ic({ size, className, ...rest }) {
+  const s = size || 20;
+  return (
+    <svg className={className} width={s} height={s}
+      viewBox={`0 0 ${data.width || 256} ${data.height || 256}`}
+      aria-hidden="true" dangerouslySetInnerHTML={{ __html: data.body }} {...rest} />
+  );
+};
+const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icFire),
+  Shield = mk(icShield), Armour = mk(icArmour), Heart = mk(icHeart),
+  Infantry = mk(icInfantry), Alien = mk(icAlien), Truck = mk(icTruck),
+  Crown = mk(icCrown), Dice = mk(icDice), Printer = mk(icPrinter), CopyIc = mk(icCopy),
+  Trash = mk(icTrash), Plus = mk(icPlus), XIc = mk(icX), Check = mk(icCheck),
+  Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
+  House = mk(icHouse), Skull = mk(icSkull);
 
-/* Unified per-unit stats: one row per stat, no duplication. Attack, Move, and Shoot
-   each carry an Order roll (the 2d6 activation target) AND a Profile value; the rest
-   carry only one. This is the single source of truth for the stat table on a card. */
 const STAT_ROWS = [
-  { key: "atk", label: "Attack",   Icon: Sword,      order: true,  val: true },
-  { key: "mov", label: "Move",     Icon: Ruler,      order: true,  val: true },
-  { key: "sho", label: "Shoot",    Icon: Target,     order: true,  val: true },
-  { key: "cou", label: "Courage",  Icon: Flame,      order: true,  val: false },
-  { key: "def", label: "Defence",  Icon: Shield,     order: false, val: true },
-  { key: "arm", label: "Armour",   Icon: ShieldHalf, order: false, val: true },
-  { key: "sp",  label: "Strength", Icon: Heart,      order: false, val: true },
+  { key: "atk", label: "Attack", Icon: Sword, order: true, val: true },
+  { key: "mov", label: "Move", Icon: Move, order: true, val: true },
+  { key: "sho", label: "Shoot", Icon: Shoot, order: true, val: true },
+  { key: "cou", label: "Courage", Icon: Fire, order: true, val: false },
+  { key: "def", label: "Defence", Icon: Shield, order: false, val: true },
+  { key: "arm", label: "Armour", Icon: Armour, order: false, val: true },
+  { key: "sp", label: "Strength", Icon: Heart, order: false, val: true },
 ];
-
+const ACT_KEYS = [
+  { key: "atk", label: "Attack" }, { key: "mov", label: "Move" },
+  { key: "sho", label: "Shoot" }, { key: "cou", label: "Courage" },
+];
 const CATS = [
-  { id: "inf", label: "Infantry", Icon: Users },
-  { id: "xeno", label: "Xenomorphs", Icon: Skull },
+  { id: "inf", label: "Infantry", Icon: Infantry },
+  { id: "xeno", label: "Xenomorphs", Icon: Alien },
   { id: "veh", label: "Vehicles", Icon: Truck },
 ];
 
-/* ---------------- helpers ---------------- */
+/* ---------------- helpers (ported from v1, verified against data.js) -------- */
 const uid = () => Math.random().toString(36).slice(2, 9);
-
 function catOf(t) {
   if (t.id.includes("xeno")) return "xeno";
   if (t.cls === VEHICLE) return "veh";
   return "inf";
 }
-function roleOf(u) {
-  if (u.isCmd) return "cmd";
-  return UNIT_BY_ID[u.typeId].cls === VEHICLE ? "veh" : "spice";
-}
-
-/* activation strings: "Free (5+)", "(Free) 6+", "5+", "—" */
 function parseAct(s) {
   if (!s || s === "—" || s === "-" || s === "n/a") return { val: "n/a", free: false };
   const free = /free/i.test(s);
   const m = s.match(/(\d+\+?)/);
   return { val: m ? m[1] : s, free };
 }
-/* shoot value "4+ / 18\"" -> { main:"4+", range:"18\"" } */
 function splitRange(s) {
   if (!s || s === "—" || s === "n/a") return { main: "n/a", range: "" };
-  if (s.includes("/")) {
-    const [a, b] = s.split("/");
-    return { main: a.trim(), range: b.trim() };
-  }
+  if (s.includes("/")) { const [a, b] = s.split("/"); return { main: a.trim(), range: b.trim() }; }
   return { main: s.trim(), range: "" };
 }
-const costLabel = (n) => (n > 0 ? `+${n}` : n < 0 ? `\u2212${Math.abs(n)}` : "0");
-
+const costLabel = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : "0");
 const optCost = (o) => o.cost || 0;
 function xenoCost(rule, val) {
   if (rule.tiers) return rule.tiers[typeof val === "number" ? val : 0].cost;
@@ -187,7 +145,6 @@ function sanitize(u) {
   }
   return { ...u, options, xenos };
 }
-
 function validate(roster, budget) {
   const issues = [];
   const used = roster.reduce((s, u) => s + unitPoints(u), 0);
@@ -197,87 +154,54 @@ function validate(roster, budget) {
   const cmds = roster.filter((u) => u.isCmd).length;
   const heavyVeh = roster.filter((u) => UNIT_BY_ID[u.typeId].heavy).length;
   const heavyCap = Math.floor(budget / 18);
-  const vehPts = roster
-    .filter((u) => UNIT_BY_ID[u.typeId].cls === VEHICLE)
-    .reduce((s, u) => s + unitPoints(u), 0);
-
+  const vehPts = roster.filter((u) => UNIT_BY_ID[u.typeId].cls === VEHICLE).reduce((s, u) => s + unitPoints(u), 0);
   if (used > budget) issues.push({ lvl: "err", msg: `Over budget by ${used - budget} points.` });
   if (count > 0) {
     if (cmds === 0) issues.push({ lvl: "err", msg: "No Commander. Crown one unit." });
     if (cmds > 1) issues.push({ lvl: "err", msg: `${cmds} Commanders. Only one is allowed.` });
     if (count < minU) issues.push({ lvl: "warn", msg: `Below minimum size (${minU} to ${maxU} units at ${budget} points).` });
     if (count > maxU) issues.push({ lvl: "err", msg: `Above maximum size (${minU} to ${maxU} units at ${budget} points).` });
-    if (heavyVeh > heavyCap)
-      issues.push({ lvl: "err", msg: `${heavyVeh} fighting/transport vehicles. The limit is ${heavyCap} (one per full 18 points).` });
-    if (vehPts > budget / 2)
-      issues.push({ lvl: "err", msg: `Vehicles are ${vehPts} points; no more than half (${Math.floor(budget / 2)}) may be vehicles.` });
+    if (heavyVeh > heavyCap) issues.push({ lvl: "err", msg: `${heavyVeh} fighting/transport vehicles. The limit is ${heavyCap} (one per full 18 points).` });
+    if (vehPts > budget / 2) issues.push({ lvl: "err", msg: `Vehicles are ${vehPts} points; no more than half (${Math.floor(budget / 2)}) may be vehicles.` });
   }
   return { issues, used, count };
 }
+const unitDisplayName = (u, i) => u.name || `${UNIT_BY_ID[u.typeId].name} ${i + 1}`;
 
-/* ---------------- gauge ---------------- */
-function Muster({ used, budget }) {
-  const pct = budget ? (used / budget) * 100 : 0;
-  const over = used > budget;
-  const near = !over && pct >= 90;
-  const fillClass = over ? "over" : near ? "near" : "ok";
-  return (
-    <div className={`xr-muster ${fillClass}`}>
-      <div className="xr-muster-head">
-        <span className="xr-muster-label">Muster</span>
-        <span className="xr-muster-read">
-          <b>{used}</b>
-          <span className="xr-muster-slash">/</span>
-          <span className="xr-muster-budget">{budget}</span>
-          <span className="xr-muster-pts">pts</span>
-        </span>
-      </div>
-      <div className="xr-muster-track">
-        <div className="xr-muster-fill" style={{ width: `${Math.min(100, pct)}%` }} />
-        {over && <div className="xr-muster-over" />}
-        <div className="xr-muster-ticks" />
-      </div>
-    </div>
-  );
+/* ---------------- storage ---------------- */
+const LS_LISTS = "xrb.lists";
+const LS_CURRENT = "xrb.current";
+function loadLists() {
+  try { return JSON.parse(localStorage.getItem(LS_LISTS)) || {}; } catch { return {}; }
+}
+function saveLists(lists) {
+  try { localStorage.setItem(LS_LISTS, JSON.stringify(lists)); } catch { /* storage full or blocked */ }
+}
+function loadPlay(listId) {
+  try { return JSON.parse(localStorage.getItem(`xrb.play.${listId}`)) || { turn: 1, units: {} }; }
+  catch { return { turn: 1, units: {} }; }
+}
+function savePlay(listId, st) {
+  try { localStorage.setItem(`xrb.play.${listId}`, JSON.stringify(st)); } catch { /* ignore */ }
 }
 
-/* ---------------- stat cells ---------------- */
-function ActCell({ def, raw }) {
-  const { val, free } = parseAct(raw);
-  const { Icon } = def;
-  const na = val === "n/a";
-  return (
-    <div className={`xr-stat ${na ? "muted" : ""}`}>
-      <div className={`xr-act-disc k-${def.key}`}>
-        <span className="xr-act-num">{val}</span>
-      </div>
-      <div className="xr-stat-body">
-        <div className="xr-stat-key">{def.label}{free && <em className="xr-free">free</em>}</div>
-      </div>
-    </div>
-  );
+/* ---------------- hash routing ---------------- */
+function parseHash() {
+  const h = window.location.hash.replace(/^#\/?/, "");
+  const [view, arg] = h.split("/");
+  if (view === "build") return { view: "build", unitKey: arg || null };
+  if (view === "print") return { view: "print" };
+  if (view === "play") return { view: "play" };
+  return { view: "home" };
 }
-function ProfCell({ def, prof, sp }) {
-  const { Icon } = def;
-  let main, range = "";
-  if (def.key === "sp") main = String(sp);
-  else if (def.key === "sho") { const r = splitRange(prof.sho); main = r.main; range = r.range; }
-  else main = prof[def.key];
-  const na = main === "n/a";
-  return (
-    <div className={`xr-stat ${na ? "muted" : ""}`}>
-      <Icon className="xr-stat-ic" size={26} strokeWidth={2} />
-      <div className="xr-stat-body">
-        <div className="xr-stat-val">{main}{range && <span className="xr-stat-rng">{range}</span>}</div>
-        <div className="xr-stat-key">{def.label}</div>
-      </div>
-    </div>
-  );
-}
+const nav = (h) => { window.location.hash = h; };
 
-/* Unified stat table: one row per stat, Order column (2d6 activation) + Profile column. */
+/* ---------------- small shared pieces ---------------- */
+function Die({ k, children }) {
+  return <span className={`xr-die k-${k}`}>{children}</span>;
+}
 function orderCell(t, key) {
-  const raw = t.noAttack && key === "atk" ? "—" : t.act[key];
+  const raw = t.noAttack && key === "atk" ? "n/a" : t.act[key];
   const { val, free } = parseAct(raw);
   return val === "n/a" ? null : { val, free };
 }
@@ -287,26 +211,23 @@ function profCellVal(t, sp, key) {
   const v = t.prof[key];
   return v == null || v === "n/a" || v === "—" ? null : { main: String(v) };
 }
-function UnitStatTable({ t, sp }) {
+function StatTable({ t, sp }) {
   return (
     <div className="xr-stt">
       <div className="xr-stt-head">
-        <span className="xr-stt-hstat">Stat</span>
-        <span className="xr-stt-hcol">Order <em>2d6</em></span>
-        <span className="xr-stt-hcol">Profile</span>
+        <span>Stat</span><span>Order <em>2d6</em></span><span>Profile</span>
       </div>
       {STAT_ROWS.map((d) => {
-        const { Icon } = d;
         const o = d.order ? orderCell(t, d.key) : null;
         const v = d.val ? profCellVal(t, sp, d.key) : null;
         return (
           <div className="xr-stt-row" key={d.key}>
-            <span className="xr-stt-stat"><Icon className="xr-stt-ic" size={24} strokeWidth={2} />{d.label}</span>
+            <span className="xr-stt-stat"><d.Icon className="xr-stt-ic" size={20} />{d.label}</span>
             <span className="xr-stt-cell">
-              {o ? <><span className={`xr-die k-${d.key}`}>{o.val}</span>{o.free && <em className="xr-free">free</em>}</> : <span className="xr-stt-dash">–</span>}
+              {o ? <><Die k={d.key}>{o.val}</Die>{o.free && <em className="xr-free">free</em>}</> : <span className="xr-dash">-</span>}
             </span>
             <span className="xr-stt-cell">
-              {v ? <><b>{v.main}</b>{v.range && <i className="xr-stt-rng">{v.range}</i>}</> : <span className="xr-stt-dash">–</span>}
+              {v ? <><b>{v.main}</b>{v.range && <i className="xr-rng">{v.range}</i>}</> : <span className="xr-dash">-</span>}
             </span>
           </div>
         );
@@ -315,247 +236,6 @@ function UnitStatTable({ t, sp }) {
   );
 }
 
-/* ---------------- catalogue card ---------------- */
-function CatalogCard({ t, onAdd, pulsing }) {
-  const cat = catOf(t);
-  const sho = splitRange(t.prof.sho).main;
-  return (
-    <button className={`xr-cat-card cat-${cat} ${pulsing ? "pulsing" : ""}`} onClick={() => onAdd(t.id)}>
-      <span className="xr-cat-stamp"><Plus size={18} strokeWidth={2.6} /><b>{t.base}</b><i>pts</i></span>
-      <span className="xr-cat-main">
-        <span className="xr-cat-top"><span className="xr-cat-name">{t.name}</span></span>
-        <span className="xr-cat-role">{t.role}</span>
-        <span className="xr-cat-ribbon">
-          <span><Sword size={18} strokeWidth={2.2} />Atk <em>{t.prof.atk}</em></span>
-          <span><Shield size={18} strokeWidth={2.2} />Def <em>{t.prof.def}</em></span>
-          <span><Target size={18} strokeWidth={2.2} />Sho <em>{sho}</em></span>
-          <span><ShieldHalf size={18} strokeWidth={2.2} />Arm <em>{t.prof.arm}</em></span>
-          <span><Heart size={18} strokeWidth={2.2} />SP <em>{t.sp}</em></span>
-        </span>
-      </span>
-    </button>
-  );
-}
-
-/* ---------------- option / xeno rows ---------------- */
-function Row({ active, disabled, name, cost, text, onToggle, sub, children }) {
-  return (
-    <div className={`xr-row ${active ? "on" : ""} ${disabled ? "off" : ""} ${sub ? "sub" : ""}`}>
-      <button className="xr-row-hit" onClick={onToggle} disabled={disabled}>
-        <span className={`xr-row-cost ${cost < 0 ? "neg" : cost > 0 ? "pos" : ""}`}>{costLabel(cost)}</span>
-        <span className="xr-check">{active ? <Check size={18} strokeWidth={3} /> : null}</span>
-        <span className="xr-row-name">{name}</span>
-      </button>
-      <p className="xr-row-text">{text}</p>
-      {children}
-    </div>
-  );
-}
-
-/* ---------------- commander panel ---------------- */
-function CommandPanel({ u, onTable, onRoll }) {
-  const tbl = u.traitTable || "aggressive";
-  const trait = typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
-  return (
-    <div className="xr-group xr-command">
-      <div className="xr-group-bar"><Crown size={18} strokeWidth={2.4} /> Command</div>
-      <div className="xr-cmd-tables">
-        {Object.entries(COMMANDER_TABLES).map(([key, t]) => (
-          <button key={key} className={`xr-cmd-tab ${tbl === key ? "on" : ""}`} onClick={() => onTable(key)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <p className="xr-cmd-blurb">{COMMANDER_TABLES[tbl].blurb}</p>
-      <button className="xr-roll" onClick={onRoll}>
-        <Dices size={20} strokeWidth={2.2} /> {trait ? "Reroll trait" : "Roll a trait"}
-      </button>
-      {trait && (
-        <div className="xr-trait">
-          <div className="xr-trait-name">{trait.name}</div>
-          <p className="xr-trait-rule">{trait.rule}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ---------------- roster unit card ---------------- */
-function UnitCard({ u, index, onName, onCmd, onDup, onDel, onOpt, onXeno, onTier, onTable, onRoll }) {
-  const t = UNIT_BY_ID[u.typeId];
-  const role = roleOf(u);
-  const pts = unitPoints(u);
-  const sp = unitSP(u);
-  const elig = useMemo(() => eligibleXenos(t), [t]);
-
-  const topOpts = t.options.filter((o) => !o.requires);
-  const subsOf = (pid) => t.options.filter((o) => o.requires === pid);
-
-  return (
-    <div className={`xr-unit role-${role}`}>
-      <div className="xr-unit-head">
-        <button
-          className={`xr-crown ${u.isCmd ? "on" : ""}`}
-          onClick={() => onCmd(u.key)}
-          aria-label={u.isCmd ? "Remove Commander" : "Make Commander"}
-          title={u.isCmd ? "Commander" : "Make Commander"}
-        >
-          <Crown size={26} strokeWidth={2.2} />
-        </button>
-        <div className="xr-unit-id">
-          <input
-            className="xr-unit-name"
-            value={u.name}
-            placeholder={`${t.name} ${index + 1}`}
-            onChange={(e) => onName(u.key, e.target.value)}
-            spellCheck={false}
-          />
-          <div className="xr-unit-type">
-            {u.isCmd && <span className="xr-tag-cmd">Commander</span>}
-            {t.name}
-          </div>
-        </div>
-        <div className="xr-unit-readout">
-          <div className="xr-ro-pts">{pts}<i>pts</i></div>
-          <div className="xr-ro-sp"><Heart size={11} strokeWidth={2.4} />{sp} SP</div>
-        </div>
-        <div className="xr-unit-tools">
-          <button onClick={() => onDup(u.key)} aria-label="Duplicate" title="Duplicate"><Copy size={22} /></button>
-          <button onClick={() => onDel(u.key)} aria-label="Remove" title="Remove"><Trash2 size={22} /></button>
-        </div>
-      </div>
-
-      {/* stat groups */}
-      <div className="xr-stats">
-        <UnitStatTable t={t} sp={sp} />
-      </div>
-
-      {/* standard rules */}
-      {t.special.length > 0 && (
-        <div className="xr-group">
-          <div className="xr-group-bar">Standard rules</div>
-          <div className="xr-rules">
-            {t.special.map((name) => (
-              <div className="xr-defn" key={name}>
-                <div className="xr-defn-name">{name}</div>
-                {SPECIAL_RULES[name] && <p className="xr-defn-text">{SPECIAL_RULES[name]}</p>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* loadout */}
-      {topOpts.length > 0 && (
-        <div className="xr-group">
-          <div className="xr-group-bar">Loadout</div>
-          {topOpts.map((o) => {
-            const on = !!u.options[o.id];
-            const subs = subsOf(o.id);
-            return (
-              <Row key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text} onToggle={() => onOpt(u.key, o.id)}>
-                {on && subs.length > 0 && (
-                  <div className="xr-subs">
-                    {subs.map((s) => (
-                      <Row key={s.id} sub active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text} onToggle={() => onOpt(u.key, s.id)} />
-                    ))}
-                  </div>
-                )}
-              </Row>
-            );
-          })}
-        </div>
-      )}
-
-      {/* xeno rules */}
-      {elig.length > 0 && (
-        <div className="xr-group">
-          <div className="xr-group-bar">Xeno rules</div>
-          {elig.map((x) => {
-            const sel = x.id in u.xenos;
-            const reqMet = xenoReqMet(x, u);
-            const disabled = !sel && !reqMet;
-            const val = u.xenos[x.id];
-            return (
-              <Row
-                key={x.id}
-                active={sel}
-                disabled={disabled}
-                name={x.name}
-                cost={xenoCost(x, val)}
-                text={disabled && x.requiresXeno ? `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule. ${x.text}` : x.text}
-                onToggle={() => onXeno(u.key, x.id)}
-              >
-                {sel && x.tiers && (
-                  <div className="xr-tiers">
-                    {x.tiers.map((tier, i) => (
-                      <button key={i} className={`xr-tier ${val === i ? "on" : ""}`} onClick={() => onTier(u.key, x.id, i)}>
-                        {tier.label} <i>{costLabel(tier.cost)}</i>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </Row>
-            );
-          })}
-        </div>
-      )}
-
-      {u.isCmd && <CommandPanel u={u} onTable={onTable} onRoll={onRoll} />}
-    </div>
-  );
-}
-
-/* ---------------- print sheet ---------------- */
-function unitLine(u) {
-  const t = UNIT_BY_ID[u.typeId];
-  const p = t.prof;
-  const a = t.act;
-  return { t, p, a, pts: unitPoints(u), sp: unitSP(u) };
-}
-function PrintSheet({ roster, det, budget, used, count }) {
-  return (
-    <div className="xr-printsheet">
-      <div className="xr-pr-head">
-        <div className="xr-pr-title">{det || "Untitled Detachment"}</div>
-        <div className="xr-pr-meta">Xenos Rampant, {used}/{budget} pts, {count} units</div>
-      </div>
-      {roster.map((u, i) => {
-        const { t, p, a, pts, sp } = unitLine(u);
-        const opts = t.options.filter((o) => u.options[o.id]);
-        const xenos = XENO_RULES.filter((x) => x.id in u.xenos);
-        const tbl = u.traitTable || "aggressive";
-        const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
-        return (
-          <div className="xr-pr-unit" key={u.key}>
-            <div className="xr-pr-unit-head">
-              <span className="xr-pr-unit-name">
-                {u.isCmd && <b>[CMD] </b>}
-                {u.name || `${t.name} ${i + 1}`}
-                <em> ({t.name})</em>
-              </span>
-              <span className="xr-pr-unit-pts">{pts} pts, {sp} SP</span>
-            </div>
-            <div className="xr-pr-stats">
-              <span>Act: A {parseAct(t.noAttack ? "—" : a.atk).val} / M {parseAct(a.mov).val} / S {parseAct(a.sho).val} / C {parseAct(a.cou).val}</span>
-              <span>Prof: A {p.atk} / D {p.def} / S {p.sho} / Arm {p.arm} / Mov {p.mov}</span>
-            </div>
-            <div className="xr-pr-rules">{t.special.filter((s) => s !== "None").join(", ")}</div>
-            {opts.map((o) => (
-              <div className="xr-pr-line" key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</div>
-            ))}
-            {xenos.map((x) => (
-              <div className="xr-pr-line" key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.text}</div>
-            ))}
-            {trait && <div className="xr-pr-line"><b>Trait: {trait.name}:</b> {trait.rule}</div>}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ---------------- site footer ---------------- */
 function SiteFooter() {
   return (
     <footer className="game-info-footer">
@@ -583,215 +263,685 @@ function SiteFooter() {
 }
 
 /* ================================================================== *
- * APP
+ * DASHBOARD (saved detachments)
  * ================================================================== */
-export default function App() {
-  const [budget, setBudget] = useState(24);
-  const [det, setDet] = useState("");
-  const [roster, setRoster] = useState([]);
-  const [pulseId, setPulseId] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [pickCat, setPickCat] = useState("inf");
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const onKey = (e) => { if (e.key === "Escape") setDrawerOpen(false); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [drawerOpen]);
-
-  const { issues, used, count } = useMemo(() => validate(roster, budget), [roster, budget]);
-  const errors = issues.filter((i) => i.lvl === "err");
-  const status = errors.length ? "err" : count === 0 ? "empty" : "ok";
-
-  /* mutations */
-  const addUnit = (typeId) => {
-    setRoster((r) => [
-      ...r,
-      { key: uid(), typeId, name: "", isCmd: r.length === 0, traitTable: "aggressive", traitIndex: undefined, options: {}, xenos: {} },
-    ]);
-    setPulseId(typeId);
-    setTimeout(() => setPulseId((p) => (p === typeId ? null : p)), 420);
-  };
-  const dupUnit = (key) =>
-    setRoster((r) => {
-      const i = r.findIndex((u) => u.key === key);
-      if (i < 0) return r;
-      const copy = { ...r[i], key: uid(), isCmd: false, options: { ...r[i].options }, xenos: { ...r[i].xenos } };
-      const next = [...r];
-      next.splice(i + 1, 0, copy);
-      return next;
-    });
-  const delUnit = (key) => setRoster((r) => r.filter((u) => u.key !== key));
-  const nameUnit = (key, name) => setRoster((r) => r.map((u) => (u.key === key ? { ...u, name } : u)));
-  const cmdUnit = (key) =>
-    setRoster((r) => r.map((u) => (u.key === key ? { ...u, isCmd: !u.isCmd } : { ...u, isCmd: false })));
-  const optToggle = (key, oid) =>
-    setRoster((r) =>
-      r.map((u) => {
-        if (u.key !== key) return u;
-        const t = UNIT_BY_ID[u.typeId];
-        const o = t.options.find((x) => x.id === oid);
-        const options = { ...u.options };
-        if (options[oid]) delete options[oid];
-        else { options[oid] = true; (o.conflicts || []).forEach((c) => delete options[c]); }
-        return sanitize({ ...u, options });
-      })
-    );
-  const xenoToggle = (key, xid) =>
-    setRoster((r) =>
-      r.map((u) => {
-        if (u.key !== key) return u;
-        const rule = XENO_BY_ID[xid];
-        const xenos = { ...u.xenos };
-        if (xid in xenos) delete xenos[xid];
-        else xenos[xid] = rule.tiers ? 0 : true;
-        return sanitize({ ...u, xenos });
-      })
-    );
-  const xenoTier = (key, xid, i) =>
-    setRoster((r) => r.map((u) => (u.key === key ? { ...u, xenos: { ...u.xenos, [xid]: i } } : u)));
-  const setTable = (key, tbl) =>
-    setRoster((r) => r.map((u) => (u.key === key ? { ...u, traitTable: tbl } : u)));
-  const rollTrait = (key) =>
-    setRoster((r) => r.map((u) => (u.key === key ? { ...u, traitIndex: Math.floor(Math.random() * 6) } : u)));
-  const clearAll = () => { if (roster.length === 0 || window.confirm("Clear the whole detachment?")) setRoster([]); };
-
-  const copyList = () => {
-    const lines = [`${det || "Untitled Detachment"} (${used}/${budget} pts, ${count} units)`, ""];
-    roster.forEach((u, i) => {
-      const t = UNIT_BY_ID[u.typeId];
-      lines.push(`${u.isCmd ? "[CMD] " : ""}${u.name || `${t.name} ${i + 1}`} (${t.name}, ${unitPoints(u)} pts, ${unitSP(u)} SP)`);
-      t.options.filter((o) => u.options[o.id]).forEach((o) => lines.push(`  - ${o.name} (${costLabel(optCost(o))})`));
-      XENO_RULES.filter((x) => x.id in u.xenos).forEach((x) => lines.push(`  - ${x.name} (${costLabel(xenoCost(x, u.xenos[x.id]))})`));
-      if (u.isCmd && typeof u.traitIndex === "number") {
-        const tr = COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex];
-        lines.push(`  - Trait: ${tr.name}`);
-      }
-    });
-    navigator.clipboard?.writeText(lines.join("\n"));
-  };
-
-  const grouped = CATS.map((c) => ({ ...c, units: UNIT_TYPES.filter((t) => catOf(t) === c.id) }));
-
+function Dashboard({ lists, onOpen, onCreate, onDup, onDel }) {
+  const arr = Object.values(lists).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   return (
-    <div className="xr-app">
-      <style>{CSS}</style>
-      <div className="field-book">
-
-      {/* masthead */}
-      <header className="xr-mast">
-        <div className="xr-mast-row">
-          <div className="xr-brand">
-            <h1 className="xr-word">Xenos Rampant</h1>
-            <span className="xr-sub">Force Builder</span>
-          </div>
-          <div className="xr-actions">
-            <button className="xr-act primary" onClick={() => setDrawerOpen(true)}><Plus size={20} strokeWidth={2.8} /> Add unit</button>
-            <button className="xr-act" onClick={() => window.print()}><Printer size={20} strokeWidth={2.2} /> Print</button>
-            <button className="xr-act" onClick={copyList}><Copy size={20} strokeWidth={2.2} /> Copy</button>
-            <button className="xr-act danger" onClick={clearAll}><RotateCcw size={20} strokeWidth={2.2} /> Clear</button>
-          </div>
+    <div className="xr-home">
+      <header className="xr-home-mast">
+        <h1 className="xr-word">Xenos Rampant</h1>
+        <span className="xr-sub">Force Builder</span>
+      </header>
+      <main className="xr-home-body">
+        <div className="xr-home-bar">
+          <h2 className="xr-home-h">Detachments</h2>
+          <button className="xr-btn primary" onClick={onCreate}><Plus size={20} /> New detachment</button>
         </div>
-        <div className="xr-mast-row2">
-          <input className="xr-detname" value={det} placeholder="Name your detachment" onChange={(e) => setDet(e.target.value)} spellCheck={false} />
-          <div className="xr-points">
-            <div className="xr-budget">
-              <span className="xr-budget-l">Budget</span>
-              {BUDGET_PRESETS.map((b) => (
-                <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} onClick={() => setBudget(b)}>{b}</button>
-              ))}
-            </div>
-            <Muster used={used} budget={budget} />
-            <div className={`xr-status ${status}`}>
-              {status === "ok" && (<><Check size={18} strokeWidth={3} /> {count} units, legal</>)}
-              {status === "err" && (<><AlertTriangle size={18} strokeWidth={2.6} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>)}
-              {status === "empty" && (<>Empty detachment</>)}
-            </div>
-          </div>
-        </div>
-        {issues.length > 0 && (
-          <div className="xr-issues">
-            {issues.map((it, i) => (
-              <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>
-            ))}
+        {arr.length === 0 ? (
+          <button className="xr-home-empty" onClick={onCreate}>
+            <Alien size={44} />
+            <span>Muster your first detachment</span>
+          </button>
+        ) : (
+          <div className="xr-home-grid">
+            {arr.map((l) => {
+              const { issues, used, count } = validate(l.roster, l.budget);
+              const err = issues.some((i) => i.lvl === "err");
+              return (
+                <div className="xr-list-card" key={l.id}>
+                  <button className="xr-list-open" onClick={() => onOpen(l.id)}>
+                    <span className="xr-list-name">{l.name || "Untitled detachment"}</span>
+                    <span className="xr-list-meta">
+                      <b>{used}</b>/{l.budget} pts, {count} {count === 1 ? "unit" : "units"}
+                    </span>
+                    <span className={`xr-list-status ${count === 0 ? "empty" : err ? "err" : "ok"}`}>
+                      {count === 0 ? "Empty" : err ? "Has issues" : "Legal"}
+                    </span>
+                  </button>
+                  <div className="xr-list-tools">
+                    <button onClick={() => onDup(l.id)} aria-label="Duplicate" title="Duplicate"><CopyIc size={19} /></button>
+                    <button onClick={() => onDel(l.id)} aria-label="Delete" title="Delete"><Trash size={19} /></button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
-      </header>
-
-      <div className="xr-body">
-        {/* roster (full width; units are added from the slide-in drawer) */}
-        <main className="xr-roster">
-          {roster.length === 0 ? (
-            <div className="xr-empty">
-              <Skull size={56} strokeWidth={1.3} />
-              <button className="xr-add-big" onClick={() => setDrawerOpen(true)}><Plus size={22} strokeWidth={2.8} /> Add your first unit</button>
-            </div>
-          ) : (
-            roster.map((u, i) => (
-              <UnitCard
-                key={u.key}
-                u={u}
-                index={i}
-                onName={nameUnit}
-                onCmd={cmdUnit}
-                onDup={dupUnit}
-                onDel={delUnit}
-                onOpt={optToggle}
-                onXeno={xenoToggle}
-                onTier={xenoTier}
-                onTable={setTable}
-                onRoll={rollTrait}
-              />
-            ))
-          )}
-        </main>
-      </div>
-
-      {/* add-unit modal with category tabs (pick a category, then a unit) */}
-      {drawerOpen && (
-        <div className="xr-modal-backdrop" onClick={() => setDrawerOpen(false)}>
-          <div className="xr-modal" role="dialog" aria-label="Add unit" onClick={(e) => e.stopPropagation()}>
-            <div className="xr-modal-head">
-              <span className="xr-modal-title"><Plus size={24} strokeWidth={2.6} /> Add unit</span>
-              <button className="xr-modal-x" onClick={() => setDrawerOpen(false)} aria-label="Close"><X size={24} strokeWidth={2.4} /></button>
-            </div>
-            <div className="xr-modal-tabs">
-              {CATS.map((c) => (
-                <button key={c.id} className={`xr-modal-tab cat-${c.id} ${pickCat === c.id ? "on" : ""}`} onClick={() => setPickCat(c.id)}>
-                  <c.Icon size={20} strokeWidth={2.3} /> {c.label}
-                </button>
-              ))}
-            </div>
-            <div className="xr-modal-body">
-              <div className="xr-pick-grid">
-                {(grouped.find((g) => g.id === pickCat)?.units || []).map((t) => (
-                  <CatalogCard key={t.id} t={t} onAdd={addUnit} pulsing={pulseId === t.id} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
+      </main>
       <SiteFooter />
-      </div>
-
-      <PrintSheet roster={roster} det={det} budget={budget} used={used} count={count} />
     </div>
   );
 }
 
 /* ================================================================== *
- * STYLE
+ * BUILDER: compact rows + detail panel
+ * ================================================================== */
+function UnitRow({ u, i, selected, onSelect }) {
+  const t = UNIT_BY_ID[u.typeId];
+  const pts = unitPoints(u);
+  const taken = [
+    ...t.options.filter((o) => u.options[o.id]).map((o) => o.name),
+    ...XENO_RULES.filter((x) => x.id in u.xenos).map((x) => x.name),
+  ];
+  return (
+    <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={onSelect} aria-expanded={selected}>
+      <span className="xr-urow-top">
+        {u.isCmd && <Crown className="xr-urow-crown" size={17} />}
+        <span className="xr-urow-name">{unitDisplayName(u, i)}</span>
+        <b className="xr-urow-pts">{pts}<i>pts</i></b>
+      </span>
+      <span className="xr-urow-sub">
+        {t.name}, {unitSP(u)} SP{taken.length > 0 && <em> · {taken.join(", ")}</em>}
+      </span>
+    </button>
+  );
+}
+
+function OptionRow({ active, disabled, name, cost, text, onToggle, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`xr-row ${active ? "on" : ""} ${disabled ? "off" : ""}`}>
+      <div className="xr-row-line">
+        <button className="xr-row-hit" onClick={onToggle} disabled={disabled}>
+          <span className={`xr-row-cost ${cost < 0 ? "neg" : cost > 0 ? "pos" : ""}`}>{costLabel(cost)}</span>
+          <span className="xr-check" aria-hidden="true">{active ? <Check size={16} /> : null}</span>
+          <span className="xr-row-name">{name}</span>
+        </button>
+        <button className="xr-row-info" onClick={() => setOpen((o) => !o)} aria-label={open ? "Hide rule text" : "Show rule text"} aria-expanded={open}>?</button>
+      </div>
+      {(open || active) && <p className="xr-row-text">{text}</p>}
+      {children}
+    </div>
+  );
+}
+
+function RuleChip({ name, text }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`xr-chipwrap ${open ? "open" : ""}`}>
+      <button className="xr-chip" onClick={() => setOpen((o) => !o)} aria-expanded={open}>{name}</button>
+      {open && text && <p className="xr-chip-text">{text}</p>}
+    </div>
+  );
+}
+
+function UnitPanel({ u, index, onClose, dispatch }) {
+  const t = UNIT_BY_ID[u.typeId];
+  const pts = unitPoints(u);
+  const sp = unitSP(u);
+  const elig = useMemo(() => eligibleXenos(t), [t]);
+  const topOpts = t.options.filter((o) => !o.requires);
+  const subsOf = (pid) => t.options.filter((o) => o.requires === pid);
+  const tbl = u.traitTable || "aggressive";
+  const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
+
+  return (
+    <section className="xr-panel" aria-label="Unit editor">
+      <div className="xr-panel-head">
+        <button className="xr-iconbtn xr-panel-back" onClick={onClose} aria-label="Close unit"><Back size={20} /></button>
+        <div className="xr-panel-id">
+          <input className="xr-panel-name" value={u.name} placeholder={`${t.name} ${index + 1}`}
+            onChange={(e) => dispatch({ type: "name", key: u.key, name: e.target.value })} spellCheck={false} />
+          <span className="xr-panel-type">{u.isCmd && <b className="xr-tag-cmd"><Crown size={13} /> Commander</b>} {t.name}</span>
+        </div>
+        <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
+      </div>
+
+      <div className="xr-panel-tools">
+        <button className={`xr-btn small ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })}>
+          <Crown size={17} /> {u.isCmd ? "Commander" : "Make Commander"}
+        </button>
+        <button className="xr-btn small" onClick={() => dispatch({ type: "dup", key: u.key })}><CopyIc size={17} /> Duplicate</button>
+        <button className="xr-btn small danger" onClick={() => { dispatch({ type: "del", key: u.key }); onClose(); }}><Trash size={17} /> Remove</button>
+      </div>
+
+      <StatTable t={t} sp={sp} />
+
+      {t.special.filter((s) => s !== "None").length > 0 && (
+        <div className="xr-group">
+          <h3 className="xr-group-h">Standard rules</h3>
+          <div className="xr-chips">
+            {t.special.filter((s) => s !== "None").map((name) => (
+              <RuleChip key={name} name={name} text={SPECIAL_RULES[name]} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {topOpts.length > 0 && (
+        <div className="xr-group">
+          <h3 className="xr-group-h">Loadout</h3>
+          {topOpts.map((o) => {
+            const on = !!u.options[o.id];
+            const subs = subsOf(o.id);
+            return (
+              <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
+                onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
+                {on && subs.length > 0 && (
+                  <div className="xr-subs">
+                    {subs.map((s) => (
+                      <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
+                        onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
+                    ))}
+                  </div>
+                )}
+              </OptionRow>
+            );
+          })}
+        </div>
+      )}
+
+      {elig.length > 0 && (
+        <div className="xr-group">
+          <h3 className="xr-group-h">Xeno rules</h3>
+          {elig.map((x) => {
+            const sel = x.id in u.xenos;
+            const reqMet = xenoReqMet(x, u);
+            const disabled = !sel && !reqMet;
+            const val = u.xenos[x.id];
+            return (
+              <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
+                text={disabled && x.requiresXeno ? `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule. ${x.text}` : x.text}
+                onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
+                {sel && x.tiers && (
+                  <div className="xr-tiers">
+                    {x.tiers.map((tier, i) => (
+                      <button key={i} className={`xr-tier ${val === i ? "on" : ""}`}
+                        onClick={() => dispatch({ type: "tier", key: u.key, xid: x.id, i })}>
+                        {tier.label} <i>{costLabel(tier.cost)}</i>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </OptionRow>
+            );
+          })}
+        </div>
+      )}
+
+      {u.isCmd && (
+        <div className="xr-group xr-command">
+          <h3 className="xr-group-h"><Crown size={16} /> Command</h3>
+          <div className="xr-cmd-tables">
+            {Object.entries(COMMANDER_TABLES).map(([key, ct]) => (
+              <button key={key} className={`xr-tier ${tbl === key ? "on" : ""}`} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
+                {ct.label}
+              </button>
+            ))}
+          </div>
+          <p className="xr-cmd-blurb">{COMMANDER_TABLES[tbl].blurb}</p>
+          <button className="xr-btn small" onClick={() => dispatch({ type: "roll", key: u.key })}>
+            <Dice size={18} /> {trait ? "Reroll trait" : "Roll a trait"}
+          </button>
+          {trait && (
+            <div className="xr-trait">
+              <div className="xr-trait-name">{trait.name}</div>
+              <p className="xr-trait-rule">{trait.rule}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function CatalogCard({ t, onAdd }) {
+  return (
+    <button className={`xr-cat-card cat-${catOf(t)}`} onClick={() => onAdd(t.id)}>
+      <span className="xr-cat-stamp"><Plus size={16} /><b>{t.base}</b><i>pts</i></span>
+      <span className="xr-cat-main">
+        <span className="xr-cat-name">{t.name}</span>
+        <span className="xr-cat-role">{t.role}</span>
+        <span className="xr-cat-ribbon">
+          <span>Atk <em>{t.prof.atk}</em></span>
+          <span>Def <em>{t.prof.def}</em></span>
+          <span>Sho <em>{splitRange(t.prof.sho).main}</em></span>
+          <span>Arm <em>{t.prof.arm}</em></span>
+          <span>SP <em>{t.sp}</em></span>
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function AddUnitModal({ onAdd, onClose }) {
+  const [cat, setCat] = useState("inf");
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const units = UNIT_TYPES.filter((t) => catOf(t) === cat);
+  return (
+    <div className="xr-modal-backdrop" onClick={onClose}>
+      <div className="xr-modal" role="dialog" aria-modal="true" aria-label="Add unit" onClick={(e) => e.stopPropagation()}>
+        <div className="xr-modal-head">
+          <span className="xr-modal-title"><Plus size={22} /> Add unit</span>
+          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        </div>
+        <div className="xr-modal-tabs" role="tablist">
+          {CATS.map((c) => (
+            <button key={c.id} role="tab" aria-selected={cat === c.id}
+              className={`xr-modal-tab cat-${c.id} ${cat === c.id ? "on" : ""}`} onClick={() => setCat(c.id)}>
+              <c.Icon size={18} /> {c.label}
+            </button>
+          ))}
+        </div>
+        <div className="xr-modal-body">
+          <div className="xr-pick-grid">
+            {units.map((t) => <CatalogCard key={t.id} t={t} onAdd={onAdd} />)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Builder({ list, selectedKey, dispatch, updateList }) {
+  const { roster, budget } = list;
+  const [adding, setAdding] = useState(false);
+  const { issues, used, count } = useMemo(() => validate(roster, budget), [roster, budget]);
+  const errors = issues.filter((i) => i.lvl === "err");
+  const status = errors.length ? "err" : count === 0 ? "empty" : "ok";
+  const selIdx = roster.findIndex((u) => u.key === selectedKey);
+  const sel = selIdx >= 0 ? roster[selIdx] : null;
+  const pct = Math.min(100, budget ? (used / budget) * 100 : 0);
+  const over = used > budget;
+
+  const copyList = () => {
+    const lines = [`${list.name || "Untitled detachment"} (${used}/${budget} pts, ${count} units)`];
+    roster.forEach((u, i) => {
+      const t = UNIT_BY_ID[u.typeId];
+      lines.push(`${u.isCmd ? "[CMD] " : ""}${unitDisplayName(u, i)} (${t.name}, ${unitPoints(u)} pts, ${unitSP(u)} SP)`);
+      t.options.filter((o) => u.options[o.id]).forEach((o) => lines.push(`- ${o.name} (${costLabel(optCost(o))})`));
+      XENO_RULES.filter((x) => x.id in u.xenos).forEach((x) => lines.push(`- ${x.name} (${costLabel(xenoCost(x, u.xenos[x.id]))})`));
+      const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
+      if (trait) lines.push(`- Trait: ${trait.name}`);
+    });
+    navigator.clipboard?.writeText(lines.join("\n"));
+  };
+
+  return (
+    <div className="xr-build">
+      <header className="xr-mast">
+        <div className="xr-mast-row">
+          <button className="xr-iconbtn" onClick={() => nav("#/")} aria-label="All detachments" title="All detachments"><House size={20} /></button>
+          <input className="xr-detname" value={list.name} placeholder="Name your detachment"
+            onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
+          <div className="xr-actions">
+            <button className="xr-btn primary" onClick={() => setAdding(true)}><Plus size={18} /> Add unit</button>
+            <button className="xr-btn" onClick={() => nav("#/print")}><Printer size={18} /> Print</button>
+            <button className="xr-btn" onClick={() => nav("#/play")} disabled={count === 0}><Play size={18} /> Play</button>
+            <button className="xr-btn" onClick={copyList}><CopyIc size={18} /> Copy</button>
+          </div>
+        </div>
+        <div className="xr-mast-row2">
+          <div className="xr-budget" role="group" aria-label="Points budget">
+            <span className="xr-budget-l">Budget</span>
+            {BUDGET_PRESETS.map((b) => (
+              <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} onClick={() => updateList({ budget: b })}>{b}</button>
+            ))}
+          </div>
+          <div className={`xr-muster ${over ? "over" : pct >= 90 ? "near" : ""}`}>
+            <span className="xr-muster-read"><b>{used}</b><span>/{budget} pts</span></span>
+            <span className="xr-muster-track"><span className="xr-muster-fill" style={{ width: `${pct}%` }} /></span>
+          </div>
+          <div className={`xr-status ${status}`} role="status">
+            {status === "ok" && <><Check size={16} /> {count} {count === 1 ? "unit" : "units"}, legal</>}
+            {status === "err" && <><Warn size={16} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>}
+            {status === "empty" && <>Empty</>}
+          </div>
+        </div>
+        {issues.length > 0 && (
+          <div className="xr-issues">
+            {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
+          </div>
+        )}
+      </header>
+
+      <div className={`xr-build-body ${sel ? "has-sel" : ""}`}>
+        <main className="xr-ulist" aria-label="Detachment roster">
+          {roster.length === 0 ? (
+            <button className="xr-home-empty" onClick={() => setAdding(true)}>
+              <Alien size={40} />
+              <span>Add your first unit</span>
+            </button>
+          ) : (
+            roster.map((u, i) => (
+              <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey}
+                onSelect={() => nav(u.key === selectedKey ? "#/build" : `#/build/${u.key}`)} />
+            ))
+          )}
+        </main>
+        <div className="xr-detail">
+          {sel ? (
+            <UnitPanel u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} />
+          ) : (
+            roster.length > 0 && <div className="xr-detail-hint"><Alien size={36} /><span>Select a unit</span></div>
+          )}
+        </div>
+      </div>
+
+      {adding && <AddUnitModal onAdd={(id) => dispatch({ type: "add", typeId: id })} onClose={() => setAdding(false)} />}
+      <SiteFooter />
+    </div>
+  );
+}
+
+/* ================================================================== *
+ * PRINT: preview + options
+ * ================================================================== */
+function PrintView({ list }) {
+  const { roster, budget } = list;
+  const [opts, setOpts] = useState({ stats: true, upgrades: true, glossary: true, traits: true, contrast: false, large: false });
+  const { used, count } = useMemo(() => validate(roster, budget), [roster, budget]);
+  const tog = (k) => setOpts((o) => ({ ...o, [k]: !o[k] }));
+
+  const glossary = useMemo(() => {
+    const names = new Set();
+    roster.forEach((u) => UNIT_BY_ID[u.typeId].special.forEach((s) => { if (s !== "None") names.add(s); }));
+    return [...names].sort().map((n) => ({ name: n, text: SPECIAL_RULES[n] })).filter((g) => g.text);
+  }, [roster]);
+
+  return (
+    <div className={`xr-printview ${opts.contrast ? "contrast" : ""} ${opts.large ? "large" : ""}`}>
+      <div className="xr-print-chrome">
+        <button className="xr-iconbtn" onClick={() => nav("#/build")} aria-label="Back to builder"><Back size={20} /></button>
+        <h2 className="xr-print-h">Print</h2>
+        <div className="xr-print-opts">
+          <span className="xr-print-optlabel">Sections</span>
+          {[["stats", "Stat table"], ["upgrades", "Upgrades and xeno rules"], ["glossary", "Standard rules glossary"], ["traits", "Commander trait"]].map(([k, lab]) => (
+            <label key={k} className="xr-print-check">
+              <input type="checkbox" checked={opts[k]} onChange={() => tog(k)} /> {lab}
+            </label>
+          ))}
+          <span className="xr-print-optlabel">Readability</span>
+          <label className="xr-print-check"><input type="checkbox" checked={opts.contrast} onChange={() => tog("contrast")} /> High contrast</label>
+          <label className="xr-print-check"><input type="checkbox" checked={opts.large} onChange={() => tog("large")} /> Larger type</label>
+          <button className="xr-btn primary" onClick={() => window.print()}><Printer size={18} /> Print</button>
+        </div>
+      </div>
+
+      <div className="xr-sheet">
+        <div className="xr-sheet-head">
+          <h1 className="xr-sheet-title">{list.name || "Untitled detachment"}</h1>
+          <div className="xr-sheet-meta">Xenos Rampant &nbsp; {used}/{budget} pts &nbsp; {count} {count === 1 ? "unit" : "units"}</div>
+        </div>
+
+        {opts.stats && (
+          <table className="xr-sheet-table">
+            <thead>
+              <tr>
+                <th className="l">Unit</th><th className="l">Type</th>
+                <th colSpan={4}>Order 2d6 (A / M / S / C)</th>
+                <th colSpan={5}>Profile (A / D / S / Arm / Mv)</th>
+                <th>SP</th><th>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {roster.map((u, i) => {
+                const t = UNIT_BY_ID[u.typeId];
+                const a = t.act, p = t.prof;
+                const av = (k) => parseAct(t.noAttack && k === "atk" ? "n/a" : a[k]);
+                return (
+                  <tr key={u.key}>
+                    <td className="l name">{u.isCmd && <Crown size={13} className="xr-sheet-crown" />}{unitDisplayName(u, i)}</td>
+                    <td className="l type">{t.name}</td>
+                    {ACT_KEYS.map(({ key }) => {
+                      const c = av(key);
+                      return <td key={key}>{c.val === "n/a" ? "-" : c.val}{c.free ? "*" : ""}</td>;
+                    })}
+                    <td>{p.atk === "n/a" ? "-" : p.atk}</td>
+                    <td>{p.def}</td>
+                    <td>{splitRange(p.sho).main === "n/a" ? "-" : p.sho}</td>
+                    <td>{p.arm}</td>
+                    <td>{p.mov}</td>
+                    <td>{unitSP(u)}</td>
+                    <td className="pts">{unitPoints(u)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+        {opts.stats && <p className="xr-sheet-note">* free action. Order is the 2d6 activation target; Profile is how the action resolves.</p>}
+
+        {opts.upgrades && roster.some((u) => Object.keys(u.options).length || Object.keys(u.xenos).length || (opts.traits && u.isCmd && typeof u.traitIndex === "number")) && (
+          <div className="xr-sheet-units">
+            {roster.map((u, i) => {
+              const t = UNIT_BY_ID[u.typeId];
+              const os = t.options.filter((o) => u.options[o.id]);
+              const xs = XENO_RULES.filter((x) => x.id in u.xenos);
+              const trait = opts.traits && u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
+              if (!os.length && !xs.length && !trait) return null;
+              return (
+                <div className="xr-sheet-unit" key={u.key}>
+                  <h3>{unitDisplayName(u, i)} <em>({t.name})</em></h3>
+                  {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
+                  {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.text}</p>)}
+                  {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {opts.glossary && glossary.length > 0 && (
+          <div className="xr-sheet-gloss">
+            <h2>Standard rules</h2>
+            {glossary.map((g) => <p key={g.name}><b>{g.name}:</b> {g.text}</p>)}
+          </div>
+        )}
+
+        <div className="xr-sheet-foot">Xenos Rampant is by Daniel Mersey and Richard Cowen (Osprey Games, 2022). Roster built with the WarLore force builder.</div>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================== *
+ * PLAY: full game tracker
+ * ================================================================== */
+function PlayView({ list }) {
+  const { roster } = list;
+  const [st, setSt] = useState(() => loadPlay(list.id));
+  useEffect(() => savePlay(list.id, st), [list.id, st]);
+
+  const unitSt = (key) => st.units[key] || { dmg: 0, act: false, sup: false };
+  const patch = (key, p) => setSt((s) => ({ ...s, units: { ...s.units, [key]: { ...unitSt(key), ...p } } }));
+  const newTurn = () => setSt((s) => ({
+    turn: s.turn + 1,
+    units: Object.fromEntries(Object.entries(s.units).map(([k, v]) => [k, { ...v, act: false }])),
+  }));
+  const resetGame = () => { if (window.confirm("Reset the game? Damage and turn count clear.")) setSt({ turn: 1, units: {} }); };
+
+  return (
+    <div className="xr-play">
+      <header className="xr-play-mast">
+        <button className="xr-iconbtn" onClick={() => nav("#/build")} aria-label="Back to builder"><Back size={20} /></button>
+        <h2 className="xr-play-h">{list.name || "Untitled detachment"}</h2>
+        <span className="xr-play-turn">Turn <b>{st.turn}</b></span>
+        <div className="xr-actions">
+          <button className="xr-btn primary" onClick={newTurn}><Reset size={17} /> New turn</button>
+          <button className="xr-btn danger" onClick={resetGame}>Reset game</button>
+        </div>
+      </header>
+      <main className="xr-play-grid">
+        {roster.map((u, i) => {
+          const t = UNIT_BY_ID[u.typeId];
+          const sp = unitSP(u);
+          const s = unitSt(u.key);
+          const dead = s.dmg >= sp;
+          return (
+            <div className={`xr-pcard cat-${catOf(t)} ${dead ? "dead" : ""} ${s.act ? "acted" : ""} ${s.sup ? "sup" : ""}`} key={u.key}>
+              <div className="xr-pcard-head">
+                {u.isCmd && <Crown size={17} className="xr-pcard-crown" />}
+                <span className="xr-pcard-name">{unitDisplayName(u, i)}</span>
+                <span className="xr-pcard-type">{t.name}</span>
+              </div>
+              <div className="xr-pcard-dice">
+                {ACT_KEYS.map(({ key, label }) => {
+                  const c = orderCell(t, key);
+                  return (
+                    <span className="xr-pcard-die" key={key}>
+                      <Die k={key}>{c ? c.val : "-"}</Die>
+                      <i>{label}{c && c.free ? " (free)" : ""}</i>
+                    </span>
+                  );
+                })}
+              </div>
+              <div className="xr-pcard-sp" role="group" aria-label={`Strength points, ${sp - s.dmg} of ${sp} left`}>
+                {Array.from({ length: sp }, (_, pi) => {
+                  const lost = pi >= sp - s.dmg;
+                  return (
+                    <button key={pi} className={`xr-pip ${lost ? "lost" : ""}`}
+                      aria-label={lost ? "Restore strength point" : "Mark strength point lost"}
+                      onClick={() => patch(u.key, { dmg: lost ? sp - pi - 1 : sp - pi })}>
+                      <Heart size={17} />
+                    </button>
+                  );
+                })}
+                <span className="xr-pcard-spread"><b>{Math.max(0, sp - s.dmg)}</b>/{sp}</span>
+              </div>
+              <div className="xr-pcard-toggles">
+                <button className={`xr-ptog ${s.act ? "on" : ""}`} onClick={() => patch(u.key, { act: !s.act })} aria-pressed={s.act}>
+                  <Check size={15} /> Activated
+                </button>
+                <button className={`xr-ptog warn ${s.sup ? "on" : ""}`} onClick={() => patch(u.key, { sup: !s.sup })} aria-pressed={s.sup}>
+                  <Warn size={15} /> Suppressed
+                </button>
+              </div>
+              {dead && <div className="xr-pcard-dead"><Skull size={26} /> Destroyed</div>}
+            </div>
+          );
+        })}
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
+/* ================================================================== *
+ * APP SHELL: routing + storage
+ * ================================================================== */
+export default function App() {
+  const [route, setRoute] = useState(parseHash());
+  const [lists, setLists] = useState(loadLists);
+  const [currentId, setCurrentId] = useState(() => localStorage.getItem(LS_CURRENT) || null);
+
+  useEffect(() => {
+    const onHash = () => setRoute(parseHash());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  useEffect(() => saveLists(lists), [lists]);
+  useEffect(() => { if (currentId) localStorage.setItem(LS_CURRENT, currentId); }, [currentId]);
+
+  const current = currentId ? lists[currentId] : null;
+
+  const updateList = useCallback((patch) => {
+    setLists((ls) => currentId && ls[currentId]
+      ? { ...ls, [currentId]: { ...ls[currentId], ...patch, updated: Date.now() } }
+      : ls);
+  }, [currentId]);
+  const setRoster = useCallback((fn) => {
+    setLists((ls) => {
+      if (!currentId || !ls[currentId]) return ls;
+      const l = ls[currentId];
+      return { ...ls, [currentId]: { ...l, roster: fn(l.roster), updated: Date.now() } };
+    });
+  }, [currentId]);
+
+  const dispatch = useCallback((a) => {
+    switch (a.type) {
+      case "add":
+        setRoster((r) => [...r, { key: uid(), typeId: a.typeId, name: "", isCmd: r.length === 0, traitTable: "aggressive", traitIndex: undefined, options: {}, xenos: {} }]);
+        break;
+      case "del": setRoster((r) => r.filter((u) => u.key !== a.key)); break;
+      case "dup":
+        setRoster((r) => {
+          const i = r.findIndex((u) => u.key === a.key);
+          if (i < 0) return r;
+          const copy = { ...r[i], key: uid(), isCmd: false, options: { ...r[i].options }, xenos: { ...r[i].xenos } };
+          const next = [...r]; next.splice(i + 1, 0, copy); return next;
+        });
+        break;
+      case "name": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, name: a.name } : u))); break;
+      case "cmd": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, isCmd: !u.isCmd } : { ...u, isCmd: false }))); break;
+      case "opt":
+        setRoster((r) => r.map((u) => {
+          if (u.key !== a.key) return u;
+          const t = UNIT_BY_ID[u.typeId];
+          const o = t.options.find((x) => x.id === a.oid);
+          const options = { ...u.options };
+          if (options[a.oid]) delete options[a.oid];
+          else { options[a.oid] = true; (o.conflicts || []).forEach((c) => delete options[c]); }
+          return sanitize({ ...u, options });
+        }));
+        break;
+      case "xeno":
+        setRoster((r) => r.map((u) => {
+          if (u.key !== a.key) return u;
+          const rule = XENO_BY_ID[a.xid];
+          const xenos = { ...u.xenos };
+          if (a.xid in xenos) delete xenos[a.xid];
+          else xenos[a.xid] = rule.tiers ? 0 : true;
+          return sanitize({ ...u, xenos });
+        }));
+        break;
+      case "tier": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, xenos: { ...u.xenos, [a.xid]: a.i } } : u))); break;
+      case "table": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitTable: a.tbl } : u))); break;
+      case "roll": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitIndex: Math.floor(Math.random() * 6) } : u))); break;
+      default: break;
+    }
+  }, [setRoster]);
+
+  const createList = () => {
+    const id = uid();
+    setLists((ls) => ({ ...ls, [id]: { id, name: "", budget: 24, roster: [], updated: Date.now() } }));
+    setCurrentId(id);
+    nav("#/build");
+  };
+  const openList = (id) => { setCurrentId(id); nav("#/build"); };
+  const dupList = (id) => {
+    const src = lists[id];
+    if (!src) return;
+    const nid = uid();
+    setLists((ls) => ({ ...ls, [nid]: { ...src, id: nid, name: src.name ? `${src.name} (copy)` : "", roster: src.roster.map((u) => ({ ...u, key: uid() })), updated: Date.now() } }));
+  };
+  const delList = (id) => {
+    const l = lists[id];
+    if (!window.confirm(`Delete ${l?.name || "this detachment"}? This cannot be undone.`)) return;
+    setLists((ls) => { const next = { ...ls }; delete next[id]; return next; });
+    if (currentId === id) setCurrentId(null);
+  };
+
+  /* guard: build/print/play need a current list */
+  if (route.view !== "home" && !current) {
+    return <div className="xr-app"><style>{CSS}</style>
+      <Dashboard lists={lists} onOpen={openList} onCreate={createList} onDup={dupList} onDel={delList} />
+    </div>;
+  }
+
+  return (
+    <div className="xr-app">
+      <style>{CSS}</style>
+      {route.view === "home" && <Dashboard lists={lists} onOpen={openList} onCreate={createList} onDup={dupList} onDel={delList} />}
+      {route.view === "build" && <Builder list={current} selectedKey={route.unitKey} dispatch={dispatch} updateList={updateList} />}
+      {route.view === "print" && <PrintView list={current} />}
+      {route.view === "play" && <PlayView list={current} />}
+    </div>
+  );
+}
+
+/* ================================================================== *
+ * CSS (Field Almanac: cream paper, bottle-green ink, coral stamps)
  * ================================================================== */
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
-/* Terminal Grotesque Open (Velvetyne, OFL), bundled locally. Used only for the
-   gold WarLore wordmark in the footer, the standing brand mark across WarLore builders. */
 @font-face{font-family:'Terminal Grotesque Open';src:url('${import.meta.env.BASE_URL}fonts/terminal-grotesque-open.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
-/* Hyper Scrypt (Jeremy Landes, Velvetyne, OFL), stencil web cut. The Xenos Rampant title. */
 @font-face{font-family:'Hyper Scrypt';src:url('${import.meta.env.BASE_URL}fonts/HyperScrypt-Stencil.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
-/* Sligoil Micro (Ariel Martin Perez, Velvetyne, OFL), a technical mono used for stat readouts. */
 @font-face{font-family:'Sligoil Micro';src:url('${import.meta.env.BASE_URL}fonts/Sligoil-Micro.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
 @font-face{font-family:'Sligoil Micro';src:url('${import.meta.env.BASE_URL}fonts/Sligoil-MicroBold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;}
 
@@ -805,315 +955,314 @@ const CSS = `
   --body:'Source Serif 4',Georgia,serif;
   --title:'Hyper Scrypt','Zilla Slab',Georgia,serif;
   --mono:'Sligoil Micro',ui-monospace,Consolas,monospace;
-  --r-card:14px; --r-stamp:50%;
-  --shadow-page:0 2px 18px rgba(31,61,46,.10);
-  --shadow-card:0 6px 16px -8px rgba(31,61,46,.32);
-  background:var(--paper);
-  color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.6;
-  min-height:100vh;
+  --r:12px;
+  background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:17px;line-height:1.55;min-height:100vh;
 }
-.xr-app *{box-sizing:border-box;}
-.xr-app button{font-family:inherit;cursor:pointer;color:inherit;background:none;border:none;}
-.xr-app input{font-family:inherit;}
-.xr-app ::selection{background:var(--coral);color:#fff;}
-.xr-app :focus-visible{outline:3px solid var(--iris);outline-offset:2px;}
-@media (prefers-reduced-motion: reduce){
-  .xr-app *{animation:none !important; transition:none !important;}
-}
-@keyframes xr-pop-in{0%{opacity:0;transform:translateY(10px) scale(1.03);}60%{opacity:1;transform:translateY(0) scale(.99);}100%{transform:scale(1);}}
-@keyframes xr-pulse{0%{transform:scale(1);}40%{transform:scale(1.05);}100%{transform:scale(1);}}
-@keyframes xr-check{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
+.xr-app *{box-sizing:border-box;margin:0;}
+.xr-app button{font-family:inherit;font-size:inherit;cursor:pointer;color:inherit;background:none;border:none;}
+.xr-app :focus-visible{outline:3px solid var(--iris);outline-offset:2px;border-radius:4px;}
+@media (prefers-reduced-motion: reduce){.xr-app *{animation:none !important;transition:none !important;}}
 
-/* full-width book shell (was capped at 1100px and centered; opened to full viewport per request) */
-.field-book{max-width:none;margin-inline:0;background:var(--paper);box-shadow:var(--shadow-page);min-height:100vh;}
+/* shared controls */
+.xr-btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:16px;color:var(--ink);border:2px solid var(--ink);background:var(--paper-2);padding:10px 16px;border-radius:10px;min-height:46px;transition:.13s;}
+.xr-btn:hover{background:var(--paper-3);}
+.xr-btn:active{transform:scale(.97);}
+.xr-btn.primary{background:var(--ink);color:var(--cream);}
+.xr-btn.primary:hover{background:var(--iris);border-color:var(--iris);}
+.xr-btn.danger:hover{background:var(--coral);border-color:var(--coral-ink);color:#fff;}
+.xr-btn.small{min-height:42px;padding:8px 13px;font-size:15.5px;}
+.xr-btn.gold{background:var(--brass);border-color:var(--brass);color:var(--cream);}
+.xr-btn:disabled{opacity:.45;cursor:not-allowed;}
+.xr-iconbtn{width:46px;height:46px;flex:none;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink);border-radius:10px;color:var(--ink);background:var(--paper-2);transition:.12s;}
+.xr-iconbtn:hover{background:var(--paper-3);}
+.xr-iconbtn:active{transform:scale(.95);}
 
-/* ---------- masthead ---------- */
-.xr-mast{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:3px solid var(--ink);padding:18px clamp(16px,3vw,30px) 16px;}
-.xr-mast-row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;}
-.xr-brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
-.xr-word{font-family:var(--title);font-weight:400;font-size:clamp(34px,5.6vw,56px);letter-spacing:.02em;line-height:1.02;margin:0;color:var(--ink);}
-.xr-sub{font-family:var(--body);font-style:italic;font-weight:400;letter-spacing:.01em;font-size:clamp(16px,1.6vw,19px);color:var(--coral-ink);}
-.xr-mast-right{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
-.xr-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-.xr-act.danger{margin-left:16px;}
-/* points cluster: budget presets, muster gauge, and legality read together */
-.xr-points{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
-.xr-act{display:inline-flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink);border:2px solid var(--ink);background:var(--paper-2);padding:11px 16px;border-radius:10px;transition:.13s;min-height:48px;}
-.xr-act:hover{background:var(--sage);color:var(--cream);border-color:var(--sage);}
-.xr-act:active{transform:scale(.97);}
-.xr-act.danger:hover{background:var(--coral);color:#fff;border-color:var(--coral-ink);}
-
-/* gauge */
-.xr-muster{min-width:240px;}
-.xr-muster-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;gap:10px;}
-.xr-muster-label{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);}
-.xr-muster-read{font-family:var(--mono);font-weight:700;line-height:1;font-variant-numeric:tabular-nums;}
-.xr-muster-read b{font-size:30px;color:var(--ink);}
-.xr-muster-slash{font-size:22px;color:var(--ink-2);margin:0 3px;}
-.xr-muster-budget{font-size:24px;color:var(--ink-2);}
-.xr-muster-pts{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-left:6px;}
-.xr-muster-track{position:relative;height:18px;border:2px solid var(--ink);background:var(--paper-2);border-radius:6px;overflow:hidden;}
-.xr-muster-fill{height:100%;transition:width .3s cubic-bezier(.4,0,.2,1);background:var(--sage);}
-.xr-muster.near .xr-muster-fill{background:var(--brass);}
-.xr-muster.over .xr-muster-fill{background:var(--coral);}
-.xr-muster-over{position:absolute;inset:0;border:2px solid var(--coral-ink);pointer-events:none;}
-.xr-muster-ticks{position:absolute;inset:0;pointer-events:none;background-image:repeating-linear-gradient(90deg,#0000 0 calc(10% - 2px),var(--ink-18) calc(10% - 2px) 10%);}
-
-.xr-mast-row2{display:flex;align-items:center;gap:16px;margin-top:16px;flex-wrap:wrap;}
-.xr-detname{flex:1;min-width:200px;font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);background:transparent;border:none;border-bottom:2px solid var(--ink-30);padding:4px 2px 6px;}
-.xr-detname::placeholder{color:var(--ink-2);opacity:.7;}
-.xr-detname:focus{outline:none;border-bottom-color:var(--coral);}
-.xr-budget{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.xr-budget-l{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);margin-right:4px;}
-.xr-budget-b{font-family:var(--body);font-weight:600;font-size:17px;color:var(--ink);border:2px solid var(--ink);min-width:52px;min-height:48px;padding:8px 10px;border-radius:10px;transition:.12s;}
-.xr-budget-b:hover{background:var(--paper-2);}
-.xr-budget-b:active{transform:scale(.96);}
-.xr-budget-b.on{background:var(--ink);color:var(--cream);}
-.xr-status{display:inline-flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:16px;padding:9px 14px;border-radius:10px;border:2px solid var(--ink);}
-.xr-status.ok{color:var(--sage);border-color:var(--sage);background:var(--paper-2);}
-.xr-status.err{color:var(--coral-ink);border-color:var(--coral-ink);background:#F4604C18;}
-.xr-status.empty{color:var(--ink-2);}
-.xr-issues{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
-.xr-issue{font-family:var(--body);font-weight:600;font-size:16px;padding:7px 12px;border-radius:8px;border-left:4px solid;background:var(--paper-2);}
-.xr-issue.err{color:var(--coral-ink);border-color:var(--coral-ink);}
-.xr-issue.warn{color:var(--brass);border-color:var(--brass);}
-
-/* ---------- body ---------- */
-.xr-body{display:block;}
-@media(max-width:880px){.xr-body{grid-template-columns:1fr;}}
-
-/* catalogue */
-.xr-catalogue{position:sticky;top:190px;align-self:start;max-height:calc(100vh - 190px);overflow-y:auto;padding:20px clamp(12px,1.5vw,18px) 40px;border-right:3px solid var(--ink);}
-@media(max-width:880px){.xr-catalogue{position:static;max-height:none;border-right:none;border-bottom:3px solid var(--ink);}}
-
-/* add-unit modal: pick a category tab, then a unit from the grid */
-.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.42);display:flex;align-items:center;justify-content:center;padding:24px;z-index:90;animation:xr-fade .18s ease;}
-.xr-modal{width:min(920px,100%);max-height:86vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:0 12px 40px rgba(31,61,46,.28);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop-in .28s cubic-bezier(.2,.8,.2,1);}
-.xr-modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:3px solid var(--ink);}
-.xr-modal-title{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:26px;color:var(--ink);}
-.xr-modal .xr-modal-x{width:48px;height:48px;flex:none;border:2px solid var(--ink);border-radius:10px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.12s;}
-.xr-modal .xr-modal-x:hover{background:var(--coral);color:#fff;border-color:var(--coral-ink);}
-.xr-modal .xr-modal-x:active{transform:scale(.95);}
-.xr-modal-tabs{display:flex;gap:8px;padding:14px 22px;border-bottom:2px solid var(--ink-18);flex-wrap:wrap;}
-.xr-modal .xr-modal-tab{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:17px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:9px 16px;border-radius:10px;min-height:46px;transition:.12s;}
-.xr-modal .xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
-.xr-modal .xr-modal-tab.on{color:var(--cream);background:var(--ink);border-color:var(--ink);}
-.xr-modal .xr-modal-tab.cat-inf.on{background:var(--sage);border-color:var(--sage);}
-.xr-modal .xr-modal-tab.cat-xeno.on{background:var(--iris);border-color:var(--iris);}
-.xr-modal .xr-modal-tab.cat-veh.on{background:var(--rust);border-color:var(--rust);}
-.xr-modal-body{overflow-y:auto;padding:20px 22px 26px;}
-.xr-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
-@keyframes xr-fade{from{opacity:0;}to{opacity:1;}}
-@media (prefers-reduced-motion: reduce){.xr-modal-backdrop,.xr-modal{animation:none;}}
-
-/* primary add-unit button and empty-state add */
-.xr-act.primary{background:var(--ink);color:var(--cream);border-color:var(--ink);}
-.xr-act.primary:hover{background:var(--iris);border-color:var(--iris);color:var(--cream);}
-.xr-empty .xr-add-big{display:inline-flex;align-items:center;gap:10px;margin-top:22px;font-family:var(--body);font-weight:700;font-size:19px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:14px 26px;border-radius:12px;transition:.14s;}
-.xr-add-big:hover{background:var(--iris);border-color:var(--iris);}
-.xr-add-big:active{transform:scale(.97);}
-
-/* order-value die chips: read as a die you roll, distinct from the bare profile numeral */
-.xr-die{display:inline-flex;align-items:center;justify-content:center;min-width:46px;padding:4px 10px;border-radius:9px;border:1.5px solid var(--ink-30);background:var(--paper-2);font-family:var(--mono);font-weight:700;font-size:19px;color:var(--ink);font-variant-numeric:tabular-nums;}
+/* die chips */
+.xr-die{display:inline-flex;align-items:center;justify-content:center;min-width:44px;padding:3px 9px;border-radius:9px;border:1.5px solid var(--ink-30);background:var(--paper-2);font-family:var(--mono);font-weight:700;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums;}
 .xr-die.k-atk{background:#F4604C22;border-color:var(--coral-ink);}
 .xr-die.k-mov{background:#5C7A5222;border-color:var(--sage);}
 .xr-die.k-sho{background:#6A4A8C22;border-color:var(--iris);}
 .xr-die.k-cou{background:#8A6A1F22;border-color:var(--brass);}
-.xr-catsec{margin-bottom:26px;}
-.xr-catsec-h{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:24px;padding-bottom:8px;margin-bottom:12px;border-bottom:2px solid var(--ink-30);}
-.xr-catsec-h.cat-inf{color:var(--sage);}
-.xr-catsec-h.cat-xeno{color:var(--iris);}
-.xr-catsec-h.cat-veh{color:var(--rust);}
-.xr-catsec-list{display:grid;grid-template-columns:1fr;gap:12px;}
+.xr-free{font-style:italic;font-weight:600;font-size:14.5px;color:var(--coral-ink);margin-left:5px;}
+.xr-dash{color:var(--ink-2);opacity:.45;}
+.xr-rng{font-family:var(--mono);font-style:normal;font-size:15px;color:var(--ink-2);margin-left:5px;}
 
-.xr-cat-card{display:flex;gap:12px;text-align:left;border:3px solid var(--ink);background:var(--paper-2);padding:14px;border-radius:var(--r-card);transition:.14s;align-items:flex-start;}
-.xr-cat-card.cat-veh{border-color:var(--rust);}
-.xr-cat-card.cat-xeno{border-color:var(--iris);}
-.xr-cat-card:hover{box-shadow:var(--shadow-card);transform:translateY(-2px);}
-.xr-cat-card:active{transform:scale(.99);}
-.xr-cat-card.pulsing{animation:xr-pulse .42s cubic-bezier(.2,.8,.2,1);}
-.xr-cat-stamp{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:66px;min-height:66px;border-radius:var(--r-stamp);background:var(--coral);color:var(--ink);border:2px solid var(--ink);transition:.14s;}
-.xr-cat-card:hover .xr-cat-stamp{background:var(--coral-ink);color:var(--cream);}
-.xr-cat-stamp b{font-family:var(--display);font-weight:700;font-size:24px;line-height:1;}
-.xr-cat-stamp i{font-family:var(--body);font-style:normal;font-weight:600;font-size:13px;}
-.xr-cat-main{flex:1;min-width:0;display:flex;flex-direction:column;}
-.xr-cat-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
-.xr-cat-name{font-family:var(--display);font-weight:700;font-size:21px;color:var(--ink);}
-.xr-cat-role{font-style:italic;font-size:16px;line-height:1.45;color:var(--ink-2);margin:4px 0 10px;}
-.xr-cat-ribbon{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;}
-.xr-cat-ribbon span{display:inline-flex;align-items:center;gap:5px;font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);}
-.xr-cat-ribbon span svg{color:var(--ink);}
-.xr-cat-ribbon span em{font-style:normal;color:var(--ink);font-weight:700;}
-
-/* roster */
-.xr-roster{padding:20px clamp(14px,2.5vw,28px) 60px;display:grid;grid-template-columns:1fr;gap:20px;}
-@media(min-width:1000px){.xr-roster{grid-template-columns:repeat(auto-fill,minmax(460px,1fr));}}
-.xr-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:6px;border:3px dashed var(--ink-30);border-radius:var(--r-card);padding:64px 30px;text-align:center;color:var(--ink-2);margin-top:10px;}
-.xr-empty svg{color:var(--sage);margin-bottom:14px;}
-.xr-empty p{font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);margin:0 0 8px;}
-.xr-empty span{font-size:16px;font-style:italic;}
-
-.xr-unit{border:3px solid var(--ink);background:var(--paper-2);border-radius:var(--r-card);overflow:hidden;animation:xr-pop-in .38s cubic-bezier(.2,.8,.2,1);}
-.xr-unit.role-veh{border-color:var(--rust);}
-.xr-unit.role-cmd{border-color:var(--brass);box-shadow:0 0 0 2px var(--brass) inset;}
-
-.xr-unit-head{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:2px solid var(--ink-30);background:var(--paper);}
-.xr-crown{flex:none;width:56px;height:56px;border:2px solid var(--ink);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--ink-2);transition:.13s;}
-.xr-crown:hover{color:var(--brass);border-color:var(--brass);}
-.xr-crown:active{transform:scale(.95);}
-.xr-crown.on{color:var(--cream);background:var(--brass);border-color:var(--brass);}
-.xr-unit-id{flex:1;min-width:0;}
-.xr-unit-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(18px,1.8vw,24px);color:var(--ink);background:transparent;border:none;border-bottom:2px solid transparent;padding:0 0 2px;line-height:1.1;text-overflow:ellipsis;}
-.xr-unit-name::placeholder{color:var(--ink-2);opacity:.6;}
-.xr-unit-name:focus{outline:none;border-bottom-color:var(--coral);}
-.xr-unit-type{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink-2);margin-top:4px;}
-.xr-tag-cmd{color:var(--cream);background:var(--brass);margin-right:9px;padding:2px 8px;border-radius:6px;font-weight:700;}
-.xr-unit-readout{text-align:right;flex:none;}
-.xr-ro-pts{font-family:var(--mono);font-weight:700;font-size:32px;line-height:.9;color:var(--ink);font-variant-numeric:tabular-nums;}
-.xr-ro-pts i{font-family:var(--body);font-weight:600;font-style:normal;font-size:15px;color:var(--ink-2);margin-left:4px;}
-.xr-ro-sp{display:inline-flex;align-items:center;gap:4px;font-family:var(--body);font-weight:600;font-size:16px;color:var(--sage);margin-top:3px;}
-.xr-unit.role-veh .xr-ro-sp{color:var(--rust);}
-.xr-unit-tools{display:flex;flex-direction:column;gap:6px;flex:none;}
-.xr-unit-tools button{width:48px;height:48px;border:2px solid var(--ink);border-radius:10px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.12s;}
-.xr-unit-tools button:hover{background:var(--paper);}
-.xr-unit-tools button:active{transform:scale(.95);}
-.xr-unit-tools button:last-child:hover{color:#fff;background:var(--coral);border-color:var(--coral-ink);}
-
-/* stat groups */
-.xr-stats{display:grid;grid-template-columns:1fr;gap:0;}
-.xr-statgroup{padding:16px;border-bottom:2px solid var(--ink-18);}
-.xr-statgroup:last-child{border-bottom:none;}
-.xr-statgroup-h{font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.03em;font-size:18px;color:var(--ink-2);margin-bottom:12px;}
-.xr-statgroup-h em{font-style:italic;color:var(--ink-2);margin-left:6px;}
-.xr-statgrid{display:grid;gap:14px 12px;}
-.xr-statgrid.act{grid-template-columns:repeat(2,1fr);}
-.xr-statgrid.prof{grid-template-columns:repeat(3,1fr);}
-@media(max-width:520px){.xr-statgrid.prof{grid-template-columns:repeat(2,1fr);}}
-.xr-stat{display:flex;align-items:center;gap:10px;}
-.xr-stat-ic{color:var(--ink);flex:none;}
-.xr-stat.muted{opacity:.5;}
-.xr-stat-body{min-width:0;line-height:1.1;}
-.xr-stat-val{font-family:var(--mono);font-weight:700;font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums;}
-.xr-stat-rng{font-family:var(--mono);font-weight:400;font-size:16px;color:var(--ink-2);margin-left:4px;}
-.xr-stat-key{font-family:var(--mono);font-weight:400;font-size:16px;letter-spacing:.02em;color:var(--ink-2);margin-top:1px;}
-.xr-free{font-style:italic;color:var(--coral-ink);margin-left:6px;}
-
-/* activation discs */
-.xr-act-disc{flex:none;width:48px;height:48px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;}
-.xr-act-num{font-family:var(--mono);font-weight:700;font-size:18px;line-height:1;}
-/* unified stat table (one row per stat, Order + Profile columns) */
-.xr-stt{padding:14px 16px 4px;}
-.xr-stt-head{display:grid;grid-template-columns:1fr 92px 108px;gap:8px 12px;align-items:end;padding-bottom:8px;border-bottom:2px solid var(--ink-30);}
-.xr-stt-hstat,.xr-stt-hcol{font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.03em;font-size:16px;color:var(--ink-2);}
-.xr-stt-hcol em{font-style:italic;font-variant:normal;font-size:14px;margin-left:3px;color:var(--ink-2);}
-.xr-stt-row{display:grid;grid-template-columns:1fr 92px 108px;gap:8px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--ink-18);}
+/* stat table */
+.xr-stt{padding:4px 0 0;}
+.xr-stt-head{display:grid;grid-template-columns:1fr 96px 104px;gap:6px 10px;padding:0 0 7px;border-bottom:2px solid var(--ink-30);font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.03em;font-size:15.5px;color:var(--ink-2);}
+.xr-stt-head em{font-style:italic;font-variant:normal;font-size:13.5px;}
+.xr-stt-row{display:grid;grid-template-columns:1fr 96px 104px;gap:6px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--ink-18);}
 .xr-stt-row:last-child{border-bottom:none;}
-.xr-stt-stat{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:18px;color:var(--ink);}
-.xr-stt-ic{color:var(--ink);flex:none;}
-.xr-stt-cell b{font-family:var(--mono);font-weight:700;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums;}
-.xr-stt-rng{font-family:var(--mono);font-style:normal;font-size:16px;color:var(--ink-2);margin-left:5px;}
-.xr-stt-dash{color:var(--ink-2);opacity:.45;font-size:18px;}
-.xr-free{font-family:var(--body);font-style:italic;font-weight:600;font-size:15px;color:var(--coral-ink);margin-left:5px;}
-.xr-act-disc.k-atk{background:var(--coral);color:var(--ink);}
-.xr-act-disc.k-mov{background:var(--sage);color:var(--cream);}
-.xr-act-disc.k-sho{background:var(--iris);color:var(--cream);}
-.xr-act-disc.k-cou{background:var(--brass);color:var(--cream);}
-.xr-stat.muted .xr-act-disc{background:var(--paper-2);color:var(--ink-2);}
+.xr-stt-stat{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:600;font-size:16.5px;}
+.xr-stt-ic{color:var(--ink-2);flex:none;}
+.xr-stt-cell b{font-family:var(--mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;}
 
-/* groups */
-.xr-group{border-top:2px solid var(--ink-18);padding:16px;}
-.xr-group-bar{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:19px;color:var(--sage);margin-bottom:12px;}
-.xr-unit.role-veh .xr-group-bar{color:var(--rust);}
-.xr-group-bar svg{color:inherit;}
+/* masthead + wordmark */
+.xr-word{font-family:var(--title);font-weight:400;font-size:clamp(30px,4.6vw,46px);letter-spacing:.02em;line-height:1.02;color:var(--ink);}
+.xr-sub{font-style:italic;font-size:clamp(16px,1.5vw,18px);color:var(--coral-ink);}
 
-.xr-rules{display:flex;flex-direction:column;gap:12px;}
-.xr-defn-name{font-family:var(--display);font-weight:600;font-size:18px;color:var(--ink);}
-.xr-defn-text{font-size:16px;line-height:1.5;color:var(--ink-2);margin:3px 0 0;}
+/* ---------- dashboard ---------- */
+.xr-home{display:flex;flex-direction:column;min-height:100vh;}
+.xr-home-mast{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:22px clamp(16px,4vw,44px) 16px;border-bottom:3px solid var(--ink);}
+.xr-home-body{flex:1;width:100%;max-width:1160px;margin-inline:auto;padding:26px clamp(16px,4vw,44px) 60px;}
+.xr-home-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+.xr-home-h{font-family:var(--display);font-weight:700;font-size:26px;}
+.xr-home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.xr-list-card{position:relative;border:3px solid var(--ink);border-radius:var(--r);background:var(--paper-2);transition:.14s;display:flex;flex-direction:column;}
+.xr-list-card:hover{box-shadow:0 3px 10px rgba(31,61,46,.14);}
+.xr-list-open{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:16px 16px 12px;}
+.xr-list-name{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.15;}
+.xr-list-meta{font-family:var(--mono);font-size:16px;color:var(--ink-2);}
+.xr-list-meta b{color:var(--ink);}
+.xr-list-status{font-size:15px;font-weight:600;padding:3px 10px;border-radius:8px;border:1.5px solid;}
+.xr-list-status.ok{color:var(--sage);border-color:var(--sage);}
+.xr-list-status.err{color:var(--coral-ink);border-color:var(--coral-ink);}
+.xr-list-status.empty{color:var(--ink-2);border-color:var(--ink-30);}
+.xr-list-tools{display:flex;gap:8px;padding:0 16px 14px;}
+.xr-list-tools button{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink-30);border-radius:9px;color:var(--ink-2);transition:.12s;}
+.xr-list-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
+.xr-list-tools button:last-child:hover{background:var(--coral);border-color:var(--coral-ink);color:#fff;}
+.xr-home-empty{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;border:3px dashed var(--ink-30);border-radius:var(--r);padding:56px 24px;color:var(--ink-2);font-family:var(--display);font-weight:600;font-size:20px;transition:.14s;}
+.xr-home-empty:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-2);}
 
-/* rows (options / xeno) */
-.xr-row{border-top:1.5px solid var(--ink-18);padding:12px 0;}
-.xr-row:first-of-type{border-top:none;}
-.xr-row-hit{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:4px 0;min-height:56px;}
-.xr-row-cost{flex:none;width:52px;height:52px;border-radius:50%;border:2px solid var(--ink);background:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink-2);font-variant-numeric:tabular-nums;transition:.12s;}
-.xr-row-cost.pos{color:var(--ink);background:var(--coral);}
-.xr-row-cost.neg{color:var(--cream);background:var(--sage);border-color:var(--sage);}
-.xr-check{flex:none;width:28px;height:28px;border:2px solid var(--ink);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--cream);transition:.12s;}
-.xr-row.on .xr-check{background:var(--sage);border-color:var(--sage);}
-.xr-row.on .xr-check svg{animation:xr-check .25s cubic-bezier(.2,.8,.2,1);}
-.xr-row-name{flex:1;font-family:var(--body);font-weight:600;font-size:18px;color:var(--ink);}
-.xr-row-hit:active{transform:scale(.99);}
-.xr-row-text{font-size:16px;line-height:1.5;color:var(--ink-2);margin:6px 0 0 64px;}
-.xr-row.on .xr-row-text{color:var(--ink);}
-.xr-row.off{opacity:.5;}
-.xr-row.off .xr-row-hit{cursor:not-allowed;}
-.xr-subs{margin:10px 0 2px 64px;padding-left:14px;border-left:2px solid var(--ink-18);}
-.xr-row.sub{padding:8px 0;}
-.xr-row.sub .xr-row-name{font-size:17px;}
-.xr-row.sub .xr-row-text{margin-left:64px;}
+/* ---------- builder ---------- */
+.xr-build{display:flex;flex-direction:column;min-height:100vh;}
+.xr-mast{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:3px solid var(--ink);padding:14px clamp(14px,3vw,30px) 12px;}
+.xr-mast-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.xr-detname{flex:1;min-width:170px;font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);background:transparent;border:none;border-bottom:2px solid var(--ink-30);padding:4px 2px 6px;}
+.xr-detname::placeholder{color:var(--ink-2);opacity:.7;}
+.xr-detname:focus{outline:none;border-bottom-color:var(--coral);}
+.xr-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.xr-mast-row2{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;}
+.xr-budget{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.xr-budget-l{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);margin-right:2px;}
+.xr-budget-b{font-family:var(--mono);font-weight:600;font-size:16px;border:2px solid var(--ink);min-width:46px;min-height:44px;padding:6px 8px;border-radius:9px;transition:.12s;}
+.xr-budget-b:hover{background:var(--paper-2);}
+.xr-budget-b.on{background:var(--ink);color:var(--cream);}
+.xr-muster{display:flex;align-items:center;gap:12px;flex:1;min-width:200px;}
+.xr-muster-read{font-family:var(--mono);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.xr-muster-read b{font-size:24px;}
+.xr-muster-read span{font-size:16px;color:var(--ink-2);}
+.xr-muster-track{position:relative;flex:1;height:14px;border:2px solid var(--ink);background:var(--paper-2);border-radius:6px;overflow:hidden;}
+.xr-muster-fill{display:block;height:100%;background:var(--sage);transition:width .3s;}
+.xr-muster.near .xr-muster-fill{background:var(--brass);}
+.xr-muster.over .xr-muster-fill{background:var(--coral);}
+.xr-status{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:16px;padding:8px 13px;border-radius:9px;border:2px solid var(--ink);}
+.xr-status.ok{color:var(--sage);border-color:var(--sage);background:var(--paper-2);}
+.xr-status.err{color:var(--coral-ink);border-color:var(--coral-ink);background:#F4604C18;}
+.xr-status.empty{color:var(--ink-2);border-color:var(--ink-30);}
+.xr-issues{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.xr-issue{font-weight:600;font-size:15.5px;padding:6px 11px;border-radius:8px;border-left:4px solid;background:var(--paper-2);}
+.xr-issue.err{color:var(--coral-ink);border-color:var(--coral-ink);}
+.xr-issue.warn{color:var(--brass);border-color:var(--brass);}
 
-.xr-tiers{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 2px 64px;}
-.xr-tier{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink);border:2px solid var(--ink);padding:10px 14px;border-radius:8px;transition:.12s;min-height:48px;}
-.xr-tier i{font-style:normal;color:var(--ink-2);margin-left:6px;}
-.xr-tier:hover{background:var(--paper);}
-.xr-tier:active{transform:scale(.96);}
-.xr-tier.on{background:var(--sage);border-color:var(--sage);color:var(--cream);}
-.xr-tier.on i{color:var(--cream);}
+.xr-build-body{flex:1;display:grid;grid-template-columns:minmax(320px,430px) 1fr;gap:0;align-items:start;}
+.xr-ulist{display:flex;flex-direction:column;gap:10px;padding:18px clamp(12px,1.6vw,20px) 40px;}
+.xr-detail{position:sticky;top:132px;align-self:start;max-height:calc(100vh - 132px);overflow-y:auto;border-left:3px solid var(--ink);min-height:320px;}
+.xr-detail-hint{display:flex;flex-direction:column;align-items:center;gap:10px;padding:80px 20px;color:var(--ink-2);font-family:var(--display);font-size:19px;}
 
-/* command */
-.xr-command{background:var(--paper);}
-.xr-command .xr-group-bar{color:var(--brass);}
-.xr-cmd-tables{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
-@media(min-width:520px){.xr-cmd-tables{grid-template-columns:repeat(4,1fr);}}
-.xr-cmd-tab{font-family:var(--body);font-weight:600;font-size:16px;color:var(--ink);border:2px solid var(--ink);padding:11px 6px;border-radius:8px;transition:.12s;min-height:48px;}
-.xr-cmd-tab:hover{background:var(--paper-2);}
-.xr-cmd-tab:active{transform:scale(.96);}
-.xr-cmd-tab.on{background:var(--brass);border-color:var(--brass);color:var(--cream);}
-.xr-cmd-blurb{font-size:16px;color:var(--ink-2);margin:12px 0;font-style:italic;}
-.xr-roll{display:inline-flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:18px;color:var(--cream);border:2px solid var(--brass);background:var(--brass);padding:12px 18px;border-radius:10px;transition:.12s;min-height:48px;}
-.xr-roll:hover{background:var(--ink);border-color:var(--ink);}
-.xr-roll:active{transform:scale(.97);}
-.xr-trait{margin-top:14px;border:2px solid var(--brass);border-radius:10px;background:var(--paper-2);padding:14px;}
-.xr-trait-name{font-family:var(--display);font-weight:700;font-size:20px;color:var(--brass);}
-.xr-trait-rule{font-size:16px;line-height:1.5;color:var(--ink);margin:5px 0 0;}
+/* compact unit rows */
+.xr-urow{display:flex;flex-direction:column;gap:3px;text-align:left;border:2.5px solid var(--ink);border-left-width:7px;border-radius:10px;background:var(--paper-2);padding:11px 14px;transition:.13s;}
+.xr-urow:hover{background:var(--paper-3);}
+.xr-urow.sel{background:var(--ink);color:var(--cream);}
+.xr-urow.sel .xr-urow-sub,.xr-urow.sel .xr-urow-pts i{color:var(--paper-3);}
+.xr-urow.cat-inf{border-left-color:var(--sage);}
+.xr-urow.cat-xeno{border-left-color:var(--iris);}
+.xr-urow.cat-veh{border-left-color:var(--rust);}
+.xr-urow-top{display:flex;align-items:center;gap:8px;width:100%;}
+.xr-urow-crown{color:var(--brass);flex:none;}
+.xr-urow.sel .xr-urow-crown{color:#E8C860;}
+.xr-urow-name{font-family:var(--display);font-weight:700;font-size:18.5px;line-height:1.15;flex:1;min-width:0;}
+.xr-urow-pts{font-family:var(--mono);font-weight:700;font-size:19px;white-space:nowrap;}
+.xr-urow-pts i{font-style:normal;font-size:14px;color:var(--ink-2);margin-left:3px;}
+.xr-urow-sub{font-size:15.5px;color:var(--ink-2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.xr-urow-sub em{font-style:italic;}
 
-/* ---------- footer ---------- */
-/* footer modelled closely on the Pacific Command builder: pipe separators, compact,
-   WarLore credit set in Terminal Grotesque small caps, pushed right. */
+/* unit panel */
+.xr-panel{padding:16px clamp(14px,2vw,24px) 40px;}
+.xr-panel-head{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:2px solid var(--ink-30);}
+.xr-panel-back{display:none;}
+.xr-panel-id{flex:1;min-width:0;}
+.xr-panel-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(19px,2vw,24px);color:var(--ink);background:transparent;border:none;border-bottom:2px solid transparent;padding:0 0 2px;}
+.xr-panel-name:focus{outline:none;border-bottom-color:var(--coral);}
+.xr-panel-type{font-size:15.5px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;}
+.xr-tag-cmd{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:13.5px;color:var(--cream);background:var(--brass);padding:2px 8px;border-radius:6px;}
+.xr-panel-pts{font-family:var(--mono);font-weight:700;white-space:nowrap;}
+.xr-panel-pts b{font-size:26px;}
+.xr-panel-pts i{font-style:normal;font-size:14px;color:var(--ink-2);margin-left:3px;}
+.xr-panel-tools{display:flex;gap:8px;flex-wrap:wrap;padding:12px 0;}
+.xr-group{margin-top:18px;}
+.xr-group-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:19px;color:var(--ink);padding-bottom:6px;border-bottom:2px solid var(--ink-30);margin-bottom:10px;}
+.xr-chips{display:flex;flex-direction:column;gap:6px;}
+.xr-chipwrap{display:flex;flex-direction:column;}
+.xr-chip{align-self:flex-start;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 12px;min-height:38px;transition:.12s;}
+.xr-chip:hover{border-color:var(--ink);background:var(--paper-2);}
+.xr-chipwrap.open .xr-chip{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+.xr-chip-text{font-size:16px;color:var(--ink-2);padding:8px 2px 4px;}
+
+/* option rows */
+.xr-row{border-bottom:1px solid var(--ink-18);padding:4px 0;}
+.xr-row:last-child{border-bottom:none;}
+.xr-row-line{display:flex;align-items:stretch;gap:6px;}
+.xr-row-hit{flex:1;display:flex;align-items:center;gap:10px;text-align:left;padding:8px 4px;min-height:48px;border-radius:8px;transition:.12s;}
+.xr-row-hit:hover{background:var(--paper-2);}
+.xr-row-hit:disabled{opacity:.5;cursor:not-allowed;}
+.xr-row-cost{flex:none;min-width:44px;text-align:center;font-family:var(--mono);font-weight:700;font-size:16.5px;padding:3px 7px;border-radius:8px;border:1.5px solid var(--ink-30);background:var(--paper-2);}
+.xr-row-cost.pos{background:var(--coral);color:var(--ink);border-color:var(--coral-ink);}
+.xr-row-cost.neg{background:var(--sage);color:var(--cream);border-color:var(--sage);}
+.xr-check{flex:none;width:26px;height:26px;border:2px solid var(--ink);border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--paper);}
+.xr-row.on .xr-check{background:var(--ink);color:var(--cream);}
+.xr-row-name{font-weight:600;font-size:16.5px;line-height:1.25;}
+.xr-row-info{flex:none;width:38px;border:none;border-radius:8px;color:var(--ink-2);font-weight:700;font-size:17px;transition:.12s;}
+.xr-row-info:hover{background:var(--paper-2);color:var(--ink);}
+.xr-row-text{font-size:16px;color:var(--ink-2);padding:2px 4px 8px 60px;}
+.xr-subs{margin-left:44px;border-left:2px solid var(--ink-18);padding-left:8px;}
+.xr-tiers{display:flex;gap:7px;flex-wrap:wrap;padding:2px 4px 10px 60px;}
+.xr-tier{font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:42px;transition:.12s;}
+.xr-tier:hover{border-color:var(--ink);}
+.xr-tier.on{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+.xr-tier i{font-style:normal;font-family:var(--mono);}
+.xr-cmd-tables{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
+.xr-cmd-blurb{font-size:16px;font-style:italic;color:var(--ink-2);margin-bottom:10px;}
+.xr-trait{margin-top:10px;border:2px solid var(--brass);border-radius:10px;padding:10px 14px;background:var(--paper-2);}
+.xr-trait-name{font-family:var(--display);font-weight:700;font-size:17.5px;color:var(--brass);}
+.xr-trait-rule{font-size:16px;color:var(--ink-2);}
+
+/* add-unit modal */
+.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.42);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade .18s ease;}
+.xr-modal{width:min(880px,100%);max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:0 12px 40px rgba(31,61,46,.28);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop .26s cubic-bezier(.2,.8,.2,1);}
+.xr-modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:3px solid var(--ink);}
+.xr-modal-title{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:24px;}
+.xr-modal-tabs{display:flex;gap:8px;padding:12px 20px;border-bottom:2px solid var(--ink-18);flex-wrap:wrap;}
+.xr-modal-tab{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:16.5px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:8px 15px;border-radius:9px;min-height:44px;transition:.12s;}
+.xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
+.xr-modal-tab.on{color:var(--cream);}
+.xr-modal-tab.cat-inf.on{background:var(--sage);border-color:var(--sage);}
+.xr-modal-tab.cat-xeno.on{background:var(--iris);border-color:var(--iris);}
+.xr-modal-tab.cat-veh.on{background:var(--rust);border-color:var(--rust);}
+.xr-modal-body{overflow-y:auto;padding:16px 20px 24px;}
+.xr-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;}
+.xr-cat-card{display:flex;gap:12px;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:13px;border-radius:var(--r);transition:.13s;align-items:flex-start;}
+.xr-cat-card:hover{background:var(--paper-3);box-shadow:0 3px 10px rgba(31,61,46,.14);}
+.xr-cat-card:active{transform:scale(.98);}
+.xr-cat-stamp{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:58px;height:58px;border-radius:50%;background:var(--coral);color:var(--ink);border:2px solid var(--ink);}
+.xr-cat-stamp b{font-family:var(--mono);font-weight:700;font-size:19px;line-height:1;}
+.xr-cat-stamp i{font-style:normal;font-size:11.5px;font-weight:700;}
+.xr-cat-name{display:block;font-family:var(--display);font-weight:700;font-size:19px;line-height:1.15;}
+.xr-cat-role{display:block;font-style:italic;font-size:15.5px;line-height:1.4;color:var(--ink-2);margin:3px 0 7px;}
+.xr-cat-ribbon{display:flex;gap:7px 13px;flex-wrap:wrap;}
+.xr-cat-ribbon span{font-weight:600;font-size:15px;color:var(--ink-2);}
+.xr-cat-ribbon em{font-style:normal;font-family:var(--mono);color:var(--ink);font-weight:700;}
+
+/* ---------- print ---------- */
+.xr-printview{min-height:100vh;background:var(--paper-3);}
+.xr-print-chrome{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px clamp(14px,3vw,30px);border-bottom:3px solid var(--ink);background:var(--paper);position:sticky;top:0;z-index:20;}
+.xr-print-h{font-family:var(--display);font-weight:700;font-size:24px;margin-right:8px;}
+.xr-print-opts{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;}
+.xr-print-optlabel{font-family:var(--display);font-weight:600;font-variant:small-caps;font-size:16px;color:var(--ink-2);}
+.xr-print-check{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:15.5px;min-height:44px;cursor:pointer;}
+.xr-print-check input{width:20px;height:20px;accent-color:var(--ink);cursor:pointer;}
+.xr-sheet{max-width:880px;margin:26px auto 60px;background:#fff;color:#1a1a1a;padding:34px 38px;box-shadow:0 4px 22px rgba(31,61,46,.2);}
+.xr-sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:3px solid #1a1a1a;padding-bottom:10px;margin-bottom:16px;}
+.xr-sheet-title{font-family:var(--display);font-weight:700;font-size:29px;}
+.xr-sheet-meta{font-family:var(--mono);font-size:16px;}
+.xr-sheet-table{width:100%;border-collapse:collapse;font-size:14.5px;}
+.xr-sheet-table th{font-family:var(--display);font-weight:700;font-size:13.5px;text-align:center;border-bottom:2px solid #1a1a1a;padding:5px 6px;}
+.xr-sheet-table th.l,.xr-sheet-table td.l{text-align:left;}
+.xr-sheet-table td{text-align:center;padding:6px;border-bottom:1px solid #bbb;font-family:var(--mono);font-size:14.5px;}
+.xr-sheet-table td.name{font-family:var(--body);font-weight:700;font-size:15px;}
+.xr-sheet-table td.type{font-family:var(--body);font-style:italic;}
+.xr-sheet-table td.pts{font-weight:700;}
+.xr-sheet-crown{vertical-align:-2px;margin-right:4px;}
+.xr-sheet-note{font-size:13.5px;font-style:italic;color:#444;margin-top:7px;}
+.xr-sheet-units{margin-top:20px;column-count:2;column-gap:28px;}
+.xr-sheet-unit{break-inside:avoid;margin-bottom:14px;}
+.xr-sheet-unit h3{font-family:var(--display);font-size:17px;border-bottom:1.5px solid #1a1a1a;padding-bottom:2px;margin-bottom:5px;}
+.xr-sheet-unit h3 em{font-weight:400;font-style:italic;font-size:14.5px;}
+.xr-sheet-unit p{font-size:13.5px;line-height:1.45;margin-bottom:5px;}
+.xr-sheet-gloss{margin-top:20px;border-top:2px solid #1a1a1a;padding-top:10px;}
+.xr-sheet-gloss h2{font-family:var(--display);font-size:19px;margin-bottom:8px;}
+.xr-sheet-gloss p{font-size:13.5px;line-height:1.45;margin-bottom:6px;}
+.xr-sheet-foot{margin-top:22px;border-top:1px solid #bbb;padding-top:8px;font-size:12.5px;font-style:italic;color:#555;}
+.xr-printview.large .xr-sheet{font-size:17px;}
+.xr-printview.large .xr-sheet-table td,.xr-printview.large .xr-sheet-table th{font-size:16.5px;padding:8px 7px;}
+.xr-printview.large .xr-sheet-unit p,.xr-printview.large .xr-sheet-gloss p{font-size:16px;}
+.xr-printview.contrast .xr-sheet{color:#000;}
+.xr-printview.contrast .xr-sheet-table td{border-bottom-color:#000;}
+.xr-printview.contrast .xr-sheet-note,.xr-printview.contrast .xr-sheet-foot{color:#000;}
+
+/* ---------- play ---------- */
+.xr-play{display:flex;flex-direction:column;min-height:100vh;}
+.xr-play-mast{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px clamp(14px,3vw,30px);border-bottom:3px solid var(--ink);background:var(--paper);position:sticky;top:0;z-index:20;}
+.xr-play-h{font-family:var(--display);font-weight:700;font-size:22px;flex:1;min-width:140px;}
+.xr-play-turn{font-family:var(--mono);font-size:18px;color:var(--ink-2);}
+.xr-play-turn b{font-size:24px;color:var(--ink);}
+.xr-play-grid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;padding:20px clamp(14px,3vw,30px) 50px;align-content:start;}
+.xr-pcard{position:relative;border:3px solid var(--ink);border-left-width:8px;border-radius:var(--r);background:var(--paper-2);padding:14px 16px;display:flex;flex-direction:column;gap:12px;transition:.15s;}
+.xr-pcard.cat-inf{border-left-color:var(--sage);}
+.xr-pcard.cat-xeno{border-left-color:var(--iris);}
+.xr-pcard.cat-veh{border-left-color:var(--rust);}
+.xr-pcard.acted{opacity:.62;}
+.xr-pcard.sup{background:#F4604C1E;}
+.xr-pcard-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.xr-pcard-crown{color:var(--brass);align-self:center;}
+.xr-pcard-name{font-family:var(--display);font-weight:700;font-size:19.5px;flex:1;}
+.xr-pcard-type{font-size:15px;font-style:italic;color:var(--ink-2);}
+.xr-pcard-dice{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.xr-pcard-die{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.xr-pcard-die .xr-die{min-width:52px;font-size:21px;padding:6px 10px;}
+.xr-pcard-die i{font-style:normal;font-size:13.5px;font-weight:600;color:var(--ink-2);}
+.xr-pcard-sp{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+.xr-pip{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:var(--coral-ink);transition:.12s;}
+.xr-pip:hover{background:var(--paper-3);}
+.xr-pip.lost{color:var(--ink-30);}
+.xr-pcard-spread{margin-left:auto;font-family:var(--mono);font-size:16px;color:var(--ink-2);}
+.xr-pcard-spread b{font-size:20px;color:var(--ink);}
+.xr-pcard-toggles{display:flex;gap:8px;}
+.xr-ptog{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:9px;padding:9px 8px;min-height:44px;color:var(--ink-2);transition:.12s;}
+.xr-ptog.on{background:var(--ink);border-color:var(--ink);color:var(--cream);}
+.xr-ptog.warn.on{background:var(--coral);border-color:var(--coral-ink);color:#fff;}
+.xr-pcard-dead{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(244,236,216,.82);border-radius:8px;font-family:var(--display);font-weight:700;font-size:24px;color:var(--coral-ink);}
+
+/* ---------- footer (Pacific Command pattern, WarLore gold-on-black) ---------- */
 .game-info-footer{border-top:1.5px solid var(--ink);background:var(--paper-3);padding:12px clamp(16px,3vw,30px);color:var(--ink-2);}
 .gif-inner{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:15px;}
 .gif-title{font-family:var(--display);font-weight:700;color:var(--ink);}
 .gif-sep{color:var(--ink-30);}
 .game-info-footer a{color:var(--iris);text-decoration:none;font-weight:600;}
 .game-info-footer a:hover{text-decoration:underline;}
-.gif-builder{margin-left:auto;color:var(--ink-2);}
-/* WarLore wordmark: ALWAYS gold on black (standing brand rule), inverts on hover. */
-.game-info-footer a.warlore-mark{font-family:'Terminal Grotesque Open','Zilla Slab',monospace;font-size:17px;letter-spacing:.03em;color:#FFCC00;background:#000;padding:1px 8px;text-decoration:none;text-transform:none;font-weight:400;transition:color .12s,background .12s;}
+.gif-builder{margin-left:auto;}
+.game-info-footer a.warlore-mark{font-family:'Terminal Grotesque Open','Zilla Slab',monospace;font-size:17px;letter-spacing:.03em;color:#FFCC00;background:#000;padding:1px 8px;text-decoration:none;font-weight:400;transition:color .12s,background .12s;}
 .game-info-footer a.warlore-mark:hover{color:#000;background:#FFCC00;}
 .warlore-mark .wl-lore{font:inherit;}
-@media(max-width:600px){.gif-inner{gap:6px;}.gif-sep{display:none;}.gif-builder{margin-left:0;}}
+@media(max-width:600px){.gif-sep{display:none;}.gif-builder{margin-left:0;}}
 
-/* ---------- print sheet ---------- */
-.xr-printsheet{display:none;}
+/* ---------- animations ---------- */
+@keyframes xr-fade{from{opacity:0;}to{opacity:1;}}
+@keyframes xr-pop{from{opacity:0;transform:scale(1.04) translateY(6px);}to{opacity:1;transform:none;}}
 
+/* ---------- mobile ---------- */
+@media(max-width:880px){
+  .xr-build-body{display:block;}
+  .xr-detail{position:fixed;inset:0;z-index:60;background:var(--paper);border-left:none;max-height:none;overflow-y:auto;display:none;}
+  .xr-build-body.has-sel .xr-detail{display:block;animation:xr-fade .18s ease;}
+  .xr-panel-back{display:flex;}
+  .xr-detail-hint{display:none;}
+  .xr-stt-head,.xr-stt-row{grid-template-columns:1fr 88px 96px;}
+  .xr-pcard-dice{grid-template-columns:repeat(2,1fr);}
+  .xr-row-text{padding-left:4px;}
+  .xr-tiers{padding-left:4px;}
+  .xr-subs{margin-left:12px;}
+}
+
+/* ---------- @media print ---------- */
 @media print{
-  .xr-app{background:#fff !important;color:#000;}
-  .xr-mast,.xr-body,.game-info-footer{display:none !important;}
-  .field-book{box-shadow:none;max-width:none;}
-  .xr-printsheet{display:block;font-family:Georgia,'Times New Roman',serif;color:#000;padding:0;}
-  .xr-pr-head{border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:14px;}
-  .xr-pr-title{font-family:var(--display);font-weight:700;font-size:30px;}
-  .xr-pr-meta{font-size:12px;color:#333;margin-top:3px;}
-  .xr-pr-unit{border:1px solid #999;border-radius:3px;padding:9px 11px;margin-bottom:9px;page-break-inside:avoid;}
-  .xr-pr-unit-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:5px;}
-  .xr-pr-unit-name{font-size:16px;font-weight:700;}
-  .xr-pr-unit-name em{font-weight:400;font-style:italic;color:#444;}
-  .xr-pr-unit-name b{color:#000;}
-  .xr-pr-unit-pts{font-size:13px;font-weight:700;white-space:nowrap;}
-  .xr-pr-stats{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:12px;margin-bottom:4px;}
-  .xr-pr-stats span{font-variant-numeric:tabular-nums;}
-  .xr-pr-rules{font-size:11.5px;font-style:italic;color:#333;margin-bottom:4px;}
-  .xr-pr-line{font-size:11.5px;line-height:1.4;margin-top:2px;}
-  .xr-pr-line b{font-weight:700;}
+  .xr-app{background:#fff;}
+  .xr-print-chrome,.game-info-footer{display:none !important;}
+  .xr-printview{background:#fff;}
+  .xr-sheet{box-shadow:none;margin:0;max-width:none;padding:0;}
+  .xr-sheet-table th,.xr-sheet-table td{padding:4px 5px;}
   @page{margin:14mm;}
 }
 `;

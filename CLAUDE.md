@@ -1,22 +1,26 @@
 # Xenos Rampant Force Builder
 
-A single page web app for building a Xenos Rampant detachment (Osprey Games, 2022).
-You pick units from a catalogue, configure loadouts and xeno rules inline, watch a
-points gauge and live validation, then print a roster. It began as a UX flow study
-by WarLore and is deployed for real use.
+A web app for building, printing, and playing a Xenos Rampant detachment (Osprey Games,
+2022). It is modelled on Mike Hutchinson's Hobgoblin builder: a saved-lists dashboard, a
+master-detail build screen (compact unit rows plus a detail/edit panel), a dedicated print
+view, and an at-the-table play tracker. Built by WarLore, deployed for real use.
 
 - Live: https://type37.github.io/xenos-rampant-force-builder/
 - Repo: https://github.com/Type37/xenos-rampant-force-builder
 
-Active work: a full visual redesign is specced in `REDESIGN-BRIEF.md`. Read that brief before
-changing the UI. It inverts the current aesthetic, sets hard rules (min 16px type, AA contrast,
-larger targets, icon plus text stats, cost on the left, columns, motion, a WarLore footer), and
-maps every change to file and line anchors.
+Architecture at a glance. Four views behind a tiny hash router (`#/`, `#/build`,
+`#/build/<unitKey>`, `#/print`, `#/play`): the Dashboard (saved detachments), the Builder
+(master-detail; on mobile the detail panel becomes a full-screen drill-down), the PrintView
+(live roster-table preview with section and accessibility toggles), and the PlayView (per-unit
+SP damage pips, activation dice, activated/suppressed toggles, turn counter). Detachments and
+per-game play state persist in `localStorage`. The Field Almanac skin is retained (cream paper,
+bottle-green ink, coral). The previous single-screen version is kept, unimported, at
+`src/legacy/App-v1.jsx` for reference; `REDESIGN-BRIEF.md` documents its redesign history.
 
 ## Stack and commands
 
-Vite + React 18. No router, no backend, no state library. Every bit of state lives in
-React (`useState`) inside `src/App.jsx`. Node 18 or newer.
+Vite + React 18. No backend, no state library, no router package (a ~10-line hash router).
+All app state lives in React inside `src/App.jsx`, mirrored to `localStorage`. Node 18 or newer.
 
 - `npm install` to set up
 - `npm run dev` for the dev server
@@ -38,11 +42,13 @@ get their credentials from outside the repo and never be written into a file her
 
 ## File map
 
-- `src/data.js` is the source of truth for stats, options, rules, and traits. Hand built from the rulebook. See the data model below.
-- `src/App.jsx` is the entire UI in one file: the icon layer, the calculation and validation helpers, all components, and an embedded CSS string. The CSS sits in a template literal at the bottom and is injected through a `<style>` tag, scoped under `.xr-app`.
-- `src/main.jsx` mounts `App`.
-- `src/index.css` is nearly empty (a body reset). Component styling is the CSS string in `App.jsx`.
+- `src/data.js` is the source of truth for stats, options, rules, and traits. Hand built from the rulebook. See the data model below. Verified against an independent transcription (dickloraine/xenos-rampant-builder, MIT); it is clean.
+- `src/App.jsx` is the whole app in one file: the icon layer (Phosphor, bundled offline), helpers, the hash router, the four views (Dashboard, Builder, PrintView, PlayView) plus their sub-components, and an embedded CSS string in a template literal at the bottom, injected via a `<style>` tag scoped under `.xr-app`.
+- `src/legacy/App-v1.jsx` is the earlier single-screen version, kept for reference and NOT imported anywhere.
+- `src/main.jsx` mounts `App`. `src/index.css` is a near-empty body reset; component styling is the CSS string in `App.jsx`.
+- `public/fonts/` holds the bundled Velvetyne faces (Hyper Scrypt, Sligoil, Terminal Grotesque Open) and their OFL licenses.
 - `index.html`, `vite.config.js` (sets the Pages base path), `.github/workflows/deploy.yml`.
+- `documents/` is gitignored local reference (rulebook scans, the Hobgoblin design reference); never committed.
 
 ## Data model (read before editing data.js)
 
@@ -78,31 +84,32 @@ the Commander (free, costing no points). At most one Fighting or Transport vehic
 
 ## Design system
 
-The direction is a warm "muster terminal", sitting between sci-fi and 40k with Dune weight.
-Background is a warm near-black, not pure black. Palette and type are CSS variables at the
-top of the CSS string under `.xr-app`. Accents are role coded: spice orange for infantry and
-xenomorphs, gunmetal steel for vehicles, imperial gold for the Commander, blood red for over
-budget and errors. Text is a bone parchment.
+The direction is "Field Almanac": warm cream paper (`--paper #F4ECD8`), bottle-green ink
+(`--ink #1F3D2E`), coral fill (`--coral #F4604C`, fill only, never as small text), with
+category tints sage (infantry), iris (xenomorphs), rust (vehicles) and brass (Commander).
+Palette, radii, and type are CSS variables at the top of the CSS string under `.xr-app`.
+Minimum on-screen type is 16px, contrast is AA, targets are 44px+, motion honours
+`prefers-reduced-motion`, and there is a visible `:focus-visible` ring.
 
-Fonts load via a Google Fonts `@import`: Big Shoulders Display carries the monumental display
-work, Oswald handles condensed labels and stat numerals, Barlow sets body and rule text. The
-signature element is the "Muster" gauge in the header, whose fill shifts from spice to gold to
-blood as you approach and then cross the budget.
+Fonts (Google `@import` plus bundled Velvetyne faces): the Xenos Rampant title is **Hyper
+Scrypt** (stencil display), stat and numeric readouts are **Sligoil Micro** (`--mono`),
+headings/labels are **Zilla Slab** (`--display`), body and flavour are **Source Serif 4**
+(`--body`). The WarLore footer credit is the **Terminal Grotesque Open** wordmark, and per a
+standing brand rule it is ALWAYS gold (`#FFCC00`) on black, inverting on hover. The Order
+column of the stat table uses colour-tinted "die chips" (one per activation, coral/sage/
+iris/brass) so activation rolls read differently from bare Profile values.
 
-This is a real deployed app rather than a Claude.ai artifact, so browser storage works here.
-There is currently no persistence; lists live in memory and reset on reload. localStorage or
-a share by URL scheme would be a sensible addition.
+Detachments persist in `localStorage` (`xrb.lists`, `xrb.current`); per-game play state under
+`xrb.play.<listId>`. A share-by-URL scheme and a print QR code are sensible future additions.
 
 ## Icons
 
-Icons come from Iconify, bundled offline (no runtime and no network call) and rendered as
-inline SVG. `game-icons` supplies the thematic glyphs (stats, crown, dice, category headers)
-and `tabler` supplies the plain controls (plus, trash, copy, check, printer, rotate). The
-`mk()` helper at the top of `App.jsx` wraps each imported icon data object into a small
-component and aliases them to the old lucide names, so usage still reads like
-`<Swords size={17} />`. To swap an icon, import a different one from
-`@iconify-icons/game-icons/<slug>` or `@iconify-icons/tabler/<slug>` and point the alias at
-it. Confirm a slug exists by checking `node_modules/@iconify-icons/<set>/<slug>.js`.
+One cohesive set: **Phosphor** solid fills from Iconify (`@iconify-icons/ph/<slug>`), bundled
+offline as inline SVG (no runtime, no network). The `mk()` helper near the top of `App.jsx`
+wraps each imported icon-data object into a small component (viewBox defaults to 256 for
+Phosphor). To swap an icon, import a different `ph` slug and point the alias at it; confirm
+the slug exists at `node_modules/@iconify-icons/ph/<slug>.js`. Stat/category icons are
+deliberately restrained (Hobgoblin uses text for unit types); do not reintroduce icon soup.
 
 ## Copy conventions
 
