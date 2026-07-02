@@ -24,6 +24,8 @@ import icBack from "@iconify-icons/ph/arrow-left-bold";
 import icReset from "@iconify-icons/ph/arrow-counter-clockwise-bold";
 import icHouse from "@iconify-icons/ph/house-fill";
 import icSkull from "@iconify-icons/ph/skull-fill";
+import icEdit from "@iconify-icons/ph/pencil-simple-fill";
+import icCaret from "@iconify-icons/ph/caret-down-bold";
 
 import {
   INFANTRY, VEHICLE, UNIT_TYPES, XENO_RULES, SPECIAL_RULES,
@@ -50,7 +52,7 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   Crown = mk(icCrown), Dice = mk(icDice), Printer = mk(icPrinter), CopyIc = mk(icCopy),
   Trash = mk(icTrash), Plus = mk(icPlus), XIc = mk(icX), Check = mk(icCheck),
   Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
-  House = mk(icHouse), Skull = mk(icSkull);
+  House = mk(icHouse), Skull = mk(icSkull), Edit = mk(icEdit), Caret = mk(icCaret);
 
 const STAT_ROWS = [
   { key: "atk", label: "Attack", Icon: Sword, order: true, val: true },
@@ -262,6 +264,44 @@ function SiteFooter() {
   );
 }
 
+/* persistent nav rail: groups the view controls in one place (left on desktop, bottom on mobile) */
+function RailNav({ view }) {
+  const items = [
+    { v: "home", Icon: House, label: "Lists", hash: "#/" },
+    { v: "build", Icon: Edit, label: "Build", hash: "#/build" },
+    { v: "print", Icon: Printer, label: "Print", hash: "#/print" },
+    { v: "play", Icon: Play, label: "Play", hash: "#/play" },
+  ];
+  return (
+    <nav className="xr-rail" aria-label="Views">
+      <div className="xr-rail-logo" aria-hidden="true"><Skull size={26} /></div>
+      <div className="xr-rail-nav">
+        {items.map((it) => (
+          <button key={it.v} className={`xr-rail-btn ${view === it.v ? "on" : ""}`}
+            onClick={() => nav(it.hash)} aria-current={view === it.v ? "page" : undefined}>
+            <it.Icon size={22} /><span>{it.label}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+/* collapsible section: progressive disclosure inside the unit editor */
+function Section({ title, count, defaultOpen, children }) {
+  const [open, setOpen] = useState(!!defaultOpen);
+  return (
+    <div className={`xr-sec ${open ? "open" : ""}`}>
+      <button className="xr-sec-h" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+        <span className="xr-sec-title">{title}</span>
+        {count > 0 && <em className="xr-sec-count">{count}</em>}
+        <Caret className="xr-sec-caret" size={18} />
+      </button>
+      {open && <div className="xr-sec-body">{children}</div>}
+    </div>
+  );
+}
+
 /* ================================================================== *
  * DASHBOARD (saved detachments)
  * ================================================================== */
@@ -373,6 +413,9 @@ function UnitPanel({ u, index, onClose, dispatch }) {
   const elig = useMemo(() => eligibleXenos(t), [t]);
   const topOpts = t.options.filter((o) => !o.requires);
   const subsOf = (pid) => t.options.filter((o) => o.requires === pid);
+  const stdRules = t.special.filter((s) => s !== "None");
+  const selOpts = t.options.filter((o) => u.options[o.id]).length;
+  const selXenos = Object.keys(u.xenos).length;
   const tbl = u.traitTable || "aggressive";
   const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
 
@@ -398,20 +441,18 @@ function UnitPanel({ u, index, onClose, dispatch }) {
 
       <StatTable t={t} sp={sp} />
 
-      {t.special.filter((s) => s !== "None").length > 0 && (
-        <div className="xr-group">
-          <h3 className="xr-group-h">Standard rules</h3>
+      {stdRules.length > 0 && (
+        <Section title="Standard rules" count={stdRules.length}>
           <div className="xr-chips">
-            {t.special.filter((s) => s !== "None").map((name) => (
+            {stdRules.map((name) => (
               <RuleChip key={name} name={name} text={SPECIAL_RULES[name]} />
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
       {topOpts.length > 0 && (
-        <div className="xr-group">
-          <h3 className="xr-group-h">Loadout</h3>
+        <Section title="Loadout" count={selOpts} defaultOpen>
           {topOpts.map((o) => {
             const on = !!u.options[o.id];
             const subs = subsOf(o.id);
@@ -429,12 +470,11 @@ function UnitPanel({ u, index, onClose, dispatch }) {
               </OptionRow>
             );
           })}
-        </div>
+        </Section>
       )}
 
       {elig.length > 0 && (
-        <div className="xr-group">
-          <h3 className="xr-group-h">Xeno rules</h3>
+        <Section title="Xeno rules" count={selXenos}>
           {elig.map((x) => {
             const sel = x.id in u.xenos;
             const reqMet = xenoReqMet(x, u);
@@ -457,12 +497,11 @@ function UnitPanel({ u, index, onClose, dispatch }) {
               </OptionRow>
             );
           })}
-        </div>
+        </Section>
       )}
 
       {u.isCmd && (
-        <div className="xr-group xr-command">
-          <h3 className="xr-group-h"><Crown size={16} /> Command</h3>
+        <Section title="Command" defaultOpen>
           <div className="xr-cmd-tables">
             {Object.entries(COMMANDER_TABLES).map(([key, ct]) => (
               <button key={key} className={`xr-tier ${tbl === key ? "on" : ""}`} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
@@ -480,7 +519,7 @@ function UnitPanel({ u, index, onClose, dispatch }) {
               <p className="xr-trait-rule">{trait.rule}</p>
             </div>
           )}
-        </div>
+        </Section>
       )}
     </section>
   );
@@ -564,17 +603,12 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
 
   return (
     <div className="xr-build">
+      <RailNav view="build" />
       <header className="xr-mast">
         <div className="xr-mast-row">
-          <button className="xr-iconbtn" onClick={() => nav("#/")} aria-label="All detachments" title="All detachments"><House size={20} /></button>
           <input className="xr-detname" value={list.name} placeholder="Name your detachment"
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
-          <div className="xr-actions">
-            <button className="xr-btn primary" onClick={() => setAdding(true)}><Plus size={18} /> Add unit</button>
-            <button className="xr-btn" onClick={() => nav("#/print")}><Printer size={18} /> Print</button>
-            <button className="xr-btn" onClick={() => nav("#/play")} disabled={count === 0}><Play size={18} /> Play</button>
-            <button className="xr-btn" onClick={copyList}><CopyIc size={18} /> Copy</button>
-          </div>
+          <button className="xr-btn small" onClick={copyList}><CopyIc size={17} /> Copy text</button>
         </div>
         <div className="xr-mast-row2">
           <div className="xr-budget" role="group" aria-label="Points budget">
@@ -608,10 +642,15 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
               <span>Add your first unit</span>
             </button>
           ) : (
-            roster.map((u, i) => (
-              <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey}
-                onSelect={() => nav(u.key === selectedKey ? "#/build" : `#/build/${u.key}`)} />
-            ))
+            <>
+              <div className="xr-ulist-rows">
+                {roster.map((u, i) => (
+                  <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey}
+                    onSelect={() => nav(u.key === selectedKey ? "#/build" : `#/build/${u.key}`)} />
+                ))}
+              </div>
+              <button className="xr-add-sticky" onClick={() => setAdding(true)}><Plus size={20} /> Add unit</button>
+            </>
           )}
         </main>
         <div className="xr-detail">
@@ -646,6 +685,7 @@ function PrintView({ list }) {
 
   return (
     <div className={`xr-printview ${opts.contrast ? "contrast" : ""} ${opts.large ? "large" : ""}`}>
+      <RailNav view="print" />
       <div className="xr-print-chrome">
         <button className="xr-iconbtn" onClick={() => nav("#/build")} aria-label="Back to builder"><Back size={20} /></button>
         <h2 className="xr-print-h">Print</h2>
@@ -758,6 +798,7 @@ function PlayView({ list }) {
 
   return (
     <div className="xr-play">
+      <RailNav view="play" />
       <header className="xr-play-mast">
         <button className="xr-iconbtn" onClick={() => nav("#/build")} aria-label="Back to builder"><Back size={20} /></button>
         <h2 className="xr-play-h">{list.name || "Untitled detachment"}</h2>
@@ -1027,7 +1068,30 @@ const CSS = `
 .xr-home-empty:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-2);}
 
 /* ---------- builder ---------- */
-.xr-build{display:flex;flex-direction:column;min-height:100vh;}
+/* ---------- nav rail (view controls, grouped) ---------- */
+.xr-rail{position:fixed;left:0;top:0;bottom:0;width:76px;z-index:40;background:var(--ink);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:16px;}
+.xr-rail-logo{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#E8C860;}
+.xr-rail-nav{display:flex;flex-direction:column;gap:6px;width:100%;align-items:center;}
+.xr-rail .xr-rail-btn{width:62px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px;border-radius:11px;color:var(--paper-3);font-family:var(--display);font-weight:600;font-size:12.5px;letter-spacing:.02em;transition:.12s;}
+.xr-rail .xr-rail-btn:hover{background:rgba(246,239,221,.12);color:var(--cream);}
+.xr-rail .xr-rail-btn.on{background:var(--paper);color:var(--ink);}
+
+/* ---------- collapsible section (progressive disclosure) ---------- */
+.xr-sec{border-top:2px solid var(--ink-30);}
+.xr-sec-h{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:14px 2px;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:19px;color:var(--ink);min-height:52px;}
+.xr-sec-title{flex:1;}
+.xr-sec-count{font-family:var(--mono);font-style:normal;font-weight:700;font-size:14px;min-width:26px;height:26px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--cream);border-radius:13px;}
+.xr-sec-caret{color:var(--ink-2);transition:transform .15s;flex:none;}
+.xr-sec.open .xr-sec-caret{transform:rotate(180deg);}
+.xr-sec-body{padding-bottom:14px;}
+
+/* ---------- sticky add-unit ---------- */
+.xr-ulist-rows{display:flex;flex-direction:column;gap:10px;}
+.xr-add-sticky{position:sticky;bottom:14px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font-family:var(--body);font-weight:700;font-size:18px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:14px;border-radius:12px;box-shadow:0 3px 12px rgba(31,61,46,.22);transition:.13s;}
+.xr-add-sticky:hover{background:var(--iris);border-color:var(--iris);}
+.xr-add-sticky:active{transform:scale(.98);}
+
+.xr-build{display:flex;flex-direction:column;min-height:100vh;padding-left:76px;}
 .xr-mast{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:3px solid var(--ink);padding:14px clamp(14px,3vw,30px) 12px;}
 .xr-mast-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .xr-detname{flex:1;min-width:170px;font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);background:transparent;border:none;border-bottom:2px solid var(--ink-30);padding:4px 2px 6px;}
@@ -1156,7 +1220,7 @@ const CSS = `
 .xr-cat-ribbon em{font-style:normal;font-family:var(--mono);color:var(--ink);font-weight:700;}
 
 /* ---------- print ---------- */
-.xr-printview{min-height:100vh;background:var(--paper-3);}
+.xr-printview{min-height:100vh;background:var(--paper-3);padding-left:76px;}
 .xr-print-chrome{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px clamp(14px,3vw,30px);border-bottom:3px solid var(--ink);background:var(--paper);position:sticky;top:0;z-index:20;}
 .xr-print-h{font-family:var(--display);font-weight:700;font-size:24px;margin-right:8px;}
 .xr-print-opts{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;}
@@ -1193,7 +1257,7 @@ const CSS = `
 .xr-printview.contrast .xr-sheet-note,.xr-printview.contrast .xr-sheet-foot{color:#000;}
 
 /* ---------- play ---------- */
-.xr-play{display:flex;flex-direction:column;min-height:100vh;}
+.xr-play{display:flex;flex-direction:column;min-height:100vh;padding-left:76px;}
 .xr-play-mast{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px clamp(14px,3vw,30px);border-bottom:3px solid var(--ink);background:var(--paper);position:sticky;top:0;z-index:20;}
 .xr-play-h{font-family:var(--display);font-weight:700;font-size:22px;flex:1;min-width:140px;}
 .xr-play-turn{font-family:var(--mono);font-size:18px;color:var(--ink-2);}
@@ -1254,6 +1318,11 @@ const CSS = `
   .xr-row-text{padding-left:4px;}
   .xr-tiers{padding-left:4px;}
   .xr-subs{margin-left:12px;}
+  .xr-rail{top:auto;bottom:0;left:0;right:0;width:auto;height:60px;flex-direction:row;padding:0 4px;gap:0;justify-content:space-around;border-top:2px solid var(--ink-2);}
+  .xr-rail-logo{display:none;}
+  .xr-rail-nav{flex-direction:row;justify-content:space-around;height:100%;align-items:stretch;}
+  .xr-rail-btn{flex:1;max-width:96px;justify-content:center;border-radius:0;gap:2px;}
+  .xr-build,.xr-printview,.xr-play{padding-left:0;padding-bottom:64px;}
 }
 
 /* ---------- @media print ---------- */
