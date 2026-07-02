@@ -8,8 +8,8 @@ import icShield from "@iconify-icons/ph/shield-fill";
 import icArmour from "@iconify-icons/ph/shield-checkered-fill";
 import icHeart from "@iconify-icons/ph/heart-fill";
 import icInfantry from "@iconify-icons/ph/users-three-fill";
-import icAlien from "@iconify-icons/ph/alien-fill";
-import icTruck from "@iconify-icons/ph/truck-fill";
+import icAlien from "@iconify-icons/game-icons/alien-bug";
+import icTruck from "@iconify-icons/game-icons/apc";
 import icCrown from "@iconify-icons/ph/crown-simple-fill";
 import icDice from "@iconify-icons/ph/dice-six-fill";
 import icPrinter from "@iconify-icons/ph/printer-fill";
@@ -258,8 +258,6 @@ function SiteFooter() {
         <span className="gif-sep">|</span>
         <a href="https://www.ospreypublishing.com/us/xenos-rampant-9781472852366/" target="_blank" rel="noopener">Buy the game</a>
         <span className="gif-sep">|</span>
-        <a href="https://www.amazon.com/Xenos-Rampant-Science-Fiction-Wargame/dp/1472852362" target="_blank" rel="noopener">Buy on Amazon</a>
-        <span className="gif-sep">|</span>
         <span className="gif-builder">Force builder by <a className="warlore-mark" href="https://jetwong.neocities.org" target="_blank" rel="noopener" title="WarLore">War<span className="wl-lore">Lore</span></a></span>
         <span className="gif-sep">|</span>
         <a href="https://github.com/Type37/xenos-rampant-force-builder" target="_blank" rel="noopener">Source on GitHub</a>
@@ -335,7 +333,7 @@ function NewArmyModal({ onCreate, onClose }) {
               onKeyDown={(e) => { if (e.key === "Enter") create(); }} spellCheck={false} />
           </label>
           <div className="xr-field">
-            <span className="xr-field-l">Points <em>game size</em></span>
+            <span className="xr-field-l">Game size</span>
             <div className="xr-budget">
               {BUDGET_PRESETS.map((b) => (
                 <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} onClick={() => setBudget(b)}>{b}</button>
@@ -491,147 +489,160 @@ function UnitPanel({ u, index, onClose, dispatch }) {
       </div>
 
       <div className="xr-panel-tools">
-        <button className={`xr-btn small ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })}>
+        <button className={`xr-btn small ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })}
+          title={u.isCmd ? "This unit is your Commander" : "Make this unit your Commander (free)"}>
           <Crown size={17} /> {u.isCmd ? "Commander" : "Make Commander"}
         </button>
-        <button className="xr-btn small" onClick={() => dispatch({ type: "dup", key: u.key })}><CopyIc size={17} /> Duplicate</button>
-        <button className="xr-btn small danger" onClick={() => { dispatch({ type: "del", key: u.key }); onClose(); }}><Trash size={17} /> Remove</button>
+        {hasAbilities && (
+          <button className="xr-btn primary" onClick={() => setAbilOpen(true)} title="Buy loadout options and xeno rules">
+            <Plus size={17} /> Buy abilities
+          </button>
+        )}
+        <button className="xr-btn small" onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit"><CopyIc size={17} /> Duplicate</button>
+        <button className="xr-btn small danger" onClick={() => { dispatch({ type: "del", key: u.key }); onClose(); }} title="Remove this unit"><Trash size={17} /> Remove</button>
       </div>
 
-      <StatTable t={t} sp={sp} />
+      <div className="xr-panel-cols">
+        <div className="xr-panel-left">
+          <StatTable t={t} sp={sp} />
+        </div>
+        <div className="xr-panel-right">
+          {stdRules.length > 0 && (
+            <Section title="Standard rules" count={stdRules.length} defaultOpen>
+              <div className="xr-chips">
+                {stdRules.map((name) => (
+                  <RuleChip key={name} name={name} text={SPECIAL_RULES[name]} />
+                ))}
+              </div>
+            </Section>
+          )}
 
-      {stdRules.length > 0 && (
-        <Section title="Standard rules" count={stdRules.length}>
-          <div className="xr-chips">
-            {stdRules.map((name) => (
-              <RuleChip key={name} name={name} text={SPECIAL_RULES[name]} />
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {hasAbilities && (
-        <div className="xr-abil">
-          <div className="xr-abil-bar">
-            <h3 className="xr-abil-h">Abilities</h3>
-            <button className="xr-btn small primary" onClick={() => setAbilOpen(true)}><Plus size={16} /> Buy abilities</button>
-          </div>
-          {boughtOpts.length + boughtXenos.length > 0 ? (
-            <div className="xr-abil-chips">
-              {boughtOpts.map((o) => (
-                <button key={o.id} className="xr-abil-chip" onClick={() => setAbilOpen(true)} title={o.text}>
-                  {o.name} <i>{costLabel(optCost(o))}</i>
-                </button>
-              ))}
-              {boughtXenos.map((x) => (
-                <button key={x.id} className="xr-abil-chip" onClick={() => setAbilOpen(true)} title={x.text}>
-                  {x.name}{x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""} <i>{costLabel(xenoCost(x, u.xenos[x.id]))}</i>
-                </button>
-              ))}
+          {hasAbilities && (
+            <div className="xr-abil">
+              <h3 className="xr-abil-h">Abilities</h3>
+              {boughtOpts.length + boughtXenos.length > 0 ? (
+                <div className="xr-abil-chips">
+                  {boughtOpts.map((o) => (
+                    <button key={o.id} className="xr-abil-chip" onClick={() => setAbilOpen(true)} title={o.text}>
+                      {o.name} <i>{costLabel(optCost(o))}</i>
+                    </button>
+                  ))}
+                  {boughtXenos.map((x) => (
+                    <button key={x.id} className="xr-abil-chip" onClick={() => setAbilOpen(true)} title={x.text}>
+                      {x.name}{x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""} <i>{costLabel(xenoCost(x, u.xenos[x.id]))}</i>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="xr-abil-empty">None yet. Tap Buy abilities above.</p>
+              )}
             </div>
-          ) : (
-            <p className="xr-abil-empty">No abilities bought yet.</p>
+          )}
+
+          {u.isCmd && (
+            <Section title="Command" defaultOpen>
+              <div className="xr-cmd-tables">
+                {Object.entries(COMMANDER_TABLES).map(([key, ct]) => (
+                  <button key={key} className={`xr-tier ${tbl === key ? "on" : ""}`} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
+                    {ct.label}
+                  </button>
+                ))}
+              </div>
+              <p className="xr-cmd-blurb">{COMMANDER_TABLES[tbl].blurb}</p>
+              <button className="xr-btn small" onClick={() => dispatch({ type: "roll", key: u.key })}>
+                <Dice size={18} /> {trait ? "Reroll trait" : "Roll a trait"}
+              </button>
+              {trait && (
+                <div className="xr-trait">
+                  <div className="xr-trait-name">{trait.name}</div>
+                  <p className="xr-trait-rule">{trait.rule}</p>
+                </div>
+              )}
+            </Section>
           )}
         </div>
-      )}
-
-      {u.isCmd && (
-        <Section title="Command" defaultOpen>
-          <div className="xr-cmd-tables">
-            {Object.entries(COMMANDER_TABLES).map(([key, ct]) => (
-              <button key={key} className={`xr-tier ${tbl === key ? "on" : ""}`} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
-                {ct.label}
-              </button>
-            ))}
-          </div>
-          <p className="xr-cmd-blurb">{COMMANDER_TABLES[tbl].blurb}</p>
-          <button className="xr-btn small" onClick={() => dispatch({ type: "roll", key: u.key })}>
-            <Dice size={18} /> {trait ? "Reroll trait" : "Roll a trait"}
-          </button>
-          {trait && (
-            <div className="xr-trait">
-              <div className="xr-trait-name">{trait.name}</div>
-              <p className="xr-trait-rule">{trait.rule}</p>
-            </div>
-          )}
-        </Section>
-      )}
+      </div>
 
       {abilOpen && <AbilitiesModal u={u} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
     </section>
   );
 }
 
-/* buy-abilities modal: all loadout options and xeno rules, grouped by type */
+/* buy-abilities modal: abilities in tabs by type (progressive disclosure) */
 function AbilitiesModal({ u, dispatch, onClose }) {
   const t = UNIT_BY_ID[u.typeId];
   const topOpts = t.options.filter((o) => !o.requires);
   const subsOf = (pid) => t.options.filter((o) => o.requires === pid);
   const elig = useMemo(() => eligibleXenos(t), [t]);
+  const tabs = [];
+  if (topOpts.length) tabs.push({ id: "load", label: "Loadout", n: topOpts.filter((o) => u.options[o.id]).length });
+  if (elig.length) tabs.push({ id: "xeno", label: "Xeno rules", n: Object.keys(u.xenos).length });
+  const [tab, setTab] = useState(tabs[0] ? tabs[0].id : "load");
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+  const bought = t.options.filter((o) => u.options[o.id]).length + Object.keys(u.xenos).length;
   return (
     <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal" role="dialog" aria-modal="true" aria-label="Buy abilities" onClick={(e) => e.stopPropagation()}>
+      <div className="xr-modal xr-modal-tall" role="dialog" aria-modal="true" aria-label="Buy abilities" onClick={(e) => e.stopPropagation()}>
         <div className="xr-modal-head">
           <span className="xr-modal-title"><Plus size={22} /> {t.name} abilities</span>
           <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
         </div>
+        {tabs.length > 1 && (
+          <div className="xr-modal-tabs" role="tablist">
+            {tabs.map((tb) => (
+              <button key={tb.id} role="tab" aria-selected={tab === tb.id} className={`xr-modal-tab ${tab === tb.id ? "on" : ""}`} onClick={() => setTab(tb.id)}>
+                {tb.label}{tb.n > 0 && <em className="xr-tab-n">{tb.n}</em>}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="xr-modal-body">
-          {topOpts.length > 0 && (
-            <div className="xr-abil-group">
-              <h4 className="xr-abil-group-h">Loadout</h4>
-              {topOpts.map((o) => {
-                const on = !!u.options[o.id];
-                const subs = subsOf(o.id);
-                return (
-                  <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
-                    onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
-                    {on && subs.length > 0 && (
-                      <div className="xr-subs">
-                        {subs.map((s) => (
-                          <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
-                            onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
-                        ))}
-                      </div>
-                    )}
-                  </OptionRow>
-                );
-              })}
-            </div>
-          )}
-          {elig.length > 0 && (
-            <div className="xr-abil-group">
-              <h4 className="xr-abil-group-h">Xeno rules</h4>
-              {elig.map((x) => {
-                const sel = x.id in u.xenos;
-                const reqMet = xenoReqMet(x, u);
-                const disabled = !sel && !reqMet;
-                const val = u.xenos[x.id];
-                return (
-                  <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
-                    text={disabled && x.requiresXeno ? `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule. ${x.text}` : x.text}
-                    onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
-                    {sel && x.tiers && (
-                      <div className="xr-tiers">
-                        {x.tiers.map((tier, i) => (
-                          <button key={i} className={`xr-tier ${val === i ? "on" : ""}`}
-                            onClick={() => dispatch({ type: "tier", key: u.key, xid: x.id, i })}>
-                            {tier.label} <i>{costLabel(tier.cost)}</i>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </OptionRow>
-                );
-              })}
-            </div>
-          )}
+          {tab === "load" && topOpts.map((o) => {
+            const on = !!u.options[o.id];
+            const subs = subsOf(o.id);
+            return (
+              <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
+                onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
+                {on && subs.length > 0 && (
+                  <div className="xr-subs">
+                    {subs.map((s) => (
+                      <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
+                        onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
+                    ))}
+                  </div>
+                )}
+              </OptionRow>
+            );
+          })}
+          {tab === "xeno" && elig.map((x) => {
+            const sel = x.id in u.xenos;
+            const reqMet = xenoReqMet(x, u);
+            const disabled = !sel && !reqMet;
+            const val = u.xenos[x.id];
+            return (
+              <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
+                text={disabled && x.requiresXeno ? `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule. ${x.text}` : x.text}
+                onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
+                {sel && x.tiers && (
+                  <div className="xr-tiers">
+                    {x.tiers.map((tier, i) => (
+                      <button key={i} className={`xr-tier ${val === i ? "on" : ""}`}
+                        onClick={() => dispatch({ type: "tier", key: u.key, xid: x.id, i })}>
+                        {tier.label} <i>{costLabel(tier.cost)}</i>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </OptionRow>
+            );
+          })}
         </div>
         <div className="xr-modal-foot">
+          <span className="xr-modal-count">{bought} bought</span>
           <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
         </div>
       </div>
@@ -668,7 +679,7 @@ function AddUnitModal({ onAdd, onClose }) {
   const units = UNIT_TYPES.filter((t) => catOf(t) === cat);
   return (
     <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal" role="dialog" aria-modal="true" aria-label="Add unit" onClick={(e) => e.stopPropagation()}>
+      <div className="xr-modal xr-modal-tall" role="dialog" aria-modal="true" aria-label="Add unit" onClick={(e) => e.stopPropagation()}>
         <div className="xr-modal-head">
           <span className="xr-modal-title"><Plus size={22} /> Add unit</span>
           <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
@@ -782,7 +793,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
         </div>
       </div>
 
-      {adding && <AddUnitModal onAdd={(id) => dispatch({ type: "add", typeId: id })} onClose={() => setAdding(false)} />}
+      {adding && <AddUnitModal onAdd={(id) => { dispatch({ type: "add", typeId: id }); setAdding(false); }} onClose={() => setAdding(false)} />}
       <SiteFooter />
     </div>
   );
@@ -1016,9 +1027,12 @@ export default function App() {
 
   const dispatch = useCallback((a) => {
     switch (a.type) {
-      case "add":
-        setRoster((r) => [...r, { key: uid(), typeId: a.typeId, name: "", isCmd: r.length === 0, traitTable: "aggressive", traitIndex: undefined, options: {}, xenos: {} }]);
+      case "add": {
+        const key = uid();
+        setRoster((r) => [...r, { key, typeId: a.typeId, name: "", isCmd: r.length === 0, traitTable: "aggressive", traitIndex: undefined, options: {}, xenos: {} }]);
+        nav(`#/build/${key}`);
         break;
+      }
       case "del": setRoster((r) => r.filter((u) => u.key !== a.key)); break;
       case "dup":
         setRoster((r) => {
@@ -1276,6 +1290,12 @@ const CSS = `
 .xr-panel-pts b{font-size:26px;}
 .xr-panel-pts i{font-style:normal;font-size:14px;color:var(--ink-2);margin-left:3px;}
 .xr-panel-tools{display:flex;gap:8px;flex-wrap:wrap;padding:12px 0;}
+/* two-column panel: stats left, rules + abilities on the right */
+.xr-panel-cols{display:grid;grid-template-columns:minmax(320px,380px) 1fr;gap:14px 30px;align-items:start;}
+.xr-panel-right{min-width:0;}
+.xr-panel-right .xr-abil{margin-top:0;}
+.xr-panel-right>.xr-sec:first-child .xr-sec-h{padding-top:4px;}
+@media(max-width:1100px){.xr-panel-cols{grid-template-columns:1fr;gap:0;}}
 .xr-group{margin-top:18px;}
 .xr-group-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:19px;color:var(--ink);padding-bottom:6px;border-bottom:2px solid var(--ink-30);margin-bottom:10px;}
 /* abilities summary in the unit panel */
@@ -1340,12 +1360,16 @@ const CSS = `
 /* add-unit modal */
 .xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.42);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade .18s ease;}
 .xr-modal{width:min(880px,100%);max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:0 12px 40px rgba(31,61,46,.28);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop .26s cubic-bezier(.2,.8,.2,1);}
+/* fixed height so switching tabs does not resize/move the window */
+.xr-modal.xr-modal-tall{height:min(680px,86vh);}
 .xr-modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:3px solid var(--ink);}
 .xr-modal-title{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:24px;}
 .xr-modal-tabs{display:flex;gap:8px;padding:12px 20px;border-bottom:2px solid var(--ink-18);flex-wrap:wrap;}
 .xr-modal-tab{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:16.5px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:8px 15px;border-radius:9px;min-height:44px;transition:.12s;}
 .xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
-.xr-modal-tab.on{color:var(--cream);}
+.xr-modal-tab.on{color:var(--cream);background:var(--ink);border-color:var(--ink);}
+.xr-tab-n{font-style:normal;font-family:var(--mono);font-weight:700;font-size:13px;background:var(--cream);color:var(--ink);border-radius:10px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;}
+.xr-modal-count{margin-right:auto;font-family:var(--mono);font-size:15px;color:var(--ink-2);}
 .xr-modal-tab.cat-inf.on{background:var(--sage);border-color:var(--sage);}
 .xr-modal-tab.cat-xeno.on{background:var(--iris);border-color:var(--iris);}
 .xr-modal-tab.cat-veh.on{background:var(--rust);border-color:var(--rust);}
