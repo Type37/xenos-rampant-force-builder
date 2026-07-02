@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -201,7 +200,7 @@ const nav = (h) => { window.location.hash = h; };
 
 /* ---------------- small shared pieces ---------------- */
 function Die({ k, children }) {
-  return <span className={`xr-die k-${k}`}>{children}</span>;
+  return <span className={`xr-die k-${k}`} title="Order value: roll 2d6 this or higher to activate this action">{children}</span>;
 }
 function orderCell(t, key) {
   const raw = t.noAttack && key === "atk" ? "n/a" : t.act[key];
@@ -278,7 +277,7 @@ function RailNav({ view }) {
       <div className="xr-rail-logo" aria-hidden="true"><Skull size={26} /></div>
       <div className="xr-rail-nav">
         {items.map((it) => (
-          <button key={it.v} className={`xr-rail-btn ${view === it.v ? "on" : ""}`}
+          <button key={it.v} className={`xr-rail-btn ${view === it.v ? "on" : ""}`} title={it.v === "home" ? "All detachments" : it.label}
             onClick={() => nav(it.hash)} aria-current={view === it.v ? "page" : undefined}>
             <it.Icon size={22} /><span>{it.label}</span>
           </button>
@@ -303,10 +302,59 @@ function Section({ title, count, defaultOpen, children }) {
   );
 }
 
+/* new-army creation modal */
+function NewArmyModal({ onCreate, onClose }) {
+  const [name, setName] = useState("");
+  const [budget, setBudget] = useState(24);
+  const [desc, setDesc] = useState("");
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const create = () => onCreate({ name: name.trim(), budget, description: desc.trim() });
+  return (
+    <div className="xr-modal-backdrop" onClick={onClose}>
+      <div className="xr-modal xr-modal-narrow" role="dialog" aria-modal="true" aria-label="New detachment" onClick={(e) => e.stopPropagation()}>
+        <div className="xr-modal-head">
+          <span className="xr-modal-title"><Plus size={22} /> New detachment</span>
+          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        </div>
+        <div className="xr-modal-body">
+          <label className="xr-field">
+            <span className="xr-field-l">Name</span>
+            <input className="xr-field-in" value={name} onChange={(e) => setName(e.target.value)} placeholder="Eg. Fennec Fusiliers" autoFocus
+              onKeyDown={(e) => { if (e.key === "Enter") create(); }} spellCheck={false} />
+          </label>
+          <div className="xr-field">
+            <span className="xr-field-l">Points <em>game size</em></span>
+            <div className="xr-budget">
+              {BUDGET_PRESETS.map((b) => (
+                <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} onClick={() => setBudget(b)}>{b}</button>
+              ))}
+              <input className="xr-budget-custom" type="number" min="1" max="999" value={budget} aria-label="Custom points" title="Custom points value"
+                onChange={(e) => { const v = parseInt(e.target.value, 10); setBudget(v > 0 ? Math.min(999, v) : 1); }} />
+            </div>
+          </div>
+          <label className="xr-field">
+            <span className="xr-field-l">Description <em>optional</em></span>
+            <textarea className="xr-field-in xr-field-area" value={desc} onChange={(e) => setDesc(e.target.value)}
+              placeholder="Backstory, how to play, a note to your future self..." rows={3} />
+          </label>
+        </div>
+        <div className="xr-modal-foot">
+          <button className="xr-btn primary" onClick={create}><Plus size={17} /> Create detachment</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ================================================================== *
  * DASHBOARD (saved detachments)
  * ================================================================== */
 function Dashboard({ lists, onOpen, onCreate, onDup, onDel }) {
+  const [creating, setCreating] = useState(false);
   const arr = Object.values(lists).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   return (
     <div className="xr-home">
@@ -317,10 +365,10 @@ function Dashboard({ lists, onOpen, onCreate, onDup, onDel }) {
       <main className="xr-home-body">
         <div className="xr-home-bar">
           <h2 className="xr-home-h">Detachments</h2>
-          <button className="xr-btn primary" onClick={onCreate}><Plus size={20} /> New detachment</button>
+          <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={20} /> New detachment</button>
         </div>
         {arr.length === 0 ? (
-          <button className="xr-home-empty" onClick={onCreate}>
+          <button className="xr-home-empty" onClick={() => setCreating(true)}>
             <Alien size={44} />
             <span>Muster your first detachment</span>
           </button>
@@ -350,6 +398,7 @@ function Dashboard({ lists, onOpen, onCreate, onDup, onDel }) {
           </div>
         )}
       </main>
+      {creating && <NewArmyModal onCreate={(opts) => { onCreate(opts); setCreating(false); }} onClose={() => setCreating(false)} />}
       <SiteFooter />
     </div>
   );
@@ -516,7 +565,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-  return createPortal(
+  return (
     <div className="xr-modal-backdrop" onClick={onClose}>
       <div className="xr-modal" role="dialog" aria-modal="true" aria-label="Buy abilities" onClick={(e) => e.stopPropagation()}>
         <div className="xr-modal-head">
@@ -578,8 +627,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
           <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
         </div>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 }
 
@@ -675,7 +723,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
           <div className="xr-budget" role="group" aria-label="Points budget">
             <span className="xr-budget-l">Budget</span>
             {BUDGET_PRESETS.map((b) => (
-              <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} onClick={() => updateList({ budget: b })}>{b}</button>
+              <button key={b} className={`xr-budget-b ${budget === b ? "on" : ""}`} title={`${b}-point game`} onClick={() => updateList({ budget: b })}>{b}</button>
             ))}
             <input className="xr-budget-custom" type="number" min="1" max="999" value={budget} aria-label="Custom points value"
               title="Set any points value for your game size"
@@ -1002,9 +1050,9 @@ export default function App() {
     }
   }, [setRoster]);
 
-  const createList = () => {
+  const createList = (opts = {}) => {
     const id = uid();
-    setLists((ls) => ({ ...ls, [id]: { id, name: "", budget: 24, roster: [], updated: Date.now() } }));
+    setLists((ls) => ({ ...ls, [id]: { id, name: opts.name || "", budget: opts.budget || 24, description: opts.description || "", roster: [], updated: Date.now() } }));
     setCurrentId(id);
     nav("#/build");
   };
@@ -1238,6 +1286,14 @@ const CSS = `
 /* custom points value */
 .xr-budget-custom{width:66px;min-height:44px;font-family:var(--mono);font-weight:700;font-size:16px;text-align:center;color:var(--ink);background:var(--paper-2);border:2px dashed var(--ink-30);border-radius:9px;padding:6px 4px;margin-left:6px;}
 .xr-budget-custom:focus{outline:none;border-style:solid;border-color:var(--coral);}
+/* modal form fields */
+.xr-modal-narrow{width:min(520px,100%);}
+.xr-field{display:block;margin-bottom:18px;}
+.xr-field-l{display:block;font-family:var(--display);font-weight:600;font-variant:small-caps;letter-spacing:.03em;font-size:16px;color:var(--ink-2);margin-bottom:6px;}
+.xr-field-l em{font-style:italic;font-variant:normal;font-size:13.5px;margin-left:6px;}
+.xr-field-in{width:100%;font-family:var(--body);font-size:17px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:10px;padding:11px 13px;min-height:48px;}
+.xr-field-in:focus{outline:none;border-color:var(--coral);}
+.xr-field-area{resize:vertical;min-height:76px;line-height:1.5;}
 .xr-chips{display:flex;flex-direction:column;gap:6px;}
 .xr-chipwrap{display:flex;flex-direction:column;}
 .xr-chip{align-self:flex-start;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 12px;min-height:38px;transition:.12s;}
