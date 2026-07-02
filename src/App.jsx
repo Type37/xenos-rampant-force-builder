@@ -304,7 +304,7 @@ function UnitStatTable({ t, sp }) {
           <div className="xr-stt-row" key={d.key}>
             <span className="xr-stt-stat"><Icon className="xr-stt-ic" size={24} strokeWidth={2} />{d.label}</span>
             <span className="xr-stt-cell">
-              {o ? <><b>{o.val}</b>{o.free && <em className="xr-free">free</em>}</> : <span className="xr-stt-dash">–</span>}
+              {o ? <><span className={`xr-die k-${d.key}`}>{o.val}</span>{o.free && <em className="xr-free">free</em>}</> : <span className="xr-stt-dash">–</span>}
             </span>
             <span className="xr-stt-cell">
               {v ? <><b>{v.main}</b>{v.range && <i className="xr-stt-rng">{v.range}</i>}</> : <span className="xr-stt-dash">–</span>}
@@ -582,6 +582,13 @@ export default function App() {
   const [det, setDet] = useState("");
   const [roster, setRoster] = useState([]);
   const [pulseId, setPulseId] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKey = (e) => { if (e.key === "Escape") setDrawerOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
 
   const { issues, used, count } = useMemo(() => validate(roster, budget), [roster, budget]);
   const errors = issues.filter((i) => i.lvl === "err");
@@ -670,6 +677,7 @@ export default function App() {
             <span className="xr-sub">Force Builder</span>
           </div>
           <div className="xr-actions">
+            <button className="xr-act primary" onClick={() => setDrawerOpen(true)}><Plus size={20} strokeWidth={2.8} /> Add unit</button>
             <button className="xr-act" onClick={() => window.print()}><Printer size={20} strokeWidth={2.2} /> Print</button>
             <button className="xr-act" onClick={copyList}><Copy size={20} strokeWidth={2.2} /> Copy</button>
             <button className="xr-act danger" onClick={clearAll}><RotateCcw size={20} strokeWidth={2.2} /> Clear</button>
@@ -702,25 +710,14 @@ export default function App() {
       </header>
 
       <div className="xr-body">
-        {/* catalogue */}
-        <aside className="xr-catalogue">
-          {grouped.map((g) => (
-            <section className="xr-catsec" key={g.id}>
-              <div className={`xr-catsec-h cat-${g.id}`}><g.Icon size={22} strokeWidth={2.3} /> {g.label}</div>
-              <div className="xr-catsec-list">
-                {g.units.map((t) => <CatalogCard key={t.id} t={t} onAdd={addUnit} pulsing={pulseId === t.id} />)}
-              </div>
-            </section>
-          ))}
-        </aside>
-
-        {/* roster */}
+        {/* roster (full width; units are added from the slide-in drawer) */}
         <main className="xr-roster">
           {roster.length === 0 ? (
             <div className="xr-empty">
               <Skull size={56} strokeWidth={1.3} />
-              <p>Pick units from the catalogue to muster your detachment.</p>
+              <p>No units yet. Muster your detachment.</p>
               <span>Standard games are 24 points. One unit must be your Commander.</span>
+              <button className="xr-add-big" onClick={() => setDrawerOpen(true)}><Plus size={22} strokeWidth={2.8} /> Add your first unit</button>
             </div>
           ) : (
             roster.map((u, i) => (
@@ -742,6 +739,25 @@ export default function App() {
           )}
         </main>
       </div>
+
+      {/* slide-in catalogue drawer */}
+      <div className={`xr-drawer-backdrop ${drawerOpen ? "open" : ""}`} onClick={() => setDrawerOpen(false)} />
+      <aside className={`xr-drawer ${drawerOpen ? "open" : ""}`} role="dialog" aria-label="Add unit" aria-hidden={!drawerOpen}>
+        <div className="xr-drawer-head">
+          <span className="xr-drawer-title"><Plus size={22} strokeWidth={2.6} /> Add unit</span>
+          <button className="xr-drawer-x" onClick={() => setDrawerOpen(false)} aria-label="Close"><X size={22} strokeWidth={2.4} /></button>
+        </div>
+        <div className="xr-drawer-body">
+          {grouped.map((g) => (
+            <section className="xr-catsec" key={g.id}>
+              <div className={`xr-catsec-h cat-${g.id}`}><g.Icon size={22} strokeWidth={2.3} /> {g.label}</div>
+              <div className="xr-catsec-list">
+                {g.units.map((t) => <CatalogCard key={t.id} t={t} onAdd={addUnit} pulsing={pulseId === t.id} />)}
+              </div>
+            </section>
+          ))}
+        </div>
+      </aside>
 
       <SiteFooter />
       </div>
@@ -849,12 +865,39 @@ const CSS = `
 .xr-issue.warn{color:var(--brass);border-color:var(--brass);}
 
 /* ---------- body ---------- */
-.xr-body{display:grid;grid-template-columns:minmax(280px,340px) 1fr;gap:0;align-items:start;}
+.xr-body{display:block;}
 @media(max-width:880px){.xr-body{grid-template-columns:1fr;}}
 
 /* catalogue */
 .xr-catalogue{position:sticky;top:190px;align-self:start;max-height:calc(100vh - 190px);overflow-y:auto;padding:20px clamp(12px,1.5vw,18px) 40px;border-right:3px solid var(--ink);}
 @media(max-width:880px){.xr-catalogue{position:static;max-height:none;border-right:none;border-bottom:3px solid var(--ink);}}
+
+/* slide-in add-unit drawer (replaces the old sidebar catalogue) */
+.xr-drawer-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.38);opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s;z-index:80;}
+.xr-drawer-backdrop.open{opacity:1;visibility:visible;}
+.xr-drawer{position:fixed;top:0;right:0;height:100vh;width:min(500px,94vw);background:var(--paper);border-left:3px solid var(--ink);box-shadow:-6px 0 24px rgba(31,61,46,.18);transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);z-index:90;display:flex;flex-direction:column;}
+.xr-drawer.open{transform:translateX(0);}
+.xr-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:3px solid var(--ink);}
+.xr-drawer-title{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:24px;color:var(--ink);}
+.xr-drawer-x{width:48px;height:48px;flex:none;border:2px solid var(--ink);border-radius:10px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.12s;}
+.xr-drawer-x:hover{background:var(--coral);color:#fff;border-color:var(--coral-ink);}
+.xr-drawer-x:active{transform:scale(.95);}
+.xr-drawer-body{flex:1;overflow-y:auto;padding:20px clamp(14px,2vw,20px) 40px;}
+@media (prefers-reduced-motion: reduce){.xr-drawer,.xr-drawer-backdrop{transition:none;}}
+
+/* primary add-unit button and empty-state add */
+.xr-act.primary{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+.xr-act.primary:hover{background:var(--iris);border-color:var(--iris);color:var(--cream);}
+.xr-empty .xr-add-big{display:inline-flex;align-items:center;gap:10px;margin-top:22px;font-family:var(--body);font-weight:700;font-size:19px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:14px 26px;border-radius:12px;transition:.14s;}
+.xr-add-big:hover{background:var(--iris);border-color:var(--iris);}
+.xr-add-big:active{transform:scale(.97);}
+
+/* order-value die chips: read as a die you roll, distinct from the bare profile numeral */
+.xr-die{display:inline-flex;align-items:center;justify-content:center;min-width:46px;padding:4px 10px;border-radius:9px;border:1.5px solid var(--ink-30);background:var(--paper-2);font-family:var(--mono);font-weight:700;font-size:19px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-die.k-atk{background:#F4604C22;border-color:var(--coral-ink);}
+.xr-die.k-mov{background:#5C7A5222;border-color:var(--sage);}
+.xr-die.k-sho{background:#6A4A8C22;border-color:var(--iris);}
+.xr-die.k-cou{background:#8A6A1F22;border-color:var(--brass);}
 .xr-catsec{margin-bottom:26px;}
 .xr-catsec-h{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:24px;padding-bottom:8px;margin-bottom:12px;border-bottom:2px solid var(--ink-30);}
 .xr-catsec-h.cat-inf{color:var(--sage);}
@@ -884,7 +927,7 @@ const CSS = `
 /* roster */
 .xr-roster{padding:20px clamp(14px,2.5vw,28px) 60px;display:grid;grid-template-columns:1fr;gap:20px;}
 @media(min-width:1000px){.xr-roster{grid-template-columns:repeat(auto-fill,minmax(460px,1fr));}}
-.xr-empty{grid-column:1/-1;border:3px dashed var(--ink-30);border-radius:var(--r-card);padding:70px 30px;text-align:center;color:var(--ink-2);margin-top:10px;}
+.xr-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:6px;border:3px dashed var(--ink-30);border-radius:var(--r-card);padding:64px 30px;text-align:center;color:var(--ink-2);margin-top:10px;}
 .xr-empty svg{color:var(--sage);margin-bottom:14px;}
 .xr-empty p{font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);margin:0 0 8px;}
 .xr-empty span{font-size:16px;font-style:italic;}
