@@ -39,7 +39,7 @@ import icoStrength from "./assets/stat/strength.png";
 import {
   INFANTRY, VEHICLE, UNIT_TYPES, XENO_RULES, SPECIAL_RULES,
   COMMANDER_TABLES, BUDGET_PRESETS, UNIT_BY_ID, XENO_BY_ID,
-  NATIONAL_TRAITS, NATIONAL_BY_ID,
+  NATIONAL_TRAITS, NATIONAL_BY_ID, PSYCHIC_POWERS,
 } from "./data.js";
 import { SETTINGS } from "./premade.js";
 
@@ -159,7 +159,17 @@ function sanitize(u) {
     if (x.requiresXeno && !(x.requiresXeno in xenos)) delete xenos[x.id];
     if (x.requiresAny && !x.requiresAny.some((r) => r in xenos)) delete xenos[x.id];
   }
-  return { ...u, options, xenos };
+  // keep chosen psychic powers within what the class allows
+  let psychic = u.psychic || [];
+  if (!("psychic" in xenos)) {
+    psychic = [];
+  } else {
+    const pr = XENO_BY_ID["psychic"];
+    const ti = typeof xenos.psychic === "number" ? xenos.psychic : 0;
+    const lim = pr.tiers[ti].powers;
+    if (psychic.length > lim) psychic = psychic.slice(0, lim);
+  }
+  return { ...u, options, xenos, psychic };
 }
 function validate(roster, budget, freeplay) {
   const issues = [];
@@ -586,14 +596,15 @@ function RuleChip({ name, text }) {
 }
 
 /* a bought ability: name and cost, expands to its rule text so you can read it */
-function AbilityItem({ name, cost, text, tone }) {
+function AbilityItem({ name, cost, badge, text, tone }) {
   const [open, setOpen] = useState(false);
   return (
     <div className={`xr-abil-item ${tone || ""} ${open ? "open" : ""}`}>
       <button className="xr-abil-item-h" onClick={() => setOpen((o) => !o)} aria-expanded={open} title={open ? "Hide rule text" : "Show rule text"}>
         <Caret className="xr-abil-item-caret" size={14} />
         <span className="xr-abil-item-name">{name}</span>
-        <span className="xr-abil-item-cost">{costLabel(cost)}</span>
+        {badge != null && <span className="xr-abil-item-badge">{badge}</span>}
+        {cost != null && <span className="xr-abil-item-cost">{costLabel(cost)}</span>}
       </button>
       {open && text && <RuleText data={text} className="xr-abil-item-text" />}
     </div>
@@ -704,6 +715,10 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
                 {boughtXenos.map((x) => (
                   <AbilityItem key={x.id} name={`${x.name}${x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""}`} cost={xenoCost(x, u.xenos[x.id])} text={x.text} />
                 ))}
+                {(u.psychic || []).map((name) => {
+                  const pw = PSYCHIC_POWERS.find((p) => p.name === name);
+                  return pw ? <AbilityItem key={`pw-${name}`} name={pw.name} badge={pw.difficulty} tone="psy" text={`${pw.target} ${pw.duration} ${pw.effect}`} /> : null;
+                })}
                 {custom.map((c) => (
                   <AbilityItem key={c.id} name={c.name} cost={c.cost} text={c.text} tone="custom" />
                 ))}
@@ -730,6 +745,70 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
       </div>
 
     </section>
+  );
+}
+
+/* psychic tab: pick the Psychic class, then choose powers up to that class limit */
+function PsychicTab({ u, rules, dispatch }) {
+  const psySel = "psychic" in u.xenos;
+  const psyRule = XENO_BY_ID["psychic"];
+  const tierIdx = typeof u.xenos.psychic === "number" ? u.xenos.psychic : 0;
+  const limit = psySel ? psyRule.tiers[tierIdx].powers : 0;
+  const chosen = u.psychic || [];
+  return (
+    <div className="xr-psy">
+      {rules.map((x) => {
+        const sel = x.id in u.xenos;
+        const reqMet = xenoReqMet(x, u);
+        const disabled = !sel && !reqMet;
+        const val = u.xenos[x.id];
+        return (
+          <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
+            text={disabled && x.requiresXeno ? `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule. ${x.text}` : x.text}
+            onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
+            {sel && x.tiers && (
+              <div className="xr-tiers">
+                {x.tiers.map((tier, i) => (
+                  <button key={i} className={`xr-tier ${val === i ? "on" : ""}`}
+                    onClick={() => dispatch({ type: "tier", key: u.key, xid: x.id, i })}>
+                    <span className="xr-tier-l">{tier.label}{tier.sub && <em>{tier.sub}</em>}</span> <i>{costLabel(tier.cost)}</i>
+                  </button>
+                ))}
+              </div>
+            )}
+          </OptionRow>
+        );
+      })}
+      {psySel && (
+        <div className="xr-psy-powers">
+          <div className="xr-psy-powers-h">
+            <h4>Psychic powers</h4>
+            <span className={`xr-psy-count ${chosen.length >= limit ? "full" : ""}`}>{chosen.length} of {limit} chosen</span>
+          </div>
+          <div className="xr-psy-table">
+            <div className="xr-psy-tr xr-psy-head">
+              <span aria-hidden="true" /><span>Power</span><span>Diff.</span><span>Target</span><span>Duration</span><span>Effect</span>
+            </div>
+            {PSYCHIC_POWERS.map((pw) => {
+              const on = chosen.includes(pw.name);
+              const atLimit = chosen.length >= limit && !on;
+              return (
+                <button key={pw.name} className={`xr-psy-tr xr-psy-row ${on ? "on" : ""}`} disabled={atLimit}
+                  onClick={() => dispatch({ type: "psypower", key: u.key, power: pw.name })}
+                  title={on ? "Remove this power" : atLimit ? "This class has no free power slots" : "Add this power"}>
+                  <span className="xr-psy-check">{on && <Check size={14} />}</span>
+                  <span className="xr-psy-name">{pw.name}</span>
+                  <span className="xr-psy-diff">{pw.difficulty}</span>
+                  <span className="xr-psy-target">{pw.target}</span>
+                  <span className="xr-psy-dur">{pw.duration}</span>
+                  <span className="xr-psy-effect">{pw.effect}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -789,7 +868,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
               </OptionRow>
             );
           })}
-          {(tab === "xeno" || tab === "psychic") && xenoList.map((x) => {
+          {tab === "xeno" && xenoList.map((x) => {
             const sel = x.id in u.xenos;
             const reqMet = xenoReqMet(x, u);
             const disabled = !sel && !reqMet;
@@ -811,6 +890,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
               </OptionRow>
             );
           })}
+          {tab === "psychic" && <PsychicTab u={u} rules={eligPsy} dispatch={dispatch} />}
           {tab === "custom" && (
             <CustomTab u={u} custom={custom} dispatch={dispatch} />
           )}
@@ -835,7 +915,7 @@ function CustomTab({ u, custom, dispatch }) {
   };
   return (
     <div className="xr-custom-tab">
-      <p className="xr-custom-intro">Add your own ability or house rule for this unit. It costs points like any other option, and shows up on the stat card, the print sheet, and the copied roster.</p>
+      <p className="xr-custom-intro">A house rule for this unit. Costs points and prints with the roster.</p>
       {custom.map((c) => (
         editId === c.id ? (
           <CustomAbilityForm key={c.id} initial={c} onSave={(v) => save(v, c.id)} onCancel={() => setEditId(null)} />
@@ -977,6 +1057,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
       lines.push(`${u.isCmd ? "[CMD] " : ""}${unitDisplayName(u, i)} (${t.name}, ${unitPoints(u)} pts, ${unitSP(u)} SP)`);
       t.options.filter((o) => u.options[o.id]).forEach((o) => lines.push(`- ${o.name} (${costLabel(optCost(o))})`));
       XENO_RULES.filter((x) => x.id in u.xenos).forEach((x) => lines.push(`- ${x.name} (${costLabel(xenoCost(x, u.xenos[x.id]))})`));
+      (u.psychic || []).forEach((n) => { const pw = PSYCHIC_POWERS.find((p) => p.name === n); if (pw) lines.push(`- Psychic power: ${pw.name} (${pw.difficulty})`); });
       (u.custom || []).forEach((c) => lines.push(`- ${c.name} (${costLabel(c.cost)})`));
       const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
       if (trait) lines.push(`- Trait: ${trait.name}`);
@@ -1179,6 +1260,7 @@ function PrintView({ list }) {
                   <h3>{unitDisplayName(u, i)} <em>({t.name})</em></h3>
                   {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
                   {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.text}</p>)}
+                  {(u.psychic || []).map((n) => { const pw = PSYCHIC_POWERS.find((p) => p.name === n); return pw ? <p key={`pw-${n}`}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p> : null; })}
                   {cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                   {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
                 </div>
@@ -1370,7 +1452,19 @@ export default function App() {
           return sanitize({ ...u, xenos });
         }));
         break;
-      case "tier": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, xenos: { ...u.xenos, [a.xid]: a.i } } : u))); break;
+      case "tier": setRoster((r) => r.map((u) => (u.key === a.key ? sanitize({ ...u, xenos: { ...u.xenos, [a.xid]: a.i } }) : u))); break;
+      case "psypower":
+        setRoster((r) => r.map((u) => {
+          if (u.key !== a.key) return u;
+          const pr = XENO_BY_ID["psychic"];
+          const ti = typeof u.xenos.psychic === "number" ? u.xenos.psychic : 0;
+          const lim = pr.tiers[ti].powers;
+          let cur = u.psychic || [];
+          if (cur.includes(a.power)) cur = cur.filter((n) => n !== a.power);
+          else if (cur.length < lim) cur = [...cur, a.power];
+          return { ...u, psychic: cur };
+        }));
+        break;
       case "table": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitTable: a.tbl } : u))); break;
       case "roll": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitIndex: Math.floor(Math.random() * 6) } : u))); break;
       case "trait": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitIndex: a.i } : u))); break;
@@ -1680,6 +1774,8 @@ const CSS = `
 .xr-abil-item{border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);overflow:hidden;transition:border-color .12s;}
 .xr-abil-item.open{border-color:var(--ink);}
 .xr-abil-item.custom{border-color:var(--iris);}
+.xr-abil-item.psy{border-color:var(--iris);}
+.xr-abil-item-badge{flex:none;font-family:var(--mono);font-weight:700;font-size:13.5px;color:var(--iris);background:#6A4A8C14;border-radius:6px;padding:1px 7px;}
 .xr-abil-item-h{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:10px 12px;min-height:46px;transition:background .12s;}
 .xr-abil-item-h:hover{background:var(--paper-3);}
 .xr-abil-item-caret{flex:none;color:var(--ink-2);transition:transform .16s;}
@@ -1743,7 +1839,28 @@ const CSS = `
 .xr-row-text{font-family:var(--body);font-style:normal;font-size:16px;color:var(--ink);line-height:1.5;padding:2px 4px 8px 60px;}
 .xr-subs{margin-left:44px;border-left:2px solid var(--ink-18);padding-left:8px;}
 .xr-tiers{display:flex;gap:7px;flex-wrap:wrap;padding:2px 4px 10px 60px;}
-.xr-tier{font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:42px;transition:.12s;}
+.xr-tier{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:42px;transition:border-color .12s,background .12s;}
+.xr-tier-l{display:inline-flex;flex-direction:column;line-height:1.15;text-align:left;}
+.xr-tier-l em{font-style:normal;font-family:var(--ui);font-weight:500;font-size:11.5px;color:var(--ink-2);}
+.xr-tier.on .xr-tier-l em{color:var(--cream);}
+/* psychic powers picker */
+.xr-psy-powers{margin-top:16px;border-top:2px solid var(--ink-30);padding-top:14px;}
+.xr-psy-powers-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;}
+.xr-psy-powers-h h4{font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);}
+.xr-psy-count{font-family:var(--mono);font-weight:700;font-size:13.5px;color:var(--ink-2);padding:3px 9px;border:1.5px solid var(--ink-30);border-radius:8px;}
+.xr-psy-count.full{color:var(--iris);border-color:var(--iris);background:#6A4A8C10;}
+.xr-psy-table{display:flex;flex-direction:column;gap:5px;overflow-x:auto;}
+.xr-psy-tr{display:grid;grid-template-columns:30px 130px 46px 150px 148px minmax(230px,1fr);gap:10px;align-items:start;min-width:730px;text-align:left;}
+.xr-psy-head{font-family:var(--ui);font-weight:600;font-size:12.5px;color:var(--ink-2);padding:0 8px 5px;border-bottom:2px solid var(--ink-30);}
+.xr-psy-row{padding:9px 8px;border:2px solid var(--ink-30);border-radius:9px;background:var(--paper-2);transition:border-color .12s,background .12s;}
+.xr-psy-row:hover:not(:disabled){border-color:var(--iris);}
+.xr-psy-row.on{border-color:var(--iris);background:#6A4A8C14;}
+.xr-psy-row:disabled{opacity:.5;cursor:not-allowed;}
+.xr-psy-check{width:22px;height:22px;flex:none;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink);border-radius:6px;background:var(--paper);color:var(--cream);}
+.xr-psy-row.on .xr-psy-check{background:var(--iris);border-color:var(--iris);}
+.xr-psy-name{font-family:var(--ui);font-weight:600;font-size:15px;color:var(--ink);}
+.xr-psy-diff{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--iris);}
+.xr-psy-target,.xr-psy-dur,.xr-psy-effect{font-size:13px;line-height:1.4;color:var(--ink-2);}
 .xr-tier:hover{border-color:var(--ink);}
 .xr-tier.on{background:var(--ink);color:var(--cream);border-color:var(--ink);}
 .xr-tier i{font-style:normal;font-family:var(--mono);}
@@ -1843,7 +1960,7 @@ const CSS = `
 .xr-sheet-unit{break-inside:avoid;margin-bottom:14px;}
 .xr-sheet-unit h3{font-family:var(--display);font-size:17px;border-bottom:1.5px solid #1a1a1a;padding-bottom:2px;margin-bottom:5px;}
 .xr-sheet-unit h3 em{font-weight:400;font-style:italic;font-size:14.5px;}
-.xr-sheet-unit p{font-family:var(--flavor);font-style:italic;font-size:13.5px;line-height:1.45;margin-bottom:5px;}
+.xr-sheet-unit p{font-family:var(--body);font-style:normal;font-size:13.5px;line-height:1.45;margin-bottom:5px;}
 .xr-sheet-unit p b{font-style:normal;}
 .xr-sheet-gloss{margin-top:20px;border-top:2px solid #1a1a1a;padding-top:10px;}
 .xr-sheet-gloss h2{font-family:var(--display);font-size:19px;margin-bottom:8px;}
