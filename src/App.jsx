@@ -585,6 +585,55 @@ function RuleChip({ name, text }) {
   );
 }
 
+/* a bought ability: name and cost, expands to its rule text so you can read it */
+function AbilityItem({ name, cost, text, tone }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`xr-abil-item ${tone || ""} ${open ? "open" : ""}`}>
+      <button className="xr-abil-item-h" onClick={() => setOpen((o) => !o)} aria-expanded={open} title={open ? "Hide rule text" : "Show rule text"}>
+        <Caret className="xr-abil-item-caret" size={14} />
+        <span className="xr-abil-item-name">{name}</span>
+        <span className="xr-abil-item-cost">{costLabel(cost)}</span>
+      </button>
+      {open && text && <RuleText data={text} className="xr-abil-item-text" />}
+    </div>
+  );
+}
+
+/* commander trait: roll one at random, or open the table and pick */
+function TraitPicker({ u, tbl, trait, dispatch }) {
+  const [picking, setPicking] = useState(false);
+  const traits = COMMANDER_TABLES[tbl].traits;
+  return (
+    <div className="xr-traitpick">
+      <div className="xr-traitpick-btns">
+        <button className="xr-btn small" onClick={() => dispatch({ type: "roll", key: u.key })}>
+          <Dice size={17} /> {trait ? "Reroll" : "Roll a trait"}
+        </button>
+        <button className={`xr-btn small ${picking ? "gold" : ""}`} onClick={() => setPicking((p) => !p)} aria-expanded={picking}>
+          <Book size={16} /> Pick a trait
+        </button>
+      </div>
+      {picking && (
+        <div className="xr-trait-choices">
+          {traits.map((tr, i) => (
+            <button key={i} className={`xr-trait-choice ${u.traitIndex === i ? "on" : ""}`}
+              onClick={() => { dispatch({ type: "trait", key: u.key, i }); setPicking(false); }}>
+              <b>{tr.name}</b><span>{tr.rule}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {trait && (
+        <div className="xr-trait">
+          <div className="xr-trait-name">{trait.name}</div>
+          <p className="xr-trait-rule">{trait.rule}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
@@ -605,11 +654,10 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
         <button className="xr-iconbtn xr-panel-back" onClick={onClose} aria-label="Close unit"><Back size={20} /></button>
         <div className="xr-panel-id">
           <label className="xr-namefield">
-            <span className="xr-namefield-l">Unit name</span>
+            <span className="xr-namefield-l">{t.name}{u.isCmd && <b className="xr-tag-cmd"><Crown size={12} /> Commander</b>}</span>
             <input className="xr-panel-name" value={u.name} placeholder={`${t.name} ${index + 1}`}
               onChange={(e) => dispatch({ type: "name", key: u.key, name: e.target.value })} spellCheck={false} />
           </label>
-          <span className="xr-panel-type">{u.isCmd && <b className="xr-tag-cmd"><Crown size={13} /> Commander</b>} {t.name}</span>
         </div>
         <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
       </div>
@@ -643,32 +691,27 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
             </Section>
           )}
 
-          {hasAbilities && (
-            <div className="xr-abil">
+          <div className="xr-abil">
+            <div className="xr-abil-head">
               <h3 className="xr-abil-h">Abilities</h3>
-              {boughtOpts.length + boughtXenos.length + custom.length > 0 ? (
-                <div className="xr-abil-chips">
-                  {boughtOpts.map((o) => (
-                    <button key={o.id} className="xr-abil-chip" onClick={onBuyAbilities} title={o.text}>
-                      {o.name} <i>{costLabel(optCost(o))}</i>
-                    </button>
-                  ))}
-                  {boughtXenos.map((x) => (
-                    <button key={x.id} className="xr-abil-chip" onClick={onBuyAbilities} title={x.text}>
-                      {x.name}{x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""} <i>{costLabel(xenoCost(x, u.xenos[x.id]))}</i>
-                    </button>
-                  ))}
-                  {custom.map((c) => (
-                    <button key={c.id} className="xr-abil-chip custom" onClick={onBuyAbilities} title={c.text}>
-                      {c.name} <i>{costLabel(c.cost)}</i>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="xr-abil-empty">None bought.</p>
-              )}
+              <button className="xr-btn small" onClick={onBuyAbilities} title="Add or remove loadout options and xeno rules"><Plus size={15} /> Manage</button>
             </div>
-          )}
+            {boughtOpts.length + boughtXenos.length + custom.length > 0 ? (
+              <div className="xr-abil-list">
+                {boughtOpts.map((o) => (
+                  <AbilityItem key={o.id} name={o.name} cost={optCost(o)} text={o.text} />
+                ))}
+                {boughtXenos.map((x) => (
+                  <AbilityItem key={x.id} name={`${x.name}${x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""}`} cost={xenoCost(x, u.xenos[x.id])} text={x.text} />
+                ))}
+                {custom.map((c) => (
+                  <AbilityItem key={c.id} name={c.name} cost={c.cost} text={c.text} tone="custom" />
+                ))}
+              </div>
+            ) : (
+              <p className="xr-abil-empty">None bought.</p>
+            )}
+          </div>
 
           {u.isCmd && (
             <Section title="Command" defaultOpen>
@@ -680,15 +723,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
                 ))}
               </div>
               <p className="xr-cmd-blurb">{COMMANDER_TABLES[tbl].blurb}</p>
-              <button className="xr-btn small" onClick={() => dispatch({ type: "roll", key: u.key })}>
-                <Dice size={18} /> {trait ? "Reroll trait" : "Roll a trait"}
-              </button>
-              {trait && (
-                <div className="xr-trait">
-                  <div className="xr-trait-name">{trait.name}</div>
-                  <p className="xr-trait-rule">{trait.rule}</p>
-                </div>
-              )}
+              <TraitPicker u={u} tbl={tbl} trait={trait} dispatch={dispatch} />
             </Section>
           )}
         </div>
@@ -1033,7 +1068,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
         </main>
         <div className="xr-detail">
           {sel ? (
-            <UnitPanel u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} />
+            <UnitPanel key={sel.key} u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} />
           ) : (
             roster.length > 0 && <div className="xr-detail-hint"><Alien size={36} /><span>Select a unit</span></div>
           )}
@@ -1338,6 +1373,7 @@ export default function App() {
       case "tier": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, xenos: { ...u.xenos, [a.xid]: a.i } } : u))); break;
       case "table": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitTable: a.tbl } : u))); break;
       case "roll": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitIndex: Math.floor(Math.random() * 6) } : u))); break;
+      case "trait": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, traitIndex: a.i } : u))); break;
       case "customAdd":
         setRoster((r) => r.map((u) => (u.key === a.key
           ? { ...u, custom: [...(u.custom || []), { id: uid(), name: a.name, cost: a.cost, text: a.text }] }
@@ -1615,7 +1651,8 @@ const CSS = `
 .xr-namefield{position:relative;display:block;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);padding:17px 12px 6px;cursor:text;transition:border-color .12s;}
 .xr-namefield:hover{border-color:var(--ink);}
 .xr-namefield:focus-within{border-color:var(--coral);background:var(--paper);}
-.xr-namefield-l{position:absolute;top:5px;left:13px;font-family:var(--display);font-weight:600;letter-spacing:.03em;font-size:12px;line-height:1;color:var(--ink-2);}
+.xr-namefield-l{position:absolute;top:6px;left:13px;display:inline-flex;align-items:center;gap:7px;font-family:var(--ui);font-weight:600;font-size:12.5px;line-height:1;color:var(--ink-2);}
+.xr-namefield-l .xr-tag-cmd{font-size:10.5px;padding:1px 6px;gap:3px;}
 .xr-namefield:focus-within .xr-namefield-l{color:var(--coral-ink);}
 .xr-panel-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(19px,2vw,24px);color:var(--ink);background:transparent;border:none;padding:0;line-height:1.1;}
 .xr-panel-name:focus{outline:none;}
@@ -1637,12 +1674,19 @@ const CSS = `
 /* abilities summary in the unit panel */
 .xr-abil{margin-top:18px;border-top:2px solid var(--ink-30);padding-top:14px;}
 .xr-abil-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
-.xr-abil-h{font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:19px;color:var(--ink);}
-.xr-abil-chips{display:flex;flex-wrap:wrap;gap:8px;}
-.xr-abil-chip{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);background:var(--paper-2);border-radius:9px;padding:7px 12px;min-height:40px;transition:.12s;}
-.xr-abil-chip:hover{border-color:var(--ink);}
-.xr-abil-chip i{font-style:normal;font-family:var(--mono);font-weight:700;color:var(--coral-ink);}
-.xr-abil-chip.custom{border-style:dashed;border-color:var(--iris);}
+.xr-abil-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.xr-abil-h{font-family:var(--display);font-weight:700;font-size:19px;color:var(--ink);}
+.xr-abil-list{display:flex;flex-direction:column;gap:7px;}
+.xr-abil-item{border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);overflow:hidden;transition:border-color .12s;}
+.xr-abil-item.open{border-color:var(--ink);}
+.xr-abil-item.custom{border-color:var(--iris);}
+.xr-abil-item-h{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:10px 12px;min-height:46px;transition:background .12s;}
+.xr-abil-item-h:hover{background:var(--paper-3);}
+.xr-abil-item-caret{flex:none;color:var(--ink-2);transition:transform .16s;}
+.xr-abil-item.open .xr-abil-item-caret{transform:rotate(180deg);}
+.xr-abil-item-name{flex:1;font-family:var(--ui);font-weight:600;font-size:15.5px;color:var(--ink);}
+.xr-abil-item-cost{flex:none;font-family:var(--mono);font-weight:700;font-size:15px;color:var(--coral-ink);}
+.xr-abil-item-text{font-family:var(--body);font-size:15.5px;line-height:1.5;color:var(--ink);padding:0 12px 12px;animation:xr-rise .18s ease;}
 .xr-abil-empty{font-family:var(--flavor);font-size:16px;font-style:italic;color:var(--ink-2);}
 /* abilities modal: type groups + footer */
 .xr-abil-group{margin-bottom:18px;}
@@ -1705,9 +1749,16 @@ const CSS = `
 .xr-tier i{font-style:normal;font-family:var(--mono);}
 .xr-cmd-tables{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
 .xr-cmd-blurb{font-family:var(--flavor);font-size:16px;font-style:italic;color:var(--ink-2);margin-bottom:10px;}
+.xr-traitpick-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.xr-trait-choices{display:flex;flex-direction:column;gap:6px;margin-top:10px;animation:xr-rise .18s ease;}
+.xr-trait-choice{display:flex;flex-direction:column;gap:2px;text-align:left;border:2px solid var(--ink-30);border-radius:9px;padding:8px 12px;background:var(--paper-2);transition:border-color .12s,background .12s,transform .12s;}
+.xr-trait-choice:hover{border-color:var(--brass);transform:translateX(2px);}
+.xr-trait-choice.on{border-color:var(--brass);background:#8A6A1F14;}
+.xr-trait-choice b{font-family:var(--ui);font-weight:600;font-size:15.5px;color:var(--brass);}
+.xr-trait-choice span{font-size:14.5px;line-height:1.4;color:var(--ink-2);}
 .xr-trait{margin-top:10px;border:2px solid var(--brass);border-radius:10px;padding:10px 14px;background:var(--paper-2);}
 .xr-trait-name{font-family:var(--display);font-weight:700;font-size:17.5px;color:var(--brass);}
-.xr-trait-rule{font-family:var(--flavor);font-style:italic;font-size:16px;color:var(--ink-2);}
+.xr-trait-rule{font-family:var(--body);font-style:normal;font-size:16px;line-height:1.5;color:var(--ink);}
 
 /* add-unit modal */
 .xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.42);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade .18s ease;}
