@@ -433,57 +433,80 @@ function BudgetPicker({ budget, onChange }) {
 
 /* faction picker: genre -> group -> faction. picking one themes the detachment
    (sets its icon) and hands over a name pool for the randomiser. */
+/* a true drill-down: one screen at a time (genre, then group, then faction),
+   each with a back arrow, rather than tabs that show every level at once. */
 function FactionModal({ onPick, onClose }) {
-  const [gid, setGid] = useState(ALL_GENRES[0].id);
-  const genre = ALL_GENRES.find((g) => g.id === gid) || ALL_GENRES[0];
-  const [grpId, setGrpId] = useState(genre.groups[0].id);
-  const group = genre.groups.find((g) => g.id === grpId) || genre.groups[0];
+  const [gid, setGid] = useState(null);
+  const [grpId, setGrpId] = useState(null);
   const [q, setQ] = useState("");
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-  const pickGenre = (id) => { setGid(id); const g = ALL_GENRES.find((x) => x.id === id); setGrpId(g.groups[0].id); setQ(""); };
+  const genre = ALL_GENRES.find((g) => g.id === gid);
+  const group = genre && genre.groups.find((g) => g.id === grpId);
+  const step = group ? 3 : genre ? 2 : 1;
+  const back = () => { if (step === 3) setGrpId(null); else if (step === 2) setGid(null); };
   const needle = q.trim().toLowerCase();
-  const factions = group.factions.filter((f) => !needle || f.name.toLowerCase().includes(needle) || (f.tag || "").toLowerCase().includes(needle));
+  const factions = group ? group.factions.filter((f) => !needle || f.name.toLowerCase().includes(needle) || (f.tag || "").toLowerCase().includes(needle)) : [];
+  const title = step === 1 ? "Pick a setting" : step === 2 ? genre.label : group.label;
   return (
     <div className="xr-modal-backdrop" onClick={onClose}>
       <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Pick a faction" onClick={(e) => e.stopPropagation()}>
         <div className="xr-modal-head">
-          <span className="xr-modal-title"><Dice size={22} /> Pick a faction</span>
+          {step > 1 && <button className="xr-iconbtn" onClick={back} aria-label="Back"><Back size={20} /></button>}
+          <span className="xr-modal-title"><Dice size={22} /> {title}</span>
           <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
         </div>
-        <div className="xr-modal-tabs" role="tablist">
-          {ALL_GENRES.map((g) => (
-            <button key={g.id} role="tab" aria-selected={gid === g.id} className={`xr-modal-tab ${gid === g.id ? "on" : ""}`} onClick={() => pickGenre(g.id)}>{g.label}</button>
-          ))}
-        </div>
-        <div className="xr-fac-sub">
-          <div className="xr-fac-groups">
-            {genre.groups.map((g) => (
-              <button key={g.id} className={`xr-fac-grp ${grpId === g.id ? "on" : ""}`} onClick={() => { setGrpId(g.id); setQ(""); }}>{g.label}</button>
-            ))}
-          </div>
-          <input className="xr-fac-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search factions" spellCheck={false} />
-        </div>
-        <div className="xr-modal-body">
-          <div className="xr-fac-grid">
-            {factions.map((f) => {
-              const url = factionIconUrl(f.icon);
-              return (
-                <button key={f.id} className="xr-fac-card" onClick={() => onPick({ ...f, genre: genre.id, group: group.id })} title={`${f.pool.length} names`}>
-                  <span className="xr-fac-ic">{url ? <img src={url} alt="" loading="lazy" /> : <Alien size={22} />}</span>
-                  <span className="xr-fac-body">
-                    <span className="xr-fac-name">{f.name}</span>
-                    <span className="xr-fac-tag">{f.tag}</span>
-                  </span>
+        {step === 1 && (
+          <div className="xr-modal-body">
+            <p className="xr-fac-lead">What kind of setting is this detachment?</p>
+            <div className="xr-fac-genre-grid">
+              {ALL_GENRES.map((g) => (
+                <button key={g.id} className="xr-fac-genre-card" onClick={() => setGid(g.id)}>
+                  <b>{g.label}</b><i>{g.blurb}</i>
                 </button>
-              );
-            })}
-            {factions.length === 0 && <p className="xr-fac-empty">No factions match that search.</p>}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+        {step === 2 && (
+          <div className="xr-modal-body">
+            <p className="xr-fac-lead">{genre.blurb}</p>
+            <div className="xr-fac-genre-grid">
+              {genre.groups.map((g) => (
+                <button key={g.id} className="xr-fac-genre-card" onClick={() => setGrpId(g.id)}>
+                  <b>{g.label}</b><i>{g.factions.length} {g.factions.length === 1 ? "faction" : "factions"}</i>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {step === 3 && (
+          <>
+            <div className="xr-fac-sub">
+              <input className="xr-fac-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search factions" spellCheck={false} autoFocus />
+            </div>
+            <div className="xr-modal-body">
+              <div className="xr-fac-grid">
+                {factions.map((f) => {
+                  const url = factionIconUrl(f.icon);
+                  return (
+                    <button key={f.id} className="xr-fac-card" onClick={() => onPick({ ...f, genre: genre.id, group: group.id })} title={`${f.pool.length} names`}>
+                      <span className="xr-fac-ic">{url ? <img src={url} alt="" loading="lazy" /> : <Alien size={22} />}</span>
+                      <span className="xr-fac-body">
+                        <span className="xr-fac-name">{f.name}</span>
+                        <span className="xr-fac-tag">{f.tag}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+                {factions.length === 0 && <p className="xr-fac-empty">No factions match that search.</p>}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -1981,11 +2004,13 @@ const CSS = `
 .xr-faction-pick b{font-weight:700;}
 .xr-faction-pick i{font-style:normal;font-size:13.5px;color:var(--ink-2);margin-left:auto;}
 .xr-fac-sub{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:10px clamp(14px,3vw,22px) 0;}
-.xr-fac-groups{display:flex;gap:7px;flex-wrap:wrap;}
-.xr-fac-grp{font-family:var(--ui);font-weight:600;font-size:14.5px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);border-radius:8px;padding:6px 13px;min-height:40px;transition:.12s;}
-.xr-fac-grp:hover{border-color:var(--ink);color:var(--ink);}
-.xr-fac-grp.on{background:var(--ink);color:var(--cream);border-color:var(--ink);}
-.xr-fac-search{margin-left:auto;min-width:180px;font-family:var(--body);font-size:15px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:8px 11px;min-height:40px;}
+.xr-fac-lead{font-family:var(--flavor);font-style:italic;font-size:16px;color:var(--ink-2);padding:12px clamp(14px,3vw,22px) 4px;}
+.xr-fac-genre-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+.xr-fac-genre-card{display:flex;flex-direction:column;gap:5px;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);border-radius:13px;padding:16px 18px;min-height:76px;transition:transform .13s cubic-bezier(.2,.8,.2,1),box-shadow .13s,background .13s;}
+.xr-fac-genre-card:hover{background:var(--paper-3);transform:translateY(-2px);box-shadow:0 5px 14px rgba(31,61,46,.15);}
+.xr-fac-genre-card b{font-family:var(--display);font-weight:700;font-size:19px;color:var(--ink);}
+.xr-fac-genre-card i{font-family:var(--flavor);font-style:italic;font-size:14.5px;color:var(--ink-2);}
+.xr-fac-search{min-width:220px;flex:1;font-family:var(--body);font-size:15px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:8px 11px;min-height:40px;}
 .xr-fac-search:focus{outline:none;border-color:var(--coral);}
 .xr-fac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
 .xr-fac-card{display:flex;align-items:center;gap:11px;text-align:left;border:2px solid var(--ink-30);background:var(--paper-2);border-radius:11px;padding:10px 12px;min-height:62px;transition:transform .12s cubic-bezier(.2,.8,.2,1),border-color .12s,box-shadow .12s;}
