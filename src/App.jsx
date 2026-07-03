@@ -304,7 +304,7 @@ function Die({ k, free, children }) {
   return (
     <span className={`xr-die k-${k}${free ? " free" : ""}`}
       title={free ? "Free action: this activates on its own, no 2d6 roll needed" : "Roll 2d6: this or higher activates the action"}>
-      {children}{free && <Bolt size={11} className="xr-die-free" />}
+      {children}{free && <span className="xr-die-free"><Bolt size={8} /><em>Free</em></span>}
     </span>
   );
 }
@@ -1920,13 +1920,14 @@ const CSS = `
 .xr-iconbtn:active{transform:scale(.95);}
 
 /* die chips */
-.xr-die{position:relative;display:inline-flex;align-items:center;justify-content:center;width:50px;padding:3px 4px;border-radius:9px;border:1.5px solid var(--ink-30);background:var(--paper-2);font-family:var(--mono);font-weight:700;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-die{position:relative;display:inline-flex;align-items:center;justify-content:center;width:56px;padding:3px 4px;border-radius:9px;border:1.5px solid var(--ink-30);background:var(--paper-2);font-family:var(--mono);font-weight:700;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums;}
 .xr-die.k-atk{background:#F4604C22;border-color:var(--coral-ink);}
 .xr-die.k-mov{background:#5C7A5222;border-color:var(--sage);}
 .xr-die.k-sho{background:#6A4A8C22;border-color:var(--iris);}
 .xr-die.k-cou{background:#8A6A1F22;border-color:var(--brass);}
-.xr-die.free{border-style:solid;border-width:2px;border-color:var(--coral-ink);background:var(--coral);color:#3a1206;}
-.xr-die-free{position:absolute;top:2px;right:3px;color:#3a1206;}
+.xr-die.free{border-style:solid;border-width:2px;border-color:var(--coral-ink);background:var(--coral);color:#3a1206;justify-content:flex-start;padding-left:9px;}
+.xr-die-free{position:absolute;top:0;right:2px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#3a1206;}
+.xr-die-free em{writing-mode:vertical-rl;text-orientation:upright;font-family:var(--ui);font-style:normal;font-weight:800;font-size:7.5px;letter-spacing:-.5px;line-height:1;text-transform:uppercase;}
 .xr-dash{color:var(--ink-2);opacity:.45;}
 .xr-rng{font-family:var(--body);font-style:italic;font-size:15px;color:var(--ink-2);margin-left:3px;white-space:nowrap;}
 
