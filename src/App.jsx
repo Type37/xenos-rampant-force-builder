@@ -718,7 +718,7 @@ function OptionRow({ active, disabled, name, cost, text, onToggle, children }) {
         </button>
         <button className="xr-row-info" onClick={() => setOpen((o) => !o)} aria-label={open ? "Hide rule text" : "Show rule text"} aria-expanded={open}>?</button>
       </div>
-      {(open || active) && <p className="xr-row-text">{text}</p>}
+      {(open || active) && <RuleText data={text} className="xr-row-text" />}
       {children}
     </div>
   );
@@ -735,6 +735,13 @@ function RuleText({ data, className }) {
       {data.rule}
     </p>
   );
+}
+
+/* prepends a "requires X" note to a rule's mechanical text, keeping the flavour line intact */
+function withPrereqNote(data, note) {
+  if (!data) return note;
+  if (typeof data === "string") return `${note} ${data}`;
+  return { flavor: data.flavor, rule: `${note} ${data.rule}` };
 }
 
 function RuleChip({ name, text }) {
@@ -923,7 +930,7 @@ function PsychicTab({ u, rules, dispatch }) {
         const val = u.xenos[x.id];
         return (
           <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
-            text={disabled && x.requiresXeno ? `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule. ${x.text}` : x.text}
+            text={disabled && x.requiresXeno ? withPrereqNote(x.text, `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule.`) : x.text}
             onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
             {sel && x.tiers && (
               <div className="xr-tiers">
@@ -1034,7 +1041,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
             const val = u.xenos[x.id];
             return (
               <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
-                text={disabled && x.requiresXeno ? `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule. ${x.text}` : x.text}
+                text={disabled && x.requiresXeno ? withPrereqNote(x.text, `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule.`) : x.text}
                 onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
                 {sel && x.tiers && (
                   <div className="xr-tiers">
@@ -1432,7 +1439,7 @@ function PrintView({ list }) {
                   {opts.upgrades && hasRules && (
                     <div className="xr-pc-rules">
                       {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
-                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.text}</p>)}
+                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : <>{x.text.flavor && <i>{x.text.flavor} </i>}{x.text.rule}</>}</p>)}
                       {powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
                       {cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                       {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}

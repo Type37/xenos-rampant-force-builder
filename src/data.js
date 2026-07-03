@@ -1212,310 +1212,434 @@ export const UNIT_TYPES = [
 ];
 
 export const XENO_RULES = [
-  {
-    "id": "boarding-shields",
-    "name": "Boarding Shields",
-    "text": "Boarding actions are characterised by sudden, heavy torrents of short-range gunfire and the use of fearsome breaching tools to cut through bulkheads and bodies alike. As such, portable cover, in the form of hefty boarding shields, often with a loophole for the muzzle of the carrier’s own weapon, is extremely desirable. In lower-tech cultures, this xeno rule can be used to represent riot shields, particularly heavy wooden tower shields, or any other shield that both provides protection against incoming fire and is large enough to cover most of the wielder’s silhouette. Troops armed with Boarding Shields improve their Defence Value characteristic by 1 (e.g. from 4+ to 3+), and also gain +1 Armour against Shoot actions and Firefight reactions. In settings where these shields are particularly unwieldy, it may be appropriate to give the Slow xeno rule to units equipped in this way.",
-    "costText": "2 points.",
-    "cost": 2
+ {
+  "id": "boarding-shields",
+  "name": "Boarding Shields",
+  "text": {
+   "flavor": "Portable cover for a very bad day: hefty shields built to soak up return fire.",
+   "rule": "Improves this unit's Defence Value by 1 (e.g. from 4+ to 3+) and grants +1 Armour against Shoot actions and Firefight reactions."
   },
-  {
-    "id": "brutal-leader",
-    "name": "Brutal Leader",
-    "text": "One or more members of this unit keep their comrades in line through the application of carefully targeted violence. They may be fanatical priests, political officers, or wardens armed with the trigger for rest of the Detachment’s explosive collars. This unit, plus any other friendly units within 6\", may re-roll failed Courage tests (including for Rallying), once per test. This effect only applies if the Brutal Leader’s unit is not Suppressed (therefore this rule cannot be used to Rally the Brutal Leader’s own unit). A unit re-rolling a test because of a Brutal Leader will automatically lose a Strength Point as one of their number is executed or otherwise punished to provide an example of the fate awaiting cowards and traitors. This Strength Point loss is in addition to any caused by failed Courage tests and does not cause further Courage tests.",
-    "costText": "1 point.",
+  "costText": "2 points.",
+  "cost": 2
+ },
+ {
+  "id": "brutal-leader",
+  "name": "Brutal Leader",
+  "text": {
+   "flavor": "Discipline enforced by the barrel of a gun pointed at their own side.",
+   "rule": "This unit, plus any other friendly unit within 6\", may re-roll one failed Courage test (including Rallying) per test, so long as the Brutal Leader's unit is not Suppressed (it cannot use this to Rally itself). Whenever a re-roll is used this way, the re-rolling unit loses an extra Strength Point on top of any lost to the test; this extra loss does not trigger a further Courage test."
+  },
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "cloaking-device",
+  "name": "Cloaking Device",
+  "text": {
+   "flavor": "Not invisible, just very hard to keep in your sights.",
+   "rule": "This unit can only be targeted by ranged attacks within 12\", and gains +1 Armour against Shoot actions and Firefight reactions. Psychic powers and Attacks work against it as normal. Recon Infantry get the same effect for free via Hard to Target."
+  },
+  "costText": "3 points.",
+  "cost": 3
+ },
+ {
+  "id": "combat-medic",
+  "name": "Combat Medic",
+  "text": {
+   "flavor": "Someone in the unit knows how to keep the wounded moving.",
+   "rule": "Whenever this unit, or a friendly unit within 6\", loses Strength Points (except from a failed Courage test or the Brutal Leader rule), roll one die, subtracting 1 if the Combat Medic's unit is at half Strength Points or below. On a 4+, reduce the Strength Points lost by one. Has no effect on Demonic, Mechanoid, or Undead units unless the Combat Medic's unit shares that xeno rule, and cannot be used while the Combat Medic's unit is Suppressed."
+  },
+  "costText": "2 points.",
+  "cost": 2
+ },
+ {
+  "id": "contagious",
+  "name": "Contagious",
+  "text": {
+   "flavor": "Hack off the bitten arm, or risk catching whatever's animating them.",
+   "rule": "Whenever this unit inflicts Strength Point loss on an enemy infantry unit during an Attack (Attacking or Defending), it regains one Strength Point it has lost this game."
+  },
+  "costText": "1 point. Demonic or Undead infantry units only.",
+  "cost": 1,
+  "requiresAny": [
+   "demonic",
+   "undead"
+  ],
+  "infantryOnly": true
+ },
+ {
+  "id": "crusader",
+  "name": "Crusader",
+  "text": {
+   "flavor": "Zeal enough to turn back an army twice the size, so long as it's the right army.",
+   "rule": "Before deployment, pick a target for this unit's wrath: any unit with the Demonic, Mechanoid, or Undead xeno rule, a particular alien species (humans included), or a rival faith or nationality visibly opposed on the table. Against that target, this unit may re-roll all misses during Shooting and Attacks (including Firefights and Defending), and ignores the effects of Fearsome units of the targeted type. The point cost only applies while the opposing Detachment includes a unit of the targeted type; otherwise it costs nothing. A Detachment fielding a Crusader may not itself include units of its own targeted type."
+  },
+  "costText": "4 points / 0 points.",
+  "tiers": [
+   {
+    "label": "Zealots",
+    "cost": 4
+   },
+   {
+    "label": "Worship a powerful alien",
+    "cost": 0
+   }
+  ]
+ },
+ {
+  "id": "demonic",
+  "name": "Demonic",
+  "text": {
+   "flavor": "Something that shouldn't exist by the rules of physics you grew up with.",
+   "rule": "Demonic units ignore the effects of Stun Weapons and of Fearsome units, and count as Fearsome themselves at no extra cost. Enemies targeting a Demonic unit with a psychic power take a +2 modifier to their activation roll. Strength Point loss inflicted on another Demonic unit is doubled, in both directions. A Demonic unit that has lost any Strength Points counts as also having the Unstable xeno rule."
+  },
+  "costText": "0 points.",
+  "cost": 0
+ },
+ {
+  "id": "exploder",
+  "name": "Exploder",
+  "text": {
+   "flavor": "It was always going to end in a bang; the only question was when.",
+   "rule": "The 1-point version explodes automatically on reaching 0 Strength Points, before models are removed (not if the unit is removed some other way, such as routing). The 2-point version instead explodes only by choice, as an ordered activation succeeding on a 5+; a failed test still destroys the unit with no further effect. When it explodes, treat it as a Shoot action hitting on 3+ against every unit and building within 6\", rolling a separate pool of dice per target equal to the Exploder's Strength Points immediately before it went off. The Exploder is then removed from play as destroyed."
+  },
+  "costText": "1–2 points.",
+  "tiers": [
+   {
+    "label": "Small charge",
     "cost": 1
+   },
+   {
+    "label": "Large charge",
+    "cost": 2
+   }
+  ]
+ },
+ {
+  "id": "fanatical-discipline",
+  "name": "Fanatical Discipline",
+  "text": {
+   "flavor": "Courageous to the point of foolhardiness.",
+   "rule": "Improves this unit's Courage score by 1, to a maximum of 3+ (for example, Courage 5+ becomes 4+)."
   },
-  {
-    "id": "cloaking-device",
-    "name": "Cloaking Device",
-    "text": "Although not completely hidden from sight, this unit conceals itself using powerful psychic abilities, light-refracting stealth technology, or by having a gaseous form. The unit may only be targeted by ranged attacks within 12\" and gains +1 Armour against Shoot actions and Firefight reactions. Psychic powers and Attacks work as normal against cloaked units; assume there is some kind of visual disturbance or distortion that allows them to be seen at close quarters. Note that Recon Infantry achieve this same effect with their Hard To Target rule, and for fewer points.",
-    "costText": "3 points.",
+  "costText": "2 points.",
+  "cost": 2
+ },
+ {
+  "id": "fearsome",
+  "name": "Fearsome",
+  "text": {
+   "flavor": "Some things still make even hardened soldiers flinch.",
+   "rule": "Courage tests caused by this unit's Attacks (not its Shooting) suffer an additional -1, unless this unit is the one Defending. Demonic, Mechanoid, and Undead units, and units that are themselves Fearsome, are unaffected."
+  },
+  "costText": "2 points.",
+  "cost": 2
+ },
+ {
+  "id": "fearful",
+  "name": "Fearful",
+  "text": {
+   "flavor": "Never should have been on a battlefield in the first place.",
+   "rule": "Every Courage and Rally test this unit takes suffers -1; if it is Attacked by a Fearsome unit, that penalty becomes -2 instead."
+  },
+  "costText": "-1 point.",
+  "cost": -1
+ },
+ {
+  "id": "flying",
+  "name": "Flying",
+  "text": {
+   "flavor": "Spends more time overhead than on the ground.",
+   "rule": "May move over friendly and enemy units, but must still obey the 1\" proximity rule at the end of its move. Can draw line of sight from and to anywhere on the table (except through building roofs, forest canopies, or other overhead cover), and always sees other Flying units. Ignores all terrain when Moving or Attacking and never benefits from cover; a target it Shoots only benefits from overhead cover such as buildings or woods. All distances to or from it are measured base to base. Using Wild Charge, it may fly over friendly units that would otherwise block the charge. It can only be Attacked by other Flying units, though it can still be Shot at, and it Attacks ground units normally, which Defend as usual. When Retreating, it moves its full Maximum Movement and may cross any unit or terrain, which can carry it off the table."
+  },
+  "costText": "2 points.",
+  "cost": 2
+ },
+ {
+  "id": "force-field",
+  "name": "Force Field",
+  "text": {
+   "flavor": "An energy field standing between this unit and incoming fire.",
+   "rule": "Class I: when this unit loses Strength Points to Shooting (not Attacks), roll one die per Strength Point lost; each 6 rolled reduces the loss by one. Class II: as Class I, but reduces the loss on a 5 or 6. Class III: as Class II, but also protects against Attacks as well as Shooting."
+  },
+  "costText": "1–3 points.",
+  "tiers": [
+   {
+    "label": "Class I",
+    "cost": 1
+   },
+   {
+    "label": "Class II",
+    "cost": 2
+   },
+   {
+    "label": "Class III",
     "cost": 3
+   }
+  ]
+ },
+ {
+  "id": "hatred",
+  "name": "Hatred",
+  "text": {
+   "flavor": "Peace between species sounds nice; these soldiers didn't get the memo.",
+   "rule": "Before deployment, pick a target for this unit's hatred: any unit with the Demonic, Mechanoid, or Undead xeno rule, a particular alien species (humans included), or a rival faith or nationality visibly opposed on the table. Every unit in the Detachment with Hatred must share the same target. Against that target, units with Hatred gain the Wild Charge special rule; if they already have Wild Charge, they automatically pass Wild Charge tests against it."
   },
-  {
-    "id": "combat-medic",
-    "name": "Combat Medic",
-    "text": "One or more members of this unit are trained in combat medicine. Should the unit, or a friendly one within 6\", lose Strength Points (except as the result of a failed Courage test or the Brutal Leader xeno rule), roll one die. Subtract 1 from the result if the unit with Combat Medic is at half Strength Points or below. On a roll of 4+, reduce the number of Strength Points lost by one. Combat Medic has no effect on units with the Demonic, Mechanoid, or Undead xeno rules (unless the unit with Combat Medic also has the matching xeno rule), and cannot be used when the unit with Combat Medic is Suppressed.",
-    "costText": "2 points.",
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "hive-mind",
+  "name": "Hive Mind",
+  "text": {
+   "flavor": "Barely more than puppets to whatever is steering the swarm.",
+   "rule": "While the Detachment's Commander is on the table and not Suppressed, every friendly unit with Hive Mind counts as being within 12\" of the Commander for bonuses to Courage and activation tests (and Commander traits). A unit actually within 12\" of the Commander also counts as Courage 0+. The Commander's own unit may not take this xeno rule."
+  },
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "immobile",
+  "name": "Immobile",
+  "text": {
+   "flavor": "Artillery, turret emplacements, and plants don't get around much.",
+   "rule": "This unit cannot take Move or Attack actions, and automatically routs if it would be forced to Retreat. It cannot board or disembark a transport, since it cannot Move. It cannot enter play after the start of Turn 1 unless it also has Special Insertion."
+  },
+  "costText": "-2 points.",
+  "cost": -2
+ },
+ {
+  "id": "infiltrators",
+  "name": "Infiltrators",
+  "text": {
+   "flavor": "Already in position before the first shot is fired.",
+   "rule": "After deployment but before the game begins, each Infiltrators unit may make one Move activation with no activation test required, rolling a die to add that many inches to the move. This pre-game move cannot embark or disembark a vehicle. If both players have Infiltrators, the attacker moves theirs first."
+  },
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "inspirational-leader",
+  "name": "Inspirational Leader",
+  "text": {
+   "flavor": "One soldier the rest would follow anywhere.",
+   "rule": "This unit, plus any other friendly unit within 6\", may re-roll one failed Courage test (including Rallying) per test, so long as the Inspirational Leader's unit is not Suppressed (it cannot use this to Rally itself). Stacks with Commander bonuses, though with a smaller radius."
+  },
+  "costText": "2 points.",
+  "cost": 2
+ },
+ {
+  "id": "mechanoid",
+  "name": "Mechanoid",
+  "text": {
+   "flavor": "More machine than man, and it shows both in and out of combat.",
+   "rule": "Mechanoid units ignore the effects of Stun Weapons. Each may take one additional Free Action (Attack, Move, or Shoot), but suffers a -1 modifier on ordered activation tests. They never take Courage tests, so never become Suppressed or routed, but at half Strength Points or below they lose all Free Actions (such actions then count as ordered activations), and a failed activation roll that comes up a double at that point causes a critical shutdown, destroying the unit immediately."
+  },
+  "costText": "0 points.",
+  "cost": 0
+ },
+ {
+  "id": "mercenary",
+  "name": "Mercenary",
+  "text": {
+   "flavor": "Cheaper than a standing army, and deniable if things go wrong.",
+   "rule": "Before deployment (after Attacker and Defender are set), roll one die per Mercenary unit. 1, AWOL: the unit cannot be used this battle but is not a casualty for scenario purposes. 2, Late: roll a die for the earliest turn it may arrive, then it enters with a Move action from your deployment edge. 3, Reluctant: -1 to all Attack and Shoot ordered activations. 4, Eager: +1 to all Attack and Shoot ordered activations. 5, Bloodthirsty: gains Wild Charge, or automatically passes Wild Charge tests if it already has the rule. 6, Raiders: roll a die; the cheapest enemy unit loses that many Strength Points before the game begins (not below 1, and without triggering a Courage test)."
+  },
+  "costText": "-1 point.",
+  "cost": -1
+ },
+ {
+  "id": "mono-molecular-blades",
+  "name": "Mono-Molecular Blades",
+  "text": {
+   "flavor": "An edge sharpened to one molecule, or something just as sharp.",
+   "rule": "During Attacks, whether Attacking or Defending, any 6s this unit rolls to hit count as two hits instead of one."
+  },
+  "costText": "2 points.",
+  "cost": 2
+ },
+ {
+  "id": "psychic",
+  "name": "Psychic",
+  "text": {
+   "flavor": "Turns up wherever wizards would in a more fantastical setting.",
+   "rule": "One or more members of the unit can Manifest psychic powers. Delta-Class knows one power, Gamma-Class two, Beta-Class three, and Alpha-Class three plus 6\" added to every power's range. Manifesting a power is an ordered activation needing the power's Difficulty or better, at -1 if the unit is at half Strength or below. Only one power can be active at a time, and powers are chosen before the scenario is picked. This unit's Shoot, Attack, Defence, and Armour may represent raw psychic force rather than weapons, though such Attacks and Shooting still don't count as psychic in game terms."
+  },
+  "costText": "1–4 points.",
+  "tiers": [
+   {
+    "label": "Delta-Class",
+    "sub": "1 power",
+    "powers": 1,
+    "cost": 1
+   },
+   {
+    "label": "Gamma-Class",
+    "sub": "2 powers",
+    "powers": 2,
     "cost": 2
+   },
+   {
+    "label": "Beta-Class",
+    "sub": "3 powers",
+    "powers": 3,
+    "cost": 3
+   },
+   {
+    "label": "Alpha-Class",
+    "sub": "3 powers, +6\" range",
+    "powers": 3,
+    "cost": 4
+   }
+  ]
+ },
+ {
+  "id": "psychic-hazards",
+  "name": "Psychic Hazards",
+  "text": {
+   "flavor": "Powers like these come with a price: exploding heads, or worse.",
+   "rule": "If this unit rolls a double on an activation test to Manifest a power, it loses Strength Points equal to the number rolled (a double-4 costs four Strength Points), even though the power still Manifests on a success. If the unit is Suppressed or destroyed by that loss, any effect of the power ends immediately."
   },
-  {
-    "id": "contagious",
-    "name": "Contagious",
-    "text": "Sometimes it’s better to hack off a bitten arm than risk infection by… whatever it is that’s animating those things. Every time this unit inflicts Strength Point loss on an enemy infantry unit during an Attack (whether Attacking or Defending), the Contagious unit regains one Strength Point that it has lost during the game. This may be a case of enemy casualties rising from the dead or switching sides after becoming possessed, or this xeno rule could also represent some kind of power-leeching or vampiric ability in the Contagious unit.",
-    "costText": "1 point. Demonic or Undead infantry units only.",
-    "cost": 1,
-    "requiresAny": [
-      "demonic",
-      "undead"
-    ],
-    "infantryOnly": true
+  "costText": "-1 point. Psychic units only.",
+  "cost": -1,
+  "requiresXeno": "psychic"
+ },
+ {
+  "id": "psychic-resistance",
+  "name": "Psychic Resistance",
+  "text": {
+   "flavor": "Some minds are just hard for psychics to get a grip on.",
+   "rule": "Whenever this unit is targeted by a psychic power, friendly or hostile, roll one die; on a 4+ the power has no effect (the activation roll to Manifest it still counts as a success). Has no effect on Attacks or Shooting by a psychic unit, even when narratively powered by psychic ability."
   },
-  {
-    "id": "crusader",
-    "name": "Crusader",
-    "text": "Advances in science and technology, and even encounters with alien species, may not be enough to dim the religious zeal of some warriors. Sometimes, the encountered aliens might be so powerful as to cause lesser beings to worship them as gods. Whether their faith is based on superstition or direct experience of godlike entities, it is unquestionable that this unit’s fervour carries them to greater heroics on the battlefield. A unit with the Crusader xeno rule added becomes more powerful when playing against opponents that are particularly reviled by their faith. Pick a target for the Crusader’s wrath: units with the Demonic, Mechanoid, or Undead xeno rule, or a particular species of alien (including, for aliens, humans), are all applicable choices. Followers of another religion, so long as that would be obvious on the battlefield such as in a war between two cults, is also a possibility. A Crusader unit may re-roll all misses once during Shooting and Attacks, including in Firefights and while Defending, when fighting against a unit of the targeted type. A Crusader may choose to ignore the effects caused by Fearsome units of the targeted type. The 4-point cost only applies when playing against a Detachment with one or more units of the targeted type present. If none of that unit type are in play, there is no additional point cost. A Detachment including a Crusader may not field units of its targeted type; deploying those units together tends to end badly.",
-    "costText": "4 points / 0 points.",
-    "tiers": [
-      {
-        "label": "Zealots",
-        "cost": 4
-      },
-      {
-        "label": "Worship a powerful alien",
-        "cost": 0
-      }
-    ]
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "psychic-species",
+  "name": "Psychic Species",
+  "text": {
+   "flavor": "Manifesting power comes as naturally to them as breathing.",
+   "rule": "1 point lets this unit Manifest Difficulty 6+ powers as a Free Action. 2 points extends that to Difficulty 6+ or 7+. 3 points lets it Manifest any power as a Free Action."
   },
-  {
-    "id": "demonic",
-    "name": "Demonic",
-    "text": "This xeno rule, more than most others, may not be suitable for all sub-genres of science fiction. However, exactly what qualifies as a demon isn’t necessarily bound to theology; whilst a demon could be a creature from fire-and-brimstone Hell, it could just as easily be an entity from a parallel plane of existence, or simply a creature from distant realms of space where the laws of physics work differently than in our small corner of a vast, uncaring universe. If you feel so inclined, angels can also use the Demonic xeno rule, although you should probably rename it something like Celestial or Angelic. Demonic units have the following additional rules: • Ignore the effects of Stun Weapons. • Ignore the effects of Fearsome units. • Count as having the Fearsome xeno rule, at no extra cost, representing the innate ‘wrongness’ of the Demonic creatures’ existence as much as the teeth, horns, and flaming skulls it may have. • Enemies who target Demonic units with psychic powers gain a +2 modifier to their activation roll, as the psychic activity disrupts their presence on the physical plane. • Any Strength Point loss inflicted on other Demonic units is doubled. Bear in mind that the same applies in return! • Once Demonic units lose physical integrity, they rapidly lose their grip on the mortal plane. A Demonic unit that has lost any of its starting Strength Points counts as having the Unstable xeno rule.",
-    "costText": "0 points.",
-    "cost": 0
-  },
-  {
-    "id": "exploder",
-    "name": "Exploder",
-    "text": "This unit is either innately highly volatile (such as strange hydrogen-filled jellyfish or armoured guzzoline tankers) or is carrying explosives that it can detonate at will (such as with fanatical cultists or trained, but usually unsuspecting, animals strapped with grenades). The unit acts as normal until it explodes. Units with the 1-point version of this xeno rule will explode upon reaching 0 Strength Points, but before any models are removed from the table. Removal from the table by any other means (such as routing) means that the unit does not explode. Units with the 2-point version only explode by choice, as an ordered activation successful on a 5+. A failed activation test means that only a partial detonation occurs, destroying the unit but without harming anyone else. Remove the unit from play as a casualty. When the unit explodes, the explosion affects all buildings and units – friend and foe alike – within a 6\" radius of the exploding unit. This works as a Shoot action hitting on a 3+ (the number of dice rolled is equal to the Exploder’s Strength Points immediately prior to the action triggering the explosion), but you should roll separately for each unit within the blast zone. Once exploded, the Exploder unit is removed the table and counts as destroyed.",
-    "costText": "1–2 points.",
-    "tiers": [
-      {
-        "label": "Small charge",
-        "cost": 1
-      },
-      {
-        "label": "Large charge",
-        "cost": 2
-      }
-    ]
-  },
-  {
-    "id": "fanatical-discipline",
-    "name": "Fanatical Discipline",
-    "text": "This unit is courageous to the point of foolhardiness. Improve its Courage score by 1, to a maximum of 3+. For example, a unit with Courage 5+ becomes Courage 4+.",
-    "costText": "2 points.",
+  "costText": "1–3 points. Psychic units only.",
+  "tiers": [
+   {
+    "label": "Tier 1",
+    "cost": 1
+   },
+   {
+    "label": "Tier 2",
     "cost": 2
+   },
+   {
+    "label": "Tier 3",
+    "cost": 3
+   }
+  ],
+  "requiresXeno": "psychic"
+ },
+ {
+  "id": "regeneration",
+  "name": "Regeneration",
+  "text": {
+   "flavor": "Wounds that should be fatal just aren't, for this thing.",
+   "rule": "As an ordered activation succeeding on a 7+, this unit restores one previously lost Strength Point (from any cause), never above its starting total."
   },
-  {
-    "id": "fearsome",
-    "name": "Fearsome",
-    "text": "In a universe of plasma bolts and clawed monstrosities, there are still some things that strike terror into the hearts of even the most hardened soldiers. Such units will affect all opposing troop types in the same way: • Courage tests caused as the result of an Attack (but not Shooting) by a Fearsome unit suffer an additional -1 to the total. Fearsome does not apply when the Fearsome unit is the Defender. • Demonic, Mechanoid, and Undead units, and those with the Fearsome xeno rule themselves, are not frightened of Fearsome opponents.",
-    "costText": "2 points.",
-    "cost": 2
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "skimmer",
+  "name": "Skimmer",
+  "text": {
+   "flavor": "Jet packs, hoverboards, or anti-grav; it never quite touches the ground.",
+   "rule": "When moving, including during Retreats and Attacks, this unit ignores rough and impassable terrain. It may not end its move in impassable terrain."
   },
-  {
-    "id": "fearful",
-    "name": "Fearful",
-    "text": "Fearful units are really not suited to the battlefield. They may be civilians impressed into the army, yet thoroughly unimpressed by what they find there, or they could be a prey species with an innate need not to be near danger. Every Courage and Rally test suffers -1 to the total; if Attacked by a Fearsome unit, Courage tests are taken at -2.",
-    "costText": "-1 point.",
-    "cost": -1
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "slow",
+  "name": "Slow",
+  "text": {
+   "flavor": "Short legs, heavy kit, or just no hurry to get there.",
+   "rule": "Reduces this unit's Maximum Movement by 2\". Cannot be combined with a Mobile option."
   },
-  {
-    "id": "flying",
-    "name": "Flying",
-    "text": "This unit spends more time in the air than on the ground during combat, either due to possessing wings, jet packs, or bulging helium sacs. This brings with it both advantages and vulnerabilities: • A Flying unit may move over friends and enemies during its movement, but at the end of its move must adhere to the 1\" proximity rule just like any other unit. This is still a great advantage, as units may not usually interpenetrate. • Line of sight can be drawn to or from Flying units from anywhere on the tabletop, except where that passes through the roofs of buildings, forest canopies, or other forms of overhead cover; assume Flying units are positioned well above the table. Flying units can always draw line of sight to other Flying units. • Flying units ignore all terrain for Moving and Attacking, and they never benefit from cover. • Units targeted by a Flying unit will only benefit from cover if it is a building, woods, or some other overhead cover. • All measurement of distances involving Flying units is counted from the models’ bases, not the position of the models themselves. • Flying units with the Wild Charge rule will move over friendly units that would usually block the charge, to contact an enemy unit. • Flying units cannot be Attacked by units that do not also possess the Flying xeno rule, but can be targeted by Shooting. Range is measured from base to base. Flying units can Attack units on the ground as normal; they are swooping down to swipe with claws or make a strafing run before wheeling away again. Units they Attack can Defend as normal. • When Retreating, a Flying unit moves its full Maximum Movement, and may move over any other unit or terrain; this may result in it retreating off the table more quickly than you would wish!",
-    "costText": "2 points.",
-    "cost": 2
+  "costText": "-1 point.",
+  "cost": -1
+ },
+ {
+  "id": "special-insertion",
+  "name": "Special Insertion",
+  "text": {
+   "flavor": "Dropped behind the lines by teleporter, tunnel, or old-fashioned parachute.",
+   "rule": "This unit begins in reserve rather than deploying with the rest of the Detachment. It enters play one of two ways: a Psychic unit that Manifests the Summoner power can place a single Special Insertion unit anywhere within 12\" of itself and at least 6\" from any enemy, with no activation test needed, though the summoned unit cannot act until your next activation phase; or the unit can be activated from off the table with an ordered Move (even if Move is normally free for it) - on a success, place it anywhere at least 6\" from an enemy, and on a failure you may still place it there, but first roll a die against its Courage: rolling below its Courage inflicts that many Strength Points of damage and a Courage test. If your Detachment has no other unit on the table, the next Special Insertion unit activated off-table needs no activation roll for its Move. A Special Insertion vehicle with the Transport ability may bring one infantry unit in as passengers, even if that unit doesn't have Special Insertion itself."
   },
-  {
-    "id": "force-field",
-    "name": "Force Field",
-    "text": "This unit is protected by an energy field, either psychic or technological in nature, that absorbs incoming weapons fire. • Class I force fields cost 1 point and cover the basic variety, providing only limited protection. When the unit loses Strength Points to Shooting (but not during Attacks), roll a die for each lost Strength Point. For each 6 rolled, reduce the number of Strength Points lost by one. • Class II force fields cost 2 points and work the same way as Class I fields, but are twice as effective, reducing lost Strength Points on a roll of 5 or 6. • Class III force fields cost, you guessed it, 3 points. They are top of the range, reducing lost Strength Points on results of 5 or 6, and protect against both Attacks and Shooting.",
-    "costText": "1–3 points.",
-    "tiers": [
-      {
-        "label": "Class I",
-        "cost": 1
-      },
-      {
-        "label": "Class II",
-        "cost": 2
-      },
-      {
-        "label": "Class III",
-        "cost": 3
-      }
-    ]
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "stabilised-weaponry",
+  "name": "Stabilised Weaponry",
+  "text": {
+   "flavor": "Smart weapons and powered armour let infantry shoot straight on the run.",
+   "rule": "This unit can Move and Shoot as a single ordered activation, the same way vehicles can."
   },
-  {
-    "id": "hatred",
-    "name": "Hatred",
-    "text": "Some believe that the future will be a place of bonding and mutual respect between cultures. The members of this unit do not subscribe to that view. Perhaps they’ve seen their foes do truly terrible things, lost close friends or relatives to the war, or maybe they’re just bigots. Before deployment, pick a target for your unit’s Hatred; units with the Demonic, Mechanoid, or Undead xeno rules, or a particular species of alien (including, for aliens, humans), are all applicable choices. Members of another religion or a different nationality, so long as that would be obvious on the battlefield, such as in a war between two cults, or a war between nations of the same species, is also a possibility. All of your units subject to Hatred must direct this towards the same target. For example, all of the units in your Detachment of secret government UFO hunters that have this rule could hate Zeta Reticulans; but you couldn’t have some hating Zeta Reticulans and some hating Pleiadians. Units with Hatred gain the Wild Charge special rule against enemy units they hate. Units with Hatred that already have the Wild Charge special rule automatically pass their Wild Charge tests against enemy units they hate.",
-    "costText": "1 point.",
-    "cost": 1
+  "costText": "2 points. Infantry only.",
+  "cost": 2,
+  "infantryOnly": true
+ },
+ {
+  "id": "stun-weapons",
+  "name": "Stun Weapons",
+  "text": {
+   "flavor": "Less-lethal, unless the point is to make what comes next easier.",
+   "rule": "Applies to this unit's Attack and Shoot actions. Hits are resolved as normal but never cause Strength Point loss; instead, count would-be casualties as double for the resulting Courage test (Attacks still need enough hits to have caused Strength Point loss before a test is triggered; Shooting triggers a test on any hit, as normal). This unit may choose to use lethal force instead before rolling any given Attack or Shoot action. Demonic, Mechanoid, and Undead units are immune to Stun Weapons."
   },
-  {
-    "id": "hive-mind",
-    "name": "Hive Mind",
-    "text": "Some alien species have an innate psychic connection, while others are dominated by powerful psychics or sentient plants (which show up surprisingly often in science fiction) and operate as little more than puppets to their overlords. While the Detachment’s Commander is on the table and not Suppressed, all friendly units that have the Hive Mind xeno rule are counted as if they were within 12\" of the Commander model (i.e. they gain bonuses to Courage and activation tests, plus potentially certain Commander traits). If a unit with the Hive Mind rule is actually within 12\" of the Commander model, they also count as being Courage 0+. A Commander unit may not take this xeno rule; the Commander has a more developed sense of self-preservation, making them effectively a weak link if the enemy wants to break the psychic connection.",
-    "costText": "1 point.",
-    "cost": 1
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "teleport-jump",
+  "name": "Teleport Jump",
+  "text": {
+   "flavor": "Translating between two points in space without covering the distance between.",
+   "rule": "As a Move action, this unit may teleport instead of moving normally: choose a direction, roll two dice, and move up to that many inches, ignoring all terrain including impassable terrain (or less, if preferred). It must still obey unit cohesion and the 1\" spacing rule on arrival, and cannot end split across separate areas it couldn't otherwise occupy; if it doesn't fully fit where it lands, place it further back along its route. If the distance rolled is a double, the unit still moves as normal but loses Strength Points equal to one of the dice (a double-4 costs four Strength Points) and takes a Courage test."
   },
-  {
-    "id": "immobile",
-    "name": "Immobile",
-    "text": "Artillery, fixed turret emplacements, and many plant-based aliens tend not to move much. With this xeno rule, a unit loses its ability to initiate Move and Attack actions, and is automatically routed if forced to Retreat. As Immobile units cannot take Move actions, they cannot board or disembark a transport vehicle. Although immobile artillery, for example, is usually towed into place, the time taken to prepare such weapons for firing means that it is assumed to have occurred prior to the game beginning. If you want a towed light artillery piece, consider Support Infantry with the Slow xeno rule instead. Immobile units cannot move onto the table after the start of Turn 1, unless they also have the Special Insertion xeno rule to enter play via parachute, teleportation, or some other unorthodox means. Mantic Games Plague Detachment – looking at them you just know",
-    "costText": "-2 points.",
-    "cost": -2
+  "costText": "1 point.",
+  "cost": 1
+ },
+ {
+  "id": "unarmed",
+  "name": "Unarmed",
+  "text": {
+   "flavor": "No gun, whether by nature, by role, or because someone took it away.",
+   "rule": "Changes this unit's Shoot and Shoot Value to '-'. Only a unit that would normally have a ranged attack may take this xeno rule, and it cannot be combined with any option or xeno rule that affects Shooting, unless (as with Stun Weapons) that rule also affects Attacks."
   },
-  {
-    "id": "infiltrators",
-    "name": "Infiltrators",
-    "text": "Instead of deploying normally, this unit has snuck forwards under cover of night, preliminary bombardment, or by the simple expedient of looking like harmless civilians. After deployment, but prior to the start of the game, each unit of Infiltrators may make a single Move activation. This Move action does not require an activation test and you may roll a die and increase the number of inches each unit can move by the result. A unit of Infiltrators cannot use its pre-game Move action to embark or disembark from a vehicle. If both players have Infiltrators, the attacker should move all of their Infiltrators first.",
-    "costText": "1 point.",
-    "cost": 1
+  "costText": "-1 point.",
+  "cost": -1
+ },
+ {
+  "id": "undead",
+  "name": "Undead",
+  "text": {
+   "flavor": "Reanimated, and none too gentle about it.",
+   "rule": "Undead units ignore the effects of Fearsome units and Stun Weapons, and have a Courage value of 0+, so they never become Suppressed, though they still rout on a negative Courage test result. Excess hits taken during Attacks are rounded up rather than down when working out Strength Point loss (for example, three hits against Armour 2 costs two Strength Points, not one). Shooting is resolved normally."
   },
-  {
-    "id": "inspirational-leader",
-    "name": "Inspirational Leader",
-    "text": "One member of this unit is a particularly inspiring leader, whether they are a well-respected NCO, evangelising priest, or an expert propagandist. This unit, plus any other friendly units within 6”, may re-roll failed Courage tests (including Rallying), once per test. This effect only applies if the Inspirational Leader’s unit is not Suppressed (therefore this rule cannot be used to Rally their own unit). This xeno rule stacks with Commander bonuses, albeit with a smaller radius of effect.",
-    "costText": "2 points.",
-    "cost": 2
+  "costText": "0 points.",
+  "cost": 0
+ },
+ {
+  "id": "unstable",
+  "name": "Unstable",
+  "text": {
+   "flavor": "Shoddy construction, an explosive power core, or something chemical; it's all one bad roll from going wrong.",
+   "rule": "Whenever this unit rolls a double on any activation roll, including out-of-sequence ones like Wild Charge or Firefight (but not Rally tests), the order still succeeds or fails as normal, but the unit loses Strength Points equal to the result of one of the dice (a double-4 costs four Strength Points)."
   },
-  {
-    "id": "mechanoid",
-    "name": "Mechanoid",
-    "text": "This rule covers all manner of artificial units, whether they be AI-controlled vehicles, androids, robots, synthetics, or cyborgs that are more machine than man. Mechanoid units have the following additional rules: • Ignore the effects of Stun Weapons. • Mechanoids follow their programming unfailingly, but struggle with unexpected events outside their programming and objectives. Each unit may have an additional Free Action from the following: Attack, Move or Shoot. However, they suffer a -1 modifier to any ordered activation tests. • Mechanoids never take Courage tests, and so never become Suppressed or forced to rout. However, they become significantly less effective as they accumulate damage. Mechanoid units at half Strength Points or below lose all their Free Actions; such actions then count as ordered activations. Furthermore, a Mechanoid unit at half Strength Points or below that rolls a double on a failed activation roll suffers a critical system failure and undergoes emergency shutdown; immediately counting as destroyed.",
-    "costText": "0 points.",
-    "cost": 0
-  },
-  {
-    "id": "mercenary",
-    "name": "Mercenary",
-    "text": "It’s cheaper to hire mercenaries than it is to maintain a standing army. Better yet, if they do anything unsavoury, you can deny issuing any such order. Especially when you actually did. The downside of fielding Mercenary units is that they’re often somewhat unreliable. Roll a die for each Mercenary unit in your Detachment before the game begins, after determining Attacker and Defender but prior to deployment. It’s not compulsory to add this xeno rule to every unit in your force that fights as mercenaries; more reliable (or boring) mercenaries can just be treated as regular units. MERCENARY TABLE Die roll Effect 1 AWOL: Perhaps your mercenaries are off raiding somewhere (hopefully enemy territory!), sleeping off the result of spending their wages last night, or have just taken their money and run. Whatever the case, they are not where they ought to be. You cannot use the unit in this battle, but they do not count as casualties for scenario victory purposes. 2 Late: Maybe they’re just unreliable, or maybe you should have paid for the truck to carry their supplies after all. You can see them in the distance, but the enemy are somewhat nearer, so you’ll have to start without them. Roll a die; the result is the earliest turn on which the unit can arrive at the battle. Once that turn arrives, they may make a Move action to come onto the table from your deployment edge (or somewhere else suitable if that’s not appropriate to the scenario). Remember to dock their pay accordingly. 3 Reluctant: They’re just not in the mood today, possibly due to hangovers. The unit suffers a -1 modifier to all Attack and Shoot ordered activations. 4 Eager: The mercenaries are well-motivated and keen to provide value for money. They gain a +1 modifier to all Attack and Shoot ordered activation rolls. 5 Bloodthirsty: Or maybe just drunk. The unit gains the Wild Charge rule. If it already has the Wild Charge rule, it now automatically passes any Wild Charge tests without needing to roll. 6 Raiders: On their contractually obligated day off, the mercenaries have been raiding enemy supply lines for a quick buck. Roll a die; the cheapest unit from the enemy’s Detachment loses that many Strength Points prior to the game beginning, either due to casualties or because soldiers had to be abstracted to guard against further raids. The enemy unit cannot be reduced to less than 1 Strength Point by this result; nor does the damage cause a Courage test.",
-    "costText": "-1 point.",
-    "cost": -1
-  },
-  {
-    "id": "mono-molecular-blades",
-    "name": "Mono-Molecular Blades",
-    "text": "Science fiction throws up various excuses for keeping melee weapons viable in a universe of plasma cannons and orbital bombardments; one of these is by making the swords and axes themselves high- tech. This xeno rule doesn’t just cover blades that have been sharpened to an edge one molecule thick, but also those with chainsaw teeth, disruption fields, electrical pulses, neurotoxin dispensers, or diamond-hardened edges, as well as laser swords, pain gauntlets, and any other variety of melee- focused sci-fi weaponry, so long as it abides by either the laws of physics or the rule of cool. When fighting during Attacks, whether as Attacker or Defender, any 6s rolled by this unit count as two hits, rather than the usual one.",
-    "costText": "2 points.",
-    "cost": 2
-  },
-  {
-    "id": "psychic",
-    "name": "Psychic",
-    "text": "Psychics turn up across science fiction, and can stand in for wizards or other magic-users in more fantastical settings. One or more members of the unit can Manifest psychic powers, and how many it knows depends on the points spent: Delta-Class (1 point) knows one power, Gamma-Class (2 points) knows two, Beta-Class (3 points) knows three, and Alpha-Class (4 points) knows three and adds 6\" to the range of every power. Manifesting a power is an ordered activation that must roll the power's Difficulty or better; at half Strength or below the activation test takes a -1 modifier. A unit may have only one power active at a time, and chooses its powers before the scenario is picked. A Psychic unit's Shoot, Attack, Defence and Armour may also stand for raw psychic force rather than weapons, though such Attacks and Shooting do not count as psychic in game terms.",
-    "costText": "1–4 points.",
-    "tiers": [
-      { "label": "Delta-Class", "sub": "1 power", "powers": 1, "cost": 1 },
-      { "label": "Gamma-Class", "sub": "2 powers", "powers": 2, "cost": 2 },
-      { "label": "Beta-Class", "sub": "3 powers", "powers": 3, "cost": 3 },
-      { "label": "Alpha-Class", "sub": "3 powers, +6\" range", "powers": 3, "cost": 4 }
-    ]
-  },
-  {
-    "id": "psychic-hazards",
-    "name": "Psychic Hazards",
-    "text": "Psychic powers may be risky to use, with hazards ranging from bleeding eyes or shrivelled limbs, right up to exploding heads and full-on possession by extra-dimensional entities. A unit with the Psychic Hazards xeno rule will suffer Strength Point loss if it rolls a double on an activation test to Manifest a psychic power. If the activation test is successful, the power is still Manifested, although should the Manifesting unit be Suppressed or destroyed by the loss of Strength Points, any effects of the psychic power will end immediately. The number of Strength Points lost is equal to the number rolled on one of the activation test dice, so a double-4 would result in the loss of four Strength Points.",
-    "costText": "-1 point. Psychic units only.",
-    "cost": -1,
-    "requiresXeno": "psychic"
-  },
-  {
-    "id": "psychic-resistance",
-    "name": "Psychic Resistance",
-    "text": "Some species are psychically ‘blunt’, either because their minds are particularly unlike those of other species, so psychics struggle to manipulate them, or because they somehow radiate an anti- psychic aura that neutralises or disrupts nearby psychic fields. If this unit is successfully targeted by a psychic power, whether friendly or hostile, roll one die. On a result of 4 or more, the psychic power has no effect. The activation roll used to Manifest the power still counts as a success. This xeno rule has no effect against Attacks or Shooting by a Psychic enemy unit, even when they represent the unit’s psychic abilities; a telekinetically hurled rock is moving under the influence of physics, not brain-magic, when it hits you, while a biomancer’s electricity is still electricity, however it was first generated.",
-    "costText": "1 point.",
-    "cost": 1
-  },
-  {
-    "id": "psychic-species",
-    "name": "Psychic Species",
-    "text": "Most exhibitors of psychic power are rare within their species, either being mutants, practitioners of esoteric rites, or artificially modified from the species baseline. However, a few species are innately psychic, Manifesting psychic powers as easily as other species breathe or move around. Units with this xeno rule gain the ability to Manifest certain psychic powers as a Free Action, depending on the number of points invested in Psychic Species: • 1 point allows psychic powers of Difficulty 6+ to be Manifested as a Free Action. • 2 points allows psychic powers of Difficulty 6+ or 7+ to be Manifested as a Free Action. • 3 points allows all psychic powers to be Manifested as a Free Action. Even if the entire Detachment is made up of members of the same species, only those with the Psychic xeno rule have any reason to take Psychic Species.",
-    "costText": "1–3 points. Psychic units only.",
-    "tiers": [
-      {
-        "label": "Tier 1",
-        "cost": 1
-      },
-      {
-        "label": "Tier 2",
-        "cost": 2
-      },
-      {
-        "label": "Tier 3",
-        "cost": 3
-      }
-    ],
-    "requiresXeno": "psychic"
-  },
-  {
-    "id": "regeneration",
-    "name": "Regeneration",
-    "text": "Some creatures have incredible regenerative abilities. As an ordered activation, succeeding on a 7+, this unit can restore 1 Strength Point it has previously lost, for any reason, during the game. This cannot take the unit above its initial Strength Point total.",
-    "costText": "1 point.",
-    "cost": 1
-  },
-  {
-    "id": "skimmer",
-    "name": "Skimmer",
-    "text": "This unit is equipped with short-range jet packs, hoverboards, anti-gravity motors, localised teleportation, or similar. When it moves, including during Retreats and Attacks, the unit can ignore rough and impassable terrain, gliding straight over it. The unit may not end its move in impassable terrain.",
-    "costText": "1 point.",
-    "cost": 1
-  },
-  {
-    "id": "slow",
-    "name": "Slow",
-    "text": "For whatever reason, whether short legs, heavy armour and equipment, or reluctance to fight, this unit is particularly slow. Reduce its Maximum Movement value by 2\". This cannot be combined with the Mobile option available to some units.",
-    "costText": "-1 point.",
-    "cost": -1
-  },
-  {
-    "id": "special-insertion",
-    "name": "Special Insertion",
-    "text": "This xeno rule represents troops entering battle via teleportation, tunnelling (whether through the ground or between universes), orbital drop vehicles, grav-belts, jet packs, or even old-fashioned parachutes, allowing them to deploy over key objectives or behind enemy lines. Special Insertion is also a convenient way of allowing Demonic or Undead units to be summoned to the battlefield by gibbering Psychic cultists. Special Insertion units begin the game in reserve and are not deployed with the rest of your Detachment. They deploy in one of two ways: • A Psychic unit that successfully Manifests the Summoner psychic power can place a single Special Insertion unit anywhere within 12\" of themselves, but at least 6\" away from any enemy units. Summoning units is risk-free, but the summoned unit cannot make an ordered activation during this activation phase, but can act as normal starting from your next activation phase. • A Special Insertion unit can be activated while off the table, but it can only make an ordered Move activation (even if Move is normally a Free Action for it). If successful, place the unit anywhere on the table, so long as it is not within 6” of an enemy unit. If unsuccessful, the unit can still be placed on the table, but if you do, you must roll a die and compare it to the unit’s Courage; if you roll below the unit’s Courage, it suffers the die result in Strength Point damage, which causes an immediate Courage test. You can choose not to deploy a Special Insertion unit on a failed activation test and not have it suffer any Strength Point damage; either way, as with any other ordered activation, the failure ends your activation phase. In an exception to the above requirement, if there are no other friendly units on the table (e.g. your entire Detachment has Special Insertion or you’ve just had a very bad game), the next Special Insertion unit to be activated off-table does not need to make an activation roll for its Move action. If the Special Insertion unit is a vehicle with the Transport ability, it may be deployed with a single unit of infantry as passengers, who do not need to also possess the Special Insertion rule.",
-    "costText": "1 point.",
-    "cost": 1
-  },
-  {
-    "id": "stabilised-weaponry",
-    "name": "Stabilised Weaponry",
-    "text": "The difficulty of aiming while on the move and the desire of most soldiers to move into cover before shooting at the enemy mean that infantry have traditionally had to trade-off between mobility and firepower. In the far future, however, smart weapons, stabilised weapon harnesses, or powered armour can allow foot soldiers to fire accurately on the move. Units with Stabilised Weaponry can Move and Shoot as an ordered activation in the same way as vehicles.",
-    "costText": "2 points. Infantry only.",
-    "cost": 2,
-    "infantryOnly": true
-  },
-  {
-    "id": "stun-weapons",
-    "name": "Stun Weapons",
-    "text": "Some civilised cultures utilise less-lethal weaponry, ranging from simple electro-shock batons and chemical incapacitants, up to exotic energy weapons that allow them to remove the enemy’s ability or willingness to fight without causing lasting harm. Less civilised cultures may use the same weapons, but only because it makes their victims easier to slaughter afterwards. This xeno rule applies to both a unit’s Attack and Shoot actions. Hits from Stun Weapons are treated as normal, but do not cause Strength Point loss. Instead, any ‘casualties’ that would have been inflicted count as double for the purposes of Courage tests. Note that Attacks will need to cause enough hits that, under normal circumstances, they would cause Strength Point loss before a Courage test is required, although Shooting causes Courage tests if any hits are rolled, as normal. For example, a landing party from the Interplanetary Union fire stun pulses into a mob of Armour 3 Lesser Xenomorphs, rolling six hits. This would normally be enough to cause two Strength Points of damage, and thus inflicting a -2 penalty to the subsequent Courage test. Instead, no Strength Points are lost, but the Lesser Xenomorphs suffer a -4 penalty to their Courage test. Before any dice are rolled for a given Attack or Shoot action, a unit with Stun Weapons may choose to use lethal force if it prefers. Phasers have two settings, after all. Demonic, Mechanoid, and Undead units are immune to the effects of Stun Weapons. Copplestone Castings’ Bio-Chem Squad prepare to ‘clean up’ the area on their recovery mission. Painted and photographed by Kevin Dallimore.",
-    "costText": "1 point.",
-    "cost": 1
-  },
-  {
-    "id": "teleport-jump",
-    "name": "Teleport Jump",
-    "text": "Some species are innately capable of translating between dimensions when they move, while other species develop technology that allows for short range teleportation, perhaps utilising colour- coded portals. When this unit takes a Move action, it can either choose to move normally, or it can teleport. If it chooses to teleport, choose the desired direction and then roll two dice; you may move the unit any number of inches up to the result. You do not have to move the full distance but may ignore all terrain effects (including impassable terrain). The unit must abide by unit cohesion and the 1\" unit spacing rule when it rematerializes, so, for example, cannot end its move split between two separate tunnels of a spaceship. If the unit cannot completely fit in an area it can reach with the Teleport Jump, then it must be placed further back along its route. If the distance rolled on the two dice is a double, the unit still moves as above, but something has gone horribly wrong during teleportation; the unit loses a number of Strength Points equal to the result of one of the dice (e.g. a double-4 will inflict four Strength Points of damage). This will cause a Courage test.",
-    "costText": "1 point.",
-    "cost": 1
-  },
-  {
-    "id": "unarmed",
-    "name": "Unarmed",
-    "text": "Most units carry guns on the battlefield. Those that don’t tend to be monstrous creatures of one sort or another, such as the Xenomorph unit types or hordes of Militia Rabble zombies. Other units lack ranged weaponry because they’re technically non-combatants, such as medics, or are temporarily disarmed, as is the case with recently rescued prisoners. Furthermore, particularly heroic or pulpy sci-fi heroes and villains might prefer to fight with blades or have psychic powers instead of guns. Whatever the reason, the Unarmed xeno rule changes a unit’s Shoot and Shoot Value characteristics to ‘-’. Only units that normally have a ranged attack can take this xeno rule, and they can’t combine it with any other options or xeno rule that affect their Shooting abilities, unless (such as with Stun Weapons) it also affects Attacks.",
-    "costText": "-1 point.",
-    "cost": -1
-  },
-  {
-    "id": "undead",
-    "name": "Undead",
-    "text": "This xeno rule may not be suitable for some science fiction settings, but reanimated corpses, whether due to alien viruses, cybernetic implants, psychic puppetry, or a straight-up zombie apocalypse, are still a recurring feature in the genre. Undead units have the following additional rules: • Ignore the effects of Fearsome units. • Ignore the effects of Stun Weapons. • Courage value of 0+. This means that your unit will never become Suppressed, but will still rout on a negative Courage Test result as enough of the unit take crippling injuries that they cease to be combat effective or the force reanimating them dissipates. • Due to their brittle structure, any excess hits they take during Attacks are rounded up (as opposed to down) when working out how many Strength Points are lost (for example, three hits on an Armour 2 unit will result in two Strength Points being lost rather than one). Shooting is resolved normally as bullets and shrapnel just pass harmlessly through organs that aren’t being used.",
-    "costText": "0 points.",
-    "cost": 0
-  },
-  {
-    "id": "unstable",
-    "name": "Unstable",
-    "text": "The unit may be composed of cheap and shoddily assembled robots, powered by an explosive power core, or be pumped full of incredibly dangerous chemical enhancements, but whatever the cause, it is at real risk of suffering damage if it exerts itself too much. If this unit rolls a double on an activation roll, including for ‘out-of-sequence’ activations like Wild Charge or Firefight tests, but excluding Rally tests, the order passes or fails as normal, but the unit loses a number of Strength Points equal to the result of one of the dice (for example, a double-4 would result in losing four Strength Points). Mantic Games Veermyn Rumbler – a rather unconventional CHAPTER FIVE SCENARIOS Stand-up fights, bug hunts, and all stops in between! Xenos Rampant is a game about fighting small- scale battles between post-apocalyptic raiding forces, settlement militias, colonial expeditionary forces, special forces teams, bands of alien-worshipping cultists, and any other science fiction fighting force you can imagine. Sometimes these games will represent clashes between the entirety of the forces available to each side at the time of the battle, or your Detachments could simply be limited formations of a larger force, each playing their small part in a vast, planet-wide conflict, or even an all-out interstellar war. These scenarios can be played either as standalone skirmishes between isolated forces or as operations in a larger war without any real alteration to the rules. SETTING UP A GAME If you and your opponent want to play a particular scenario, or have come up with one of your own, have at it! Sweep And Clear is a simple one to try for your first game of Xenos Rampant, while Secret Mission is a straightforward battle with a few twists.",
-    "costText": "-2 points.",
-    "cost": -2
-  }
+  "costText": "-2 points.",
+  "cost": -2
+ }
 ];
-
 export const SPECIAL_RULES = {
   "Back Into The Fray": {
     flavor: "Elite troops treat a fall-back as nothing more than a better run-up to the next assault.",
