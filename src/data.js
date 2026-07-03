@@ -1272,7 +1272,12 @@ export const XENO_RULES = [
   "name": "Crusader",
   "text": {
    "flavor": "Zeal enough to turn back an army twice the size, so long as it's the right army.",
-   "rule": "Before deployment, pick a target for this unit's wrath: any unit with the Demonic, Mechanoid, or Undead xeno rule, a particular alien species (humans included), or a rival faith or nationality visibly opposed on the table. Against that target, this unit may re-roll all misses during Shooting and Attacks (including Firefights and Defending), and ignores the effects of Fearsome units of the targeted type. The point cost only applies while the opposing Detachment includes a unit of the targeted type; otherwise it costs nothing. A Detachment fielding a Crusader may not itself include units of its own targeted type."
+   "rule": [
+    "Before deployment, pick a target: any unit with the Demonic, Mechanoid, or Undead xeno rule, a particular alien species (humans included), or a rival faith or nationality visibly opposed on the table.",
+    "Against that target, it may re-roll all misses during Shooting and Attacks, including Firefights and while Defending, and ignores the effects of Fearsome units of the targeted type.",
+    "The point cost only applies while the opposing Detachment includes a unit of the targeted type; otherwise it costs nothing.",
+    "A Detachment fielding a Crusader may not itself include units of its targeted type."
+   ]
   },
   "costText": "4 points / 0 points.",
   "tiers": [
@@ -1293,7 +1298,12 @@ export const XENO_RULES = [
   "name": "Demonic",
   "text": {
    "flavor": "Something that shouldn't exist by the rules of physics you grew up with.",
-   "rule": "Demonic units ignore the effects of Stun Weapons and of Fearsome units, and count as Fearsome themselves at no extra cost. Enemies targeting a Demonic unit with a psychic power take a +2 modifier to their activation roll. Strength Point loss inflicted on another Demonic unit is doubled, in both directions. A Demonic unit that has lost any Strength Points counts as also having the Unstable xeno rule."
+   "rule": [
+    "Ignores the effects of Stun Weapons and of Fearsome units, and counts as Fearsome itself at no extra cost.",
+    "Enemies targeting it with a psychic power take a +2 modifier to their activation roll.",
+    "Strength Point loss inflicted on another Demonic unit is doubled, in both directions.",
+    "Once it has lost any Strength Points, it also counts as having the Unstable xeno rule."
+   ]
   },
   "costText": "0 points.",
   "cost": 0
@@ -1303,7 +1313,12 @@ export const XENO_RULES = [
   "name": "Exploder",
   "text": {
    "flavor": "It was always going to end in a bang; the only question was when.",
-   "rule": "The 1-point version explodes automatically on reaching 0 Strength Points, before models are removed (not if the unit is removed some other way, such as routing). The 2-point version instead explodes only by choice, as an ordered activation succeeding on a 5+; a failed test still destroys the unit with no further effect. When it explodes, treat it as a Shoot action hitting on 3+ against every unit and building within 6\", rolling a separate pool of dice per target equal to the Exploder's Strength Points immediately before it went off. The Exploder is then removed from play as destroyed."
+   "rule": [
+    "Small charge (1 point): explodes automatically on reaching 0 Strength Points, before models are removed. It does not explode if removed some other way, such as routing.",
+    "Large charge (2 points): explodes only by choice, as an ordered activation on a 5+; a failed test still destroys the unit with no further effect.",
+    "When it explodes, treat it as a Shoot action hitting on 3+ against every unit and building within 6\", rolling a pool of dice per target equal to the Exploder's Strength Points just before it went off.",
+    "The Exploder is then removed from play as destroyed."
+   ]
   },
   "costText": "1–2 points.",
   "tiers": [
@@ -1334,7 +1349,10 @@ export const XENO_RULES = [
   "name": "Fearsome",
   "text": {
    "flavor": "Some things still make even hardened soldiers flinch.",
-   "rule": "Courage tests caused by this unit's Attacks (not its Shooting) suffer an additional -1, unless this unit is the one Defending. Demonic, Mechanoid, and Undead units, and units that are themselves Fearsome, are unaffected."
+   "rule": [
+    "Courage tests caused by its Attacks, but not its Shooting, suffer an additional -1, unless it is the one Defending.",
+    "Demonic, Mechanoid, and Undead units, and units that are themselves Fearsome, are unaffected."
+   ]
   },
   "costText": "2 points.",
   "cost": 2
@@ -1354,7 +1372,15 @@ export const XENO_RULES = [
   "name": "Flying",
   "text": {
    "flavor": "Spends more time overhead than on the ground.",
-   "rule": "May move over friendly and enemy units, but must still obey the 1\" proximity rule at the end of its move. Can draw line of sight from and to anywhere on the table (except through building roofs, forest canopies, or other overhead cover), and always sees other Flying units. Ignores all terrain when Moving or Attacking and never benefits from cover; a target it Shoots only benefits from overhead cover such as buildings or woods. All distances to or from it are measured base to base. Using Wild Charge, it may fly over friendly units that would otherwise block the charge. It can only be Attacked by other Flying units, though it can still be Shot at, and it Attacks ground units normally, which Defend as usual. When Retreating, it moves its full Maximum Movement and may cross any unit or terrain, which can carry it off the table."
+   "rule": [
+    "Ignores all terrain when Moving or Attacking and never benefits from cover; a target it Shoots only benefits from overhead cover such as buildings or woods.",
+    "May move over friendly and enemy units, but must still obey the 1\" proximity rule at the end of its move.",
+    "Can draw line of sight from and to anywhere on the table (except through building roofs, forest canopies, or other overhead cover), and always sees other Flying units.",
+    "All distances to or from it are measured base to base.",
+    "Using Wild Charge, it may fly over friendly units that would otherwise block the charge.",
+    "It can only be Attacked by other Flying units, though it can still be Shot at, and it Attacks ground units normally, which Defend as usual.",
+    "When Retreating, it moves its full Maximum Movement and may cross any unit or terrain, which can carry it off the table."
+   ]
   },
   "costText": "2 points.",
   "cost": 2
@@ -1364,7 +1390,11 @@ export const XENO_RULES = [
   "name": "Force Field",
   "text": {
    "flavor": "An energy field standing between this unit and incoming fire.",
-   "rule": "Class I: when this unit loses Strength Points to Shooting (not Attacks), roll one die per Strength Point lost; each 6 rolled reduces the loss by one. Class II: as Class I, but reduces the loss on a 5 or 6. Class III: as Class II, but also protects against Attacks as well as Shooting."
+   "rule": [
+    "Class I: when it loses Strength Points to Shooting (not Attacks), roll one die per point lost; each 6 cancels one.",
+    "Class II: as Class I, but each 5 or 6 cancels a lost point.",
+    "Class III: as Class II, and it protects against Attacks as well as Shooting."
+   ]
   },
   "costText": "1–3 points.",
   "tiers": [
@@ -1390,7 +1420,11 @@ export const XENO_RULES = [
   "name": "Hatred",
   "text": {
    "flavor": "Peace between species sounds nice; these soldiers didn't get the memo.",
-   "rule": "Before deployment, pick a target for this unit's hatred: any unit with the Demonic, Mechanoid, or Undead xeno rule, a particular alien species (humans included), or a rival faith or nationality visibly opposed on the table. Every unit in the Detachment with Hatred must share the same target. Against that target, units with Hatred gain the Wild Charge special rule; if they already have Wild Charge, they automatically pass Wild Charge tests against it."
+   "rule": [
+    "Before deployment, pick a target: any unit with the Demonic, Mechanoid, or Undead xeno rule, a particular alien species (humans included), or a rival faith or nationality visibly opposed on the table.",
+    "Every unit in the Detachment with Hatred must share the same target.",
+    "Against that target, units with Hatred gain Wild Charge; if they already have Wild Charge, they automatically pass Wild Charge tests against it."
+   ]
   },
   "costText": "1 point.",
   "cost": 1
@@ -1440,7 +1474,12 @@ export const XENO_RULES = [
   "name": "Mechanoid",
   "text": {
    "flavor": "More machine than man, and it shows both in and out of combat.",
-   "rule": "Mechanoid units ignore the effects of Stun Weapons. Each may take one additional Free Action (Attack, Move, or Shoot), but suffers a -1 modifier on ordered activation tests. They never take Courage tests, so never become Suppressed or routed, but at half Strength Points or below they lose all Free Actions (such actions then count as ordered activations), and a failed activation roll that comes up a double at that point causes a critical shutdown, destroying the unit immediately."
+   "rule": [
+    "Ignores the effects of Stun Weapons.",
+    "May take one additional Free Action (Attack, Move, or Shoot), but takes a -1 modifier on ordered activation tests.",
+    "Never takes Courage tests, so never becomes Suppressed or routed.",
+    "At half Strength Points or below it loses all Free Actions (they become ordered activations), and a failed activation roll that comes up a double there causes a critical shutdown, destroying the unit."
+   ]
   },
   "costText": "0 points.",
   "cost": 0
@@ -1450,7 +1489,15 @@ export const XENO_RULES = [
   "name": "Mercenary",
   "text": {
    "flavor": "Cheaper than a standing army, and deniable if things go wrong.",
-   "rule": "Before deployment (after Attacker and Defender are set), roll one die per Mercenary unit. 1, AWOL: the unit cannot be used this battle but is not a casualty for scenario purposes. 2, Late: roll a die for the earliest turn it may arrive, then it enters with a Move action from your deployment edge. 3, Reluctant: -1 to all Attack and Shoot ordered activations. 4, Eager: +1 to all Attack and Shoot ordered activations. 5, Bloodthirsty: gains Wild Charge, or automatically passes Wild Charge tests if it already has the rule. 6, Raiders: roll a die; the cheapest enemy unit loses that many Strength Points before the game begins (not below 1, and without triggering a Courage test)."
+   "rule": [
+    "Before deployment, after Attacker and Defender are set, roll one die per Mercenary unit.",
+    "1, AWOL: cannot be used this battle, but does not count as a casualty for scenario purposes.",
+    "2, Late: roll a die for the earliest turn it may arrive, then it enters with a Move from your deployment edge.",
+    "3, Reluctant: -1 to all Attack and Shoot ordered activations.",
+    "4, Eager: +1 to all Attack and Shoot ordered activations.",
+    "5, Bloodthirsty: gains Wild Charge, or passes those tests automatically if it already has the rule.",
+    "6, Raiders: roll a die; the cheapest enemy unit loses that many Strength Points before the game, never below 1 and without a Courage test."
+   ]
   },
   "costText": "-1 point.",
   "cost": -1,
@@ -1619,7 +1666,13 @@ export const XENO_RULES = [
   "name": "Special Insertion",
   "text": {
    "flavor": "Dropped behind the lines by teleporter, tunnel, or old-fashioned parachute.",
-   "rule": "This unit begins in reserve rather than deploying with the rest of the Detachment. It enters play one of two ways: a Psychic unit that Manifests the Summoner power can place a single Special Insertion unit anywhere within 12\" of itself and at least 6\" from any enemy, with no activation test needed, though the summoned unit cannot act until your next activation phase; or the unit can be activated from off the table with an ordered Move (even if Move is normally free for it) - on a success, place it anywhere at least 6\" from an enemy, and on a failure you may still place it there, but first roll a die against its Courage: rolling below its Courage inflicts that many Strength Points of damage and a Courage test. If your Detachment has no other unit on the table, the next Special Insertion unit activated off-table needs no activation roll for its Move. A Special Insertion vehicle with the Transport ability may bring one infantry unit in as passengers, even if that unit doesn't have Special Insertion itself."
+   "rule": [
+    "Begins in reserve rather than deploying with the rest of the Detachment.",
+    "A Psychic unit that Manifests the Summoner power can place one Special Insertion unit within 12\" of itself and at least 6\" from any enemy, with no activation test; the summoned unit cannot act until your next activation phase.",
+    "Otherwise it can be activated from off the table with an ordered Move (even if Move is normally free). On a success, place it at least 6\" from any enemy; on a failure you may still place it, but first roll a die against its Courage: rolling below Courage inflicts that many Strength Points and a Courage test.",
+    "If no other friendly unit is on the table, the next Special Insertion unit activated off-table needs no activation roll for its Move.",
+    "A Special Insertion transport may bring one infantry unit in as passengers, even if that unit lacks Special Insertion."
+   ]
   },
   "costText": "1 point.",
   "cost": 1
@@ -1640,7 +1693,13 @@ export const XENO_RULES = [
   "name": "Stun Weapons",
   "text": {
    "flavor": "Less-lethal, unless the point is to make what comes next easier.",
-   "rule": "Applies to this unit's Attack and Shoot actions. Hits are resolved as normal but never cause Strength Point loss; instead, count would-be casualties as double for the resulting Courage test (Attacks still need enough hits to have caused Strength Point loss before a test is triggered; Shooting triggers a test on any hit, as normal). This unit may choose to use lethal force instead before rolling any given Attack or Shoot action. Demonic, Mechanoid, and Undead units are immune to Stun Weapons."
+   "rule": [
+    "Applies to this unit's Attack and Shoot actions.",
+    "Hits resolve as normal but never cause Strength Point loss; instead, count would-be casualties as double for the resulting Courage test.",
+    "Attacks still need enough hits to have caused a Strength Point loss before a test is triggered; Shooting triggers a test on any hit, as normal.",
+    "Before rolling any given Attack or Shoot, the unit may choose to use lethal force instead.",
+    "Demonic, Mechanoid, and Undead units are immune to Stun Weapons."
+   ]
   },
   "costText": "1 point.",
   "cost": 1
@@ -1650,7 +1709,11 @@ export const XENO_RULES = [
   "name": "Teleport Jump",
   "text": {
    "flavor": "Translating between two points in space without covering the distance between.",
-   "rule": "As a Move action, this unit may teleport instead of moving normally: choose a direction, roll two dice, and move up to that many inches, ignoring all terrain including impassable terrain (or less, if preferred). It must still obey unit cohesion and the 1\" spacing rule on arrival, and cannot end split across separate areas it couldn't otherwise occupy; if it doesn't fully fit where it lands, place it further back along its route. If the distance rolled is a double, the unit still moves as normal but loses Strength Points equal to one of the dice (a double-4 costs four Strength Points) and takes a Courage test."
+   "rule": [
+    "As a Move action, it may teleport instead of moving normally: choose a direction, roll two dice, and move up to that many inches, ignoring all terrain including impassable terrain (or less, if preferred).",
+    "It must still obey unit cohesion and the 1\" spacing rule on arrival, and cannot end split across separate areas; if it does not fully fit where it lands, place it further back along its route.",
+    "If the distance rolled is a double, it still moves, but loses Strength Points equal to one of the dice (a double-4 costs four) and takes a Courage test."
+   ]
   },
   "costText": "1 point.",
   "cost": 1
@@ -1670,7 +1733,12 @@ export const XENO_RULES = [
   "name": "Undead",
   "text": {
    "flavor": "Reanimated, and none too gentle about it.",
-   "rule": "Undead units ignore the effects of Fearsome units and Stun Weapons, and have a Courage value of 0+, so they never become Suppressed, though they still rout on a negative Courage test result. Excess hits taken during Attacks are rounded up rather than down when working out Strength Point loss (for example, three hits against Armour 2 costs two Strength Points, not one). Shooting is resolved normally."
+   "rule": [
+    "Ignores the effects of Fearsome units and of Stun Weapons.",
+    "Has a Courage value of 0+, so it never becomes Suppressed, though it still routs on a negative Courage test result.",
+    "Excess hits taken during Attacks round up rather than down when working out Strength Point loss (three hits against Armour 2 costs two Strength Points, not one).",
+    "Shooting is resolved normally."
+   ]
   },
   "costText": "0 points.",
   "cost": 0

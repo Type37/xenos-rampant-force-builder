@@ -724,15 +724,27 @@ function OptionRow({ active, disabled, name, cost, text, onToggle, children }) {
   );
 }
 
-/* renders a rule as an italic flavour line above the plain mechanical text.
-   accepts the new {flavor, rule} shape or a bare string (xeno rules, for now). */
+/* flatten a rule (string or array of bullets) into one string, for plain-text spots */
+const flatRule = (rule) => (Array.isArray(rule) ? rule.join(" ") : rule);
+
+/* renders a rule as an italic flavour line above the mechanical text. the rule may
+   be a plain string or an array of bullet strings (rendered as a list). */
 function RuleText({ data, className }) {
   if (!data) return null;
   if (typeof data === "string") return <p className={className}>{data}</p>;
+  const { flavor, rule } = data;
+  if (Array.isArray(rule)) {
+    return (
+      <div className={className}>
+        {flavor && <span className="xr-flavor">{flavor}</span>}
+        <ul className="xr-rule-list">{rule.map((b, i) => <li key={i}>{b}</li>)}</ul>
+      </div>
+    );
+  }
   return (
     <p className={className}>
-      {data.flavor && <span className="xr-flavor">{data.flavor}</span>}
-      {data.rule}
+      {flavor && <span className="xr-flavor">{flavor}</span>}
+      {rule}
     </p>
   );
 }
@@ -741,6 +753,7 @@ function RuleText({ data, className }) {
 function withPrereqNote(data, note) {
   if (!data) return note;
   if (typeof data === "string") return `${note} ${data}`;
+  if (Array.isArray(data.rule)) return { flavor: data.flavor, rule: [note, ...data.rule] };
   return { flavor: data.flavor, rule: `${note} ${data.rule}` };
 }
 
@@ -1512,7 +1525,7 @@ function PrintView({ list }) {
                   {opts.upgrades && hasRules && (
                     <div className="xr-pc-rules">
                       {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
-                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : <>{x.text.flavor && <i>{x.text.flavor} </i>}{x.text.rule}</>}</p>)}
+                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : <>{x.text.flavor && <i>{x.text.flavor} </i>}{flatRule(x.text.rule)}</>}</p>)}
                       {powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
                       {cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                       {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
@@ -1531,7 +1544,7 @@ function PrintView({ list }) {
             {glossary.map((g) => (
               <p key={g.name}>
                 <b>{g.name}.</b>{" "}
-                {typeof g.text === "string" ? g.text : <>{g.text.flavor && <i>{g.text.flavor} </i>}{g.text.rule}</>}
+                {typeof g.text === "string" ? g.text : <>{g.text.flavor && <i>{g.text.flavor} </i>}{flatRule(g.text.rule)}</>}
               </p>
             ))}
           </div>
@@ -2154,6 +2167,9 @@ const CSS = `
 .xr-chipwrap.open .xr-chip-caret{transform:rotate(180deg);color:var(--cream);}
 .xr-chip-text{font-family:var(--body);font-style:normal;font-size:16px;color:var(--ink);line-height:1.5;padding:8px 2px 4px;}
 .xr-flavor{display:block;font-family:var(--flavor);font-style:italic;font-size:15.5px;line-height:1.4;color:var(--ink-2);margin-bottom:5px;}
+.xr-rule-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;}
+.xr-rule-list li{position:relative;padding-left:17px;line-height:1.45;}
+.xr-rule-list li::before{content:"";position:absolute;left:3px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--coral);}
 
 /* option rows */
 .xr-row{border-bottom:1px solid var(--ink-18);padding:4px 0;}
