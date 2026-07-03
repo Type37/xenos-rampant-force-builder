@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -27,6 +27,7 @@ import icEdit from "@iconify-icons/ph/pencil-simple-fill";
 import icCaret from "@iconify-icons/ph/caret-down-bold";
 import icBook from "@iconify-icons/ph/book-open-fill";
 import icGear from "@iconify-icons/ph/gear-six-fill";
+import icImage from "@iconify-icons/ph/image-square-fill";
 /* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
 import icoAttack from "./assets/stat/attack.png";
 import icoMove from "./assets/stat/move.png";
@@ -64,7 +65,7 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   Trash = mk(icTrash), Plus = mk(icPlus), XIc = mk(icX), Check = mk(icCheck),
   Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
   House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret),
-  Book = mk(icBook), Gear = mk(icGear);
+  Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage);
 
 const STAT_ROWS = [
   { key: "atk", label: "Attack", img: icoAttack, order: true, val: true, tip: "Attack: melee to-hit value. Order is the 2d6 target to activate an Attack." },
@@ -244,6 +245,44 @@ function parseHash() {
   return { view: "home" };
 }
 const nav = (h) => { window.location.hash = h; };
+
+/* read an image file, downscale it to fit maxPx, hand back a compact JPEG data URL.
+   keeps localStorage small: full-res photos would blow the quota. */
+function downscaleImage(file, maxPx, cb) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      try { cb(canvas.toDataURL("image/jpeg", 0.82)); } catch { cb(null); }
+    };
+    img.onerror = () => cb(null);
+    img.src = e.target.result;
+  };
+  reader.onerror = () => cb(null);
+  reader.readAsDataURL(file);
+}
+
+/* upload/replace/remove a picture. shows the current image, or an add button. */
+function ImageUpload({ image, onChange, title, shape }) {
+  const inputRef = useRef(null);
+  const pick = () => inputRef.current && inputRef.current.click();
+  return (
+    <div className={`xr-imgup ${shape || "square"} ${image ? "has" : ""}`}>
+      {image
+        ? <button className="xr-imgup-thumb" onClick={pick} title="Change picture" style={{ backgroundImage: `url(${image})` }} aria-label="Change picture" />
+        : <button className="xr-imgup-add" onClick={pick} title={title || "Add a picture"} aria-label={title || "Add a picture"}><Image size={20} /></button>}
+      {image && <button className="xr-imgup-x" onClick={() => onChange(null)} title="Remove picture" aria-label="Remove picture"><XIc size={12} /></button>}
+      <input ref={inputRef} type="file" accept="image/*" hidden
+        onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) downscaleImage(f, 256, (d) => d && onChange(d)); e.target.value = ""; }} />
+    </div>
+  );
+}
 
 /* ---------------- small shared pieces ---------------- */
 function Die({ k, free, children }) {
@@ -501,6 +540,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
               return (
                 <div className="xr-list-card" key={l.id}>
                   <button className="xr-list-open" onClick={() => onOpen(l.id)}>
+                    {l.image && <span className="xr-list-img" style={{ backgroundImage: `url(${l.image})` }} aria-hidden="true" />}
                     <span className="xr-list-name">{l.name || "Untitled detachment"}</span>
                     <span className="xr-list-meta">
                       <b>{used}</b>/{l.budget} pts, {count} {count === 1 ? "unit" : "units"}
@@ -540,13 +580,16 @@ function UnitRow({ u, i, selected, onSelect }) {
   ];
   return (
     <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={onSelect} aria-expanded={selected}>
-      <span className="xr-urow-top">
-        {u.isCmd && <Crown className="xr-urow-crown" size={17} />}
-        <span className="xr-urow-name">{unitDisplayName(u, i)}</span>
-        <b className="xr-urow-pts">{pts}<i>pts</i></b>
-      </span>
-      <span className="xr-urow-sub">
-        {t.name}, {unitSP(u)} SP{taken.length > 0 && <em> / {taken.join(", ")}</em>}
+      {u.image && <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />}
+      <span className="xr-urow-body">
+        <span className="xr-urow-top">
+          {u.isCmd && <Crown className="xr-urow-crown" size={17} />}
+          <span className="xr-urow-name">{unitDisplayName(u, i)}</span>
+          <b className="xr-urow-pts">{pts}<i>pts</i></b>
+        </span>
+        <span className="xr-urow-sub">
+          {t.name}, {unitSP(u)} SP{taken.length > 0 && <em> / {taken.join(", ")}</em>}
+        </span>
       </span>
     </button>
   );
@@ -663,6 +706,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
     <section className="xr-panel" aria-label="Unit editor">
       <div className="xr-panel-head">
         <button className="xr-iconbtn xr-panel-back" onClick={onClose} aria-label="Close unit"><Back size={20} /></button>
+        <ImageUpload image={u.image} onChange={(img) => dispatch({ type: "image", key: u.key, image: img })} title="Add a picture to ID this unit" />
         <div className="xr-panel-id">
           <label className="xr-namefield">
             <span className="xr-namefield-l">{t.name}{u.isCmd && <b className="xr-tag-cmd"><Crown size={12} /> Commander</b>}</span>
@@ -1070,6 +1114,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
       <RailNav view="build" />
       <header className="xr-mast">
         <div className="xr-mast-row">
+          {list.image && <span className="xr-mast-img" style={{ backgroundImage: `url(${list.image})` }} aria-hidden="true" />}
           <input className="xr-detname" value={list.name} placeholder="Name your detachment"
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
           <div className="xr-actions">
@@ -1082,6 +1127,13 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
                 <>
                   <button className="xr-settings-scrim" aria-label="Close settings" onClick={() => setSettingsOpen(false)} />
                   <div className="xr-settings-pop" role="dialog" aria-label="Detachment settings">
+                    <div className="xr-set-field xr-set-img">
+                      <span className="xr-set-field-l">Detachment picture</span>
+                      <div className="xr-set-img-row">
+                        <ImageUpload image={list.image} onChange={(img) => updateList({ image: img || undefined })} title="Upload a detachment picture" />
+                        <span className="xr-set-field-h">Shows on the dashboard card and the build header.</span>
+                      </div>
+                    </div>
                     <button className={`xr-set-toggle ${list.freeplay ? "on" : ""}`} onClick={() => updateList({ freeplay: !list.freeplay })} aria-pressed={!!list.freeplay}>
                       <span className="xr-set-toggle-box">{list.freeplay && <Check size={14} />}</span>
                       <span className="xr-set-toggle-txt"><b>Free play</b><i>Ignore composition limits (unit count, vehicles, one Commander).</i></span>
@@ -1418,6 +1470,7 @@ export default function App() {
         });
         break;
       case "name": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, name: a.name } : u))); break;
+      case "image": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, image: a.image || undefined } : u))); break;
       case "cmd": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, isCmd: !u.isCmd } : { ...u, isCmd: false }))); break;
       case "opt":
         setRoster((r) => r.map((u) => {
@@ -1709,7 +1762,9 @@ const CSS = `
 .xr-detail-hint{display:flex;flex-direction:column;align-items:center;gap:10px;padding:80px 20px;color:var(--ink-2);font-family:var(--display);font-size:19px;}
 
 /* compact unit rows */
-.xr-urow{display:flex;flex-direction:column;gap:3px;text-align:left;border:2.5px solid var(--ink);border-left-width:7px;border-radius:10px;background:var(--paper-2);padding:11px 14px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;}
+.xr-urow{display:flex;flex-direction:row;align-items:center;gap:11px;text-align:left;border:2.5px solid var(--ink);border-left-width:7px;border-radius:10px;background:var(--paper-2);padding:11px 14px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;}
+.xr-urow-body{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
+.xr-urow-img{flex:none;width:46px;height:46px;border-radius:8px;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);}
 .xr-urow:hover{background:var(--paper-3);transform:translateX(3px);box-shadow:0 3px 9px rgba(31,61,46,.12);}
 .xr-urow.sel{background:var(--ink);color:var(--cream);}
 .xr-urow.sel .xr-urow-sub,.xr-urow.sel .xr-urow-pts i{color:var(--paper-3);}
@@ -1729,6 +1784,18 @@ const CSS = `
 .xr-panel{padding:16px clamp(14px,2vw,24px) 40px;animation:xr-rise .24s cubic-bezier(.2,.8,.2,1);}
 .xr-panel-head{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:2px solid var(--ink-30);}
 .xr-panel-back{display:none;}
+/* image upload widget */
+.xr-imgup{position:relative;flex:none;}
+.xr-imgup.square,.xr-imgup.square .xr-imgup-thumb,.xr-imgup.square .xr-imgup-add{width:52px;height:52px;border-radius:10px;}
+.xr-imgup-add{display:flex;align-items:center;justify-content:center;border:2px dashed var(--ink-30);background:var(--paper-2);color:var(--ink-2);transition:.13s;}
+.xr-imgup-add:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
+.xr-imgup-thumb{display:block;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);cursor:pointer;padding:0;}
+.xr-imgup-x{position:absolute;top:-7px;right:-7px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid var(--ink);background:var(--coral);color:#3a1206;transition:.12s;}
+.xr-imgup-x:hover{background:var(--coral-ink);color:#fff;}
+/* detachment picture on masthead + dashboard */
+.xr-mast-img{flex:none;width:44px;height:44px;border-radius:9px;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);}
+.xr-list-img{width:100%;height:120px;border-radius:8px;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);margin-bottom:2px;}
+.xr-set-img-row{display:flex;align-items:center;gap:11px;}
 .xr-panel-id{flex:1;min-width:0;}
 .xr-namefield{position:relative;display:block;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);padding:17px 12px 6px;cursor:text;transition:border-color .12s;}
 .xr-namefield:hover{border-color:var(--ink);}
