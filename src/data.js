@@ -1530,9 +1530,9 @@ export const XENO_RULES = [
 
 export const SPECIAL_RULES = {
   "Back Into The Fray": "If Elite Infantry ever fall back under fire, they are merely withdrawing to find a better position to try another assault. On the turn that a unit of Elite Infantry carries out a successful Rally action, it can also take an ordered activation, which requires an activation test even if it would normally be a Free Action.",
-  "Firefight": "This unit may attempt a Firefight reaction against the first enemy unit that fires on it each turn.",
+  "Firefight": "This unit may attempt a Firefight reaction against the first enemy unit that fires on it each turn. It can only react if that shooter is within this unit's own Shoot Value range, and the reaction has to pass an activation test of 7+. On a success this unit rolls to hit the shooter too, before either side removes Strength Points, so the two units trade fire at once.",
   "Ranger": "This unit uses its normal Attack/Defence/Armour profile when fighting in rough terrain.",
-  "Go To Ground": "This unit may Go To Ground as a Move action, instead of moving.",
+  "Go To Ground": "Instead of moving during a Move action, this unit may Go To Ground and hunker down. It gains Gone To Ground status: +1 Armour against Shooting, including Fire Support, on top of any cover, and its Defence Value counts as 5+ if it is Attacked. It loses the status the moment it takes any action or becomes Suppressed.",
   "Counter-Charge": "When an enemy infantry unit with a Maximum Movement equal to or less than this unit’s Maximum Movement has successfully rolled to Attack this unit, but before it moves, this unit may test for a Counter-Charge. This is an Attack at 7+. If it succeeds, the Berserk Infantry charges half its Maximum Movement distance prior to the enemy unit’s own charge into contact and both count as Attacking. If it fails, it stands in place for the enemy’s charge and counts as Defending as normal. Counter-Charge may not be used if the unit is Suppressed.",
   "Open Order": "This unit does not halve its movement in rough terrain.",
   "Wild Charge": "The unit is subject to the rules for Wild Charges.",
