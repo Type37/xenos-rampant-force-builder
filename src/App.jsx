@@ -308,34 +308,101 @@ function Die({ k, free, children }) {
     </span>
   );
 }
-function orderCell(t, key) {
-  const raw = t.noAttack && key === "atk" ? "n/a" : t.act[key];
+function orderFrom(act, key, noAttack) {
+  const raw = noAttack && key === "atk" ? "n/a" : act[key];
   const { val, free } = parseAct(raw);
   return val === "n/a" ? null : { val, free };
 }
-function profCellVal(t, sp, key) {
+function orderCell(t, key) { return orderFrom(t.act, key, t.noAttack); }
+function profFrom(prof, sp, key) {
   if (key === "sp") return { main: String(sp) };
-  if (key === "sho") { const r = splitRange(t.prof.sho); return r.main === "n/a" ? null : r; }
-  const v = t.prof[key];
+  if (key === "sho") { const r = splitRange(prof.sho); return r.main === "n/a" ? null : r; }
+  const v = prof[key];
   return v == null || v === "n/a" || v === "—" ? null : { main: String(v) };
 }
-function StatTable({ t, sp }) {
+
+/* how far a bought option or xeno rule shifts a profile value. only the effects
+   that change a displayed stat are listed; a "-" or higher target still reads right. */
+const adjInches = (s, d) => { const n = parseInt(s, 10); return Number.isNaN(n) ? s : `${n + d}"`; };
+const improveTgt = (s, by) => { const n = parseInt(s, 10); return Number.isNaN(n) ? s : `${Math.max(2, n - by)}+`; };
+const worsenTgt = (s, by) => { const n = parseInt(s, 10); if (Number.isNaN(n)) return s; const nn = n + by; return nn >= 6 ? "6" : `${nn}+`; };
+const STAT_MODS = {
+  "assault-doctrine": { prof: { atk: "3+" } },
+  "close-quarters": { prof: { sho: "4+ / 12\"" } },
+  "mobile": { movDelta: 4 },
+  "super-heavy-armour": { prof: { arm: 5 }, movDelta: -2 },
+  "increased-squad": { prof: { atk: "5+", def: "4+", sho: "5+ / 18\"" } },
+  "undisciplined": { act: { cou: "5+" } },
+  "enthusiastic": { atkWorsen: 1 },
+  "even-heavier": { prof: { arm: 4, atk: "3+" } },
+  "veteran": { prof: { def: "5+" } },
+  "artillery": { prof: { sho: "4+ / 48\"" } },
+  "sniper-team": { prof: { sho: "5+ / 24\"" } },
+  "mob": { prof: { atk: "3+", def: "5+" } },
+  "swarm": { prof: { atk: "3+" } },
+  "young-warriors": { act: { cou: "5+" } },
+  "cunning": { prof: { def: "5+" } },
+  "scythes": { prof: { atk: "5+" } },
+  "walker": { prof: { atk: "4+" }, movDelta: -2 },
+  "light-armoured": { armDelta: -1 },
+  "civilian": { prof: { arm: 2 } },
+  "improvised-armour": { prof: { arm: 4 }, movDelta: -2 },
+  "large-vehicle": { movDelta: -2 },
+  "transport-15": { movDelta: -2 },
+  "technical": { act: { sho: "6+" }, prof: { sho: "5+ / 18\"" } },
+  "green-crew": { prof: { sho: "5+ / 18\"" } },
+  "ravenous-horde": { act: { sho: "n/a" }, prof: { atk: "7+", sho: "n/a" } },
+  "primitive-missiles": { act: { sho: "6+" }, prof: { sho: "6 / 6\"" } },
+  // xeno rules
+  "slow": { movDelta: -2 },
+  "fanatical-discipline": { couImprove: 1 },
+  "fearful": { couWorsen: 1 },
+  "unarmed": { act: { sho: "n/a" }, prof: { sho: "n/a" } },
+  "boarding-shields": { defImprove: 1 },
+};
+function deriveStats(u, t) {
+  const act = { ...t.act };
+  const prof = { ...t.prof };
+  const changed = new Set();
+  const setBlock = (obj, block, kv) => { for (const k in kv) { if (String(obj[k]) !== String(kv[k])) { obj[k] = kv[k]; changed.add(`${block}:${k}`); } } };
+  const ids = [...Object.keys(u.options || {}).filter((k) => u.options[k]), ...Object.keys(u.xenos || {})];
+  ids.forEach((id) => {
+    const m = STAT_MODS[id];
+    if (!m) return;
+    if (m.act) setBlock(act, "act", m.act);
+    if (m.prof) setBlock(prof, "prof", m.prof);
+    if (m.movDelta) { prof.mov = adjInches(prof.mov, m.movDelta); changed.add("prof:mov"); }
+    if (m.armDelta != null) { prof.arm = Number(prof.arm) + m.armDelta; changed.add("prof:arm"); }
+    if (m.couImprove) { act.cou = improveTgt(act.cou, m.couImprove); changed.add("act:cou"); }
+    if (m.couWorsen) { act.cou = worsenTgt(act.cou, m.couWorsen); changed.add("act:cou"); }
+    if (m.atkWorsen) { prof.atk = worsenTgt(prof.atk, m.atkWorsen); changed.add("prof:atk"); }
+    if (m.defImprove) { prof.def = improveTgt(prof.def, m.defImprove); changed.add("prof:def"); }
+  });
+  return { act, prof, changed };
+}
+function StatTable({ t, sp, u }) {
+  const d = u ? deriveStats(u, t) : { act: t.act, prof: t.prof, changed: new Set() };
+  const spMod = !!u && sp !== t.sp;
   return (
     <div className="xr-stt">
       <div className="xr-stt-head">
         <span>Stat</span><span>Activate <em>2d6</em></span><span>Value</span>
       </div>
-      {STAT_ROWS.map((d) => {
-        const o = d.order ? orderCell(t, d.key) : null;
-        const v = d.val ? profCellVal(t, sp, d.key) : null;
+      {STAT_ROWS.map((row) => {
+        const o = row.order ? orderFrom(d.act, row.key, t.noAttack) : null;
+        const v = row.val ? profFrom(d.prof, sp, row.key) : null;
+        const modO = d.changed.has(`act:${row.key}`);
+        const modV = d.changed.has(`prof:${row.key}`) || (row.key === "sp" && spMod);
         return (
-          <div className="xr-stt-row" key={d.key} title={d.tip}>
-            <span className="xr-stt-stat"><img className="xr-stt-ic" src={d.img} alt="" width="28" height="28" />{d.label}</span>
-            <span className="xr-stt-cell">
-              {o ? <Die k={d.key} free={o.free}>{o.val}</Die> : <span className="xr-dash">-</span>}
+          <div className="xr-stt-row" key={row.key} title={row.tip}>
+            <span className="xr-stt-stat"><img className="xr-stt-ic" src={row.img} alt="" width="28" height="28" />{row.label}</span>
+            <span className={`xr-stt-cell ${modO ? "mod" : ""}`} title={modO ? "Changed by an ability" : undefined}>
+              {o ? <Die k={row.key} free={o.free}>{o.val}</Die> : <span className="xr-dash">-</span>}
+              {modO && <span className="xr-mod-dot" aria-hidden="true" />}
             </span>
-            <span className="xr-stt-cell">
+            <span className={`xr-stt-cell ${modV ? "mod" : ""}`} title={modV ? "Changed by an ability" : undefined}>
               {v ? <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range} range</i>}</> : <span className="xr-dash">-</span>}
+              {modV && <span className="xr-mod-dot" aria-hidden="true" />}
             </span>
           </div>
         );
@@ -867,7 +934,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool })
 
       <div className="xr-panel-cols">
         <div className="xr-panel-left">
-          <StatTable t={t} sp={sp} />
+          <StatTable t={t} sp={sp} u={u} />
         </div>
         <div className="xr-panel-right">
           {stdRules.length > 0 && (
@@ -1871,8 +1938,11 @@ const CSS = `
 .xr-stt-row:last-child{border-bottom:none;}
 .xr-stt-stat{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:17px;}
 .xr-stt-ic{width:28px;height:28px;object-fit:contain;flex:none;}
-.xr-stt-cell{display:flex;align-items:baseline;white-space:nowrap;min-width:0;}
+.xr-stt-cell{position:relative;display:flex;align-items:baseline;white-space:nowrap;min-width:0;}
 .xr-stt-cell b{font-family:var(--mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;flex:none;}
+.xr-stt-cell.mod b{color:var(--coral-ink);}
+.xr-stt-cell.mod .xr-die{border-color:var(--coral-ink);box-shadow:inset 0 0 0 1px var(--coral-ink);}
+.xr-mod-dot{position:absolute;top:-1px;left:-9px;width:6px;height:6px;border-radius:50%;background:var(--coral);}
 
 /* masthead + wordmark */
 .xr-titlestack{display:inline-flex;flex-direction:column;align-items:stretch;}
