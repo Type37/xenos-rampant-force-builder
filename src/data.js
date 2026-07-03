@@ -1529,24 +1529,78 @@ export const XENO_RULES = [
 ];
 
 export const SPECIAL_RULES = {
-  "Back Into The Fray": "If Elite Infantry ever fall back under fire, they are merely withdrawing to find a better position to try another assault. On the turn that a unit of Elite Infantry carries out a successful Rally action, it can also take an ordered activation, which requires an activation test even if it would normally be a Free Action.",
-  "Firefight": "This unit may attempt a Firefight reaction against the first enemy unit that fires on it each turn. It can only react if that shooter is within this unit's own Shoot Value range, and the reaction has to pass an activation test of 7+. On a success this unit rolls to hit the shooter too, before either side removes Strength Points, so the two units trade fire at once.",
-  "Ranger": "This unit uses its normal Attack/Defence/Armour profile when fighting in rough terrain.",
-  "Go To Ground": "Instead of moving during a Move action, this unit may Go To Ground and hunker down. It gains Gone To Ground status: +1 Armour against Shooting, including Fire Support, on top of any cover, and its Defence Value counts as 5+ if it is Attacked. It loses the status the moment it takes any action or becomes Suppressed.",
-  "Counter-Charge": "When an enemy infantry unit with a Maximum Movement equal to or less than this unit’s Maximum Movement has successfully rolled to Attack this unit, but before it moves, this unit may test for a Counter-Charge. This is an Attack at 7+. If it succeeds, the Berserk Infantry charges half its Maximum Movement distance prior to the enemy unit’s own charge into contact and both count as Attacking. If it fails, it stands in place for the enemy’s charge and counts as Defending as normal. Counter-Charge may not be used if the unit is Suppressed.",
-  "Open Order": "This unit does not halve its movement in rough terrain.",
-  "Wild Charge": "The unit is subject to the rules for Wild Charges.",
-  "Spotters": "If a unit of Support Infantry targets an enemy that is within 12\" of a friendly unit that has not been activated this turn, that friendly unit may forgo its action this turn to act as spotters. Spotters improve the Support Infantry’s Shoot Value to 3+ for this action only. Unless the Support Infantry has the Indirect Fire option, it must be able to draw line of sight to the enemy as normal.",
-  "Never Attacks": "Support Infantry cannot use Attack actions. Should they somehow acquire the Wild Charge rule and be required to act in the Wild Charge phase, they will attempt a Shoot action at the target instead of Attack.",
-  "Hard to Target": "Recon Infantry count as Armour 2 versus Shoot actions and may only be targeted by enemy units within 12\".",
-  "Skirmish": "As an ordered activation, successful on a 7+, this unit may choose to both Move up to half its Maximum Movement and Shoot, in either order. This unit treats its Shoot Value as 6+ / 12\" when Skirmishing.",
-  "All-Terrain": "This vehicle unit does not halve its movement in rough terrain.",
-  "Anti-Tank": "When Shooting at enemy vehicle units (including when using the Firefight rule), count the target’s Armour as being half its usual value. You may not apply this rule at the same time as Armour-Piercing.",
-  "Demolitions": "During Attacks (whether Attacking or Defending), count the Armour of enemy vehicle units as being half their usual value. You may not apply this rule at the same time as High-Powered Blades.",
-  "High-Powered Blades": "During Attacks (whether Attacking or Defending), count the target’s Armour as being 1 point lower than usual. You may not apply this rule at the same time as Demolitions.",
-  "Line-Breaker": "This unit is not slowed by linear obstacles such as barricades, barbed wire, low walls, fences or trench parapets. In the case of obstacles that could plausibly be crushed beneath the vehicle, you can remove an appropriately sized stretch of the obstacle after the unit passes over it.",
-  "Vehicle": "This unit is a vehicle and subject to all the relevant rules.",
-  "Transport (5)": "This vehicle can carry an infantry unit of up to 5 Strength Points"
+  "Back Into The Fray": {
+    flavor: "Elite troops treat a fall-back as nothing more than a better run-up to the next assault.",
+    rule: "On a turn this unit makes a successful Rally action, it may also take an ordered activation. That activation still needs an activation test, even for an action that would normally be a Free Action.",
+  },
+  "Firefight": {
+    flavor: "Veterans keep their heads up and shoot back the instant they are fired on.",
+    rule: "This unit may attempt a Firefight reaction against the first enemy that fires on it each turn, provided that shooter is within this unit's own Shoot Value range. The reaction needs an activation test of 7+; on a success this unit rolls to hit the shooter too, before either side removes Strength Points.",
+  },
+  "Ranger": {
+    flavor: "At home in the wild, they fight through undergrowth as if it were open ground.",
+    rule: "This unit uses its normal Attack, Defence and Armour profile when fighting in rough terrain.",
+  },
+  "Go To Ground": {
+    flavor: "Rather than push on, they drop flat and ride out the incoming fire.",
+    rule: "Instead of moving during a Move action, this unit may Go To Ground. It gains Gone To Ground status: +1 Armour against Shooting, including Fire Support, on top of any cover, and its Defence Value counts as 5+ if Attacked. The status is lost the moment the unit takes any action or becomes Suppressed.",
+  },
+  "Counter-Charge": {
+    flavor: "Berserkers would sooner meet a charge head-on than wait to receive it.",
+    rule: "When an enemy infantry unit with Maximum Movement equal to or less than this unit's has rolled a successful Attack against it, but before that enemy moves, this unit may test for a Counter-Charge: an Attack at 7+. On a success it charges half its Maximum Movement into contact and both units count as Attacking. On a failure it stands and counts as Defending. It may not Counter-Charge while Suppressed.",
+  },
+  "Open Order": {
+    flavor: "They keep loose and pick their footing, never bunched tightly enough to be slowed.",
+    rule: "This unit does not halve its movement in rough terrain.",
+  },
+  "Wild Charge": {
+    flavor: "Blood up, they surge at the nearest enemy whether ordered to or not.",
+    rule: "This unit is subject to the rules for Wild Charges.",
+  },
+  "Spotters": {
+    flavor: "A second pair of eyes calls the fall of shot right onto the target.",
+    rule: "If this unit targets an enemy within 12\" of a friendly unit that has not activated this turn, that friendly unit may forgo its own action to spot, improving this unit's Shoot Value to 3+ for that action. Unless this unit has Indirect Fire, it must still draw line of sight to the enemy.",
+  },
+  "Never Attacks": {
+    flavor: "Gun crews are built to shoot, not to wade into a melee.",
+    rule: "This unit cannot take Attack actions. If it somehow gains Wild Charge and must act in the Wild Charge phase, it makes a Shoot action at the target instead of an Attack.",
+  },
+  "Hard to Target": {
+    flavor: "Ghosting from cover to cover, they are gone before a gun can settle on them.",
+    rule: "This unit counts as Armour 2 against Shoot actions and may only be targeted by enemies within 12\".",
+  },
+  "Skirmish": {
+    flavor: "They fight on the move, shooting as they slip from one position to the next.",
+    rule: "As an ordered activation on a 7+, this unit may both Move up to half its Maximum Movement and Shoot, in either order. Its Shoot Value counts as 6+ / 12\" while Skirmishing.",
+  },
+  "All-Terrain": {
+    flavor: "Tracks, legs or grav-plates carry it over ground that would bog others down.",
+    rule: "This vehicle does not halve its movement in rough terrain.",
+  },
+  "Anti-Tank": {
+    flavor: "Built to crack armour, its guns punch straight through a hull.",
+    rule: "When Shooting at enemy vehicles, including during a Firefight, count the target's Armour as half its usual value. It cannot be combined with Armour-Piercing.",
+  },
+  "Demolitions": {
+    flavor: "Breaching charges and cutting gear make short work of a war machine up close.",
+    rule: "During Attacks, whether Attacking or Defending, count the Armour of enemy vehicles as half its usual value. It cannot be combined with High-Powered Blades.",
+  },
+  "High-Powered Blades": {
+    flavor: "Powered edges bite through plate that would turn an ordinary blow.",
+    rule: "During Attacks, whether Attacking or Defending, count the target's Armour as 1 point lower than usual. It cannot be combined with Demolitions.",
+  },
+  "Line-Breaker": {
+    flavor: "Walls, wire and parapets are just things to drive through.",
+    rule: "This unit is not slowed by linear obstacles such as barricades, wire, low walls, fences or trench parapets. Where an obstacle could plausibly be crushed, remove a matching stretch of it after the unit passes over.",
+  },
+  "Vehicle": {
+    flavor: "A machine of war, with all the strengths and blind spots that brings.",
+    rule: "This unit is a vehicle and is subject to all the vehicle rules.",
+  },
+  "Transport (5)": {
+    flavor: "Its hold carries a squad into the fight under armour.",
+    rule: "This vehicle can carry one infantry unit of up to 5 Strength Points.",
+  },
 };
 
 export const COMMANDER_TABLES = {

@@ -560,6 +560,19 @@ function OptionRow({ active, disabled, name, cost, text, onToggle, children }) {
   );
 }
 
+/* renders a rule as an italic flavour line above the plain mechanical text.
+   accepts the new {flavor, rule} shape or a bare string (xeno rules, for now). */
+function RuleText({ data, className }) {
+  if (!data) return null;
+  if (typeof data === "string") return <p className={className}>{data}</p>;
+  return (
+    <p className={className}>
+      {data.flavor && <span className="xr-flavor">{data.flavor}</span>}
+      {data.rule}
+    </p>
+  );
+}
+
 function RuleChip({ name, text }) {
   const [open, setOpen] = useState(false);
   return (
@@ -567,7 +580,7 @@ function RuleChip({ name, text }) {
       <button className="xr-chip" onClick={() => setOpen((o) => !o)} aria-expanded={open} title={open ? "Hide rule text" : "Show rule text"}>
         <span>{name}</span>{text && <Caret className="xr-chip-caret" size={13} />}
       </button>
-      {open && text && <p className="xr-chip-text">{text}</p>}
+      {open && text && <RuleText data={text} className="xr-chip-text" />}
     </div>
   );
 }
@@ -1142,7 +1155,12 @@ function PrintView({ list }) {
         {opts.glossary && glossary.length > 0 && (
           <div className="xr-sheet-gloss">
             <h2>Standard rules</h2>
-            {glossary.map((g) => <p key={g.name}><b>{g.name}:</b> {g.text}</p>)}
+            {glossary.map((g) => (
+              <p key={g.name}>
+                <b>{g.name}.</b>{" "}
+                {typeof g.text === "string" ? g.text : <>{g.text.flavor && <i>{g.text.flavor} </i>}{g.text.rule}</>}
+              </p>
+            ))}
           </div>
         )}
 
@@ -1660,7 +1678,8 @@ const CSS = `
 .xr-chip:hover .xr-chip-caret{color:var(--ink);}
 .xr-chipwrap.open .xr-chip{background:var(--ink);color:var(--cream);border-color:var(--ink);}
 .xr-chipwrap.open .xr-chip-caret{transform:rotate(180deg);color:var(--cream);}
-.xr-chip-text{font-family:var(--flavor);font-style:italic;font-size:16px;color:var(--ink-2);padding:8px 2px 4px;}
+.xr-chip-text{font-family:var(--body);font-style:normal;font-size:16px;color:var(--ink);line-height:1.5;padding:8px 2px 4px;}
+.xr-flavor{display:block;font-family:var(--flavor);font-style:italic;font-size:15.5px;line-height:1.4;color:var(--ink-2);margin-bottom:5px;}
 
 /* option rows */
 .xr-row{border-bottom:1px solid var(--ink-18);padding:4px 0;}
@@ -1677,7 +1696,7 @@ const CSS = `
 .xr-row-name{font-weight:600;font-size:16.5px;line-height:1.25;}
 .xr-row-info{flex:none;width:34px;align-self:center;height:34px;border:1.5px solid var(--ink-30);border-radius:50%;color:var(--ink-2);font-weight:700;font-size:16px;transition:.12s;}
 .xr-row-info:hover{background:var(--ink);border-color:var(--ink);color:var(--cream);}
-.xr-row-text{font-family:var(--flavor);font-style:italic;font-size:16px;color:var(--ink-2);padding:2px 4px 8px 60px;}
+.xr-row-text{font-family:var(--body);font-style:normal;font-size:16px;color:var(--ink);line-height:1.5;padding:2px 4px 8px 60px;}
 .xr-subs{margin-left:44px;border-left:2px solid var(--ink-18);padding-left:8px;}
 .xr-tiers{display:flex;gap:7px;flex-wrap:wrap;padding:2px 4px 10px 60px;}
 .xr-tier{font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:42px;transition:.12s;}
@@ -1777,8 +1796,9 @@ const CSS = `
 .xr-sheet-unit p b{font-style:normal;}
 .xr-sheet-gloss{margin-top:20px;border-top:2px solid #1a1a1a;padding-top:10px;}
 .xr-sheet-gloss h2{font-family:var(--display);font-size:19px;margin-bottom:8px;}
-.xr-sheet-gloss p{font-family:var(--flavor);font-style:italic;font-size:13.5px;line-height:1.45;margin-bottom:6px;}
+.xr-sheet-gloss p{font-family:var(--body);font-style:normal;font-size:13.5px;line-height:1.45;margin-bottom:6px;}
 .xr-sheet-gloss p b{font-style:normal;}
+.xr-sheet-gloss p i{font-family:var(--flavor);font-style:italic;color:#333;}
 .xr-sheet-foot{margin-top:22px;border-top:1px solid #bbb;padding-top:8px;font-size:12.5px;font-style:italic;color:#555;}
 .xr-printview.large .xr-sheet{font-size:17px;}
 .xr-printview.large .xr-sheet-table td,.xr-printview.large .xr-sheet-table th{font-size:16.5px;padding:8px 7px;}
