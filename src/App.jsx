@@ -1207,67 +1207,55 @@ function PrintView({ list }) {
           <p className="xr-sheet-natl"><b>National trait, {NATIONAL_BY_ID[list.nationalTrait].name}:</b> {NATIONAL_BY_ID[list.nationalTrait].rule}</p>
         )}
 
-        {opts.stats && (
-          <table className="xr-sheet-table">
-            <thead>
-              <tr>
-                <th className="l">Unit</th><th className="l">Type</th>
-                <th colSpan={4}>Order 2d6 (A / M / S / C)</th>
-                <th colSpan={5}>Profile (A / D / S / Arm / Mv)</th>
-                <th>SP</th><th>Pts</th>
-              </tr>
-            </thead>
-            <tbody>
-              {roster.map((u, i) => {
-                const t = UNIT_BY_ID[u.typeId];
-                const a = t.act, p = t.prof;
-                const av = (k) => parseAct(t.noAttack && k === "atk" ? "n/a" : a[k]);
-                return (
-                  <tr key={u.key}>
-                    <td className="l name">{u.isCmd && <Crown size={13} className="xr-sheet-crown" />}{unitDisplayName(u, i)}</td>
-                    <td className="l type">{t.name}</td>
-                    {ACT_KEYS.map(({ key }) => {
-                      const c = av(key);
-                      if (c.val === "n/a") return <td key={key}>-</td>;
-                      return <td key={key} className={c.free ? "free" : ""}>{c.val}{c.free && <sup className="fmk">F</sup>}</td>;
-                    })}
-                    <td>{p.atk === "n/a" ? "-" : p.atk}</td>
-                    <td>{p.def}</td>
-                    <td>{splitRange(p.sho).main === "n/a" ? "-" : p.sho}</td>
-                    <td>{p.arm}</td>
-                    <td>{p.mov}</td>
-                    <td>{unitSP(u)}</td>
-                    <td className="pts">{unitPoints(u)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-        {opts.stats && <p className="xr-sheet-note"><b className="fmk">F</b> = free action, activates on its own. Order is the 2d6 activation target; Profile is how the action resolves.</p>}
-
-        {opts.upgrades && roster.some((u) => Object.keys(u.options).length || Object.keys(u.xenos).length || (u.custom || []).length || (opts.traits && u.isCmd && typeof u.traitIndex === "number")) && (
-          <div className="xr-sheet-units">
+        {roster.length > 0 && (
+          <div className="xr-sheet-cards">
             {roster.map((u, i) => {
               const t = UNIT_BY_ID[u.typeId];
+              const a = t.act, p = t.prof;
+              const order = ACT_KEYS.map(({ key, label }) => { const c = parseAct(t.noAttack && key === "atk" ? "n/a" : a[key]); return { label, val: c.val === "n/a" ? "-" : c.val, free: c.free }; });
+              const prof = [
+                { label: "Attack", val: p.atk === "n/a" ? "-" : p.atk },
+                { label: "Defence", val: p.def },
+                { label: "Shoot", val: splitRange(p.sho).main === "n/a" ? "-" : p.sho },
+                { label: "Armour", val: p.arm },
+                { label: "Move", val: p.mov },
+                { label: "Strength", val: unitSP(u) },
+              ];
               const os = t.options.filter((o) => u.options[o.id]);
               const xs = XENO_RULES.filter((x) => x.id in u.xenos);
               const cs = u.custom || [];
               const trait = opts.traits && u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
-              if (!os.length && !xs.length && !cs.length && !trait) return null;
+              const powers = (u.psychic || []).map((n) => PSYCHIC_POWERS.find((pp) => pp.name === n)).filter(Boolean);
+              const stdRules = opts.glossary ? [] : t.special.filter((s) => s !== "None");
+              const hasRules = os.length || xs.length || cs.length || trait || powers.length;
               return (
-                <div className="xr-sheet-unit" key={u.key}>
-                  <h3>{unitDisplayName(u, i)} <em>({t.name})</em></h3>
-                  {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
-                  {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.text}</p>)}
-                  {(u.psychic || []).map((n) => { const pw = PSYCHIC_POWERS.find((p) => p.name === n); return pw ? <p key={`pw-${n}`}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p> : null; })}
-                  {cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
-                  {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
+                <div className="xr-pc" key={u.key}>
+                  <div className="xr-pc-head">
+                    <span className="xr-pc-name">{u.isCmd && <Crown size={13} className="xr-sheet-crown" />}{unitDisplayName(u, i)}</span>
+                    <span className="xr-pc-type">{t.name}</span>
+                    <span className="xr-pc-pts">{unitPoints(u)} pts, {unitSP(u)} SP</span>
+                  </div>
+                  {opts.stats && (
+                    <div className="xr-pc-stats">
+                      <div className="xr-pc-line"><span className="xr-pc-ll">Order</span>{order.map((o) => <span className="xr-pc-cell" key={o.label}><em>{o.label}</em><b>{o.val}{o.free && <sup className="fmk">F</sup>}</b></span>)}</div>
+                      <div className="xr-pc-line"><span className="xr-pc-ll">Profile</span>{prof.map((o) => <span className="xr-pc-cell" key={o.label}><em>{o.label}</em><b>{o.val}</b></span>)}</div>
+                    </div>
+                  )}
+                  {opts.upgrades && hasRules && (
+                    <div className="xr-pc-rules">
+                      {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
+                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.text}</p>)}
+                      {powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
+                      {cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
+                      {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         )}
+        {opts.stats && <p className="xr-sheet-note"><b className="fmk">F</b> = free action, activates on its own. Order is the 2d6 activation target; Profile is how the action resolves.</p>}
 
         {opts.glossary && glossary.length > 0 && (
           <div className="xr-sheet-gloss">
@@ -1953,9 +1941,32 @@ const CSS = `
 .xr-sheet-table td.free .fmk,.xr-sheet-note .fmk{font-family:var(--display);font-weight:700;color:#c23a1e;text-decoration:none;}
 .xr-sheet-table td .fmk{font-size:10px;margin-left:1px;}
 .xr-sheet-crown{vertical-align:-2px;margin-right:4px;}
-.xr-sheet-note{font-size:13.5px;font-style:italic;color:#444;margin-top:7px;}
+.xr-sheet-note{font-size:13.5px;font-style:italic;color:#444;margin-top:9px;}
 .xr-sheet-note .fmk{font-style:normal;}
-@media print{.xr-sheet-table td.free{color:#000;}.xr-sheet-table td.free .fmk,.xr-sheet-note .fmk{color:#000;}}
+@media print{.xr-sheet-note .fmk{color:#000;}}
+/* print stat cards */
+.xr-sheet-cards{display:flex;flex-direction:column;gap:9px;margin-top:14px;}
+.xr-pc{border:1.5px solid #1a1a1a;border-radius:8px;padding:9px 13px 10px;break-inside:avoid;}
+.xr-pc-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:5px;margin-bottom:7px;}
+.xr-pc-name{font-family:var(--display);font-weight:700;font-size:16.5px;display:inline-flex;align-items:center;gap:5px;}
+.xr-pc-type{font-family:var(--flavor);font-style:italic;font-size:13.5px;color:#444;}
+.xr-pc-pts{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:13.5px;}
+.xr-pc-stats{display:flex;flex-direction:column;gap:4px;}
+.xr-pc-line{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;}
+.xr-pc-ll{font-family:var(--ui);font-weight:600;font-size:11.5px;color:#666;width:50px;flex:none;}
+.xr-pc-cell{display:inline-flex;align-items:baseline;gap:4px;}
+.xr-pc-cell em{font-family:var(--ui);font-style:normal;font-size:11.5px;color:#555;}
+.xr-pc-cell b{font-family:var(--mono);font-weight:700;font-size:14px;}
+.xr-pc-cell .fmk{font-family:var(--display);font-weight:700;color:#c23a1e;}
+@media print{.xr-pc-cell .fmk{color:#000;}}
+.xr-pc-rules{margin-top:8px;border-top:1px solid #ccc;padding-top:7px;}
+.xr-pc-rules p{font-family:var(--body);font-size:12.5px;line-height:1.42;margin-bottom:3px;}
+.xr-pc-rules p b{font-weight:700;}
+.xr-printview.large .xr-pc-name{font-size:18px;}
+.xr-printview.large .xr-pc-cell b{font-size:15.5px;}
+.xr-printview.large .xr-pc-rules p{font-size:14px;}
+.xr-printview.contrast .xr-pc,.xr-printview.contrast .xr-pc-head{border-color:#000;}
+.xr-printview.contrast .xr-pc-type,.xr-printview.contrast .xr-pc-cell em,.xr-printview.contrast .xr-pc-ll{color:#000;}
 .xr-sheet-units{margin-top:20px;column-count:2;column-gap:28px;}
 .xr-sheet-unit{break-inside:avoid;margin-bottom:14px;}
 .xr-sheet-unit h3{font-family:var(--display);font-size:17px;border-bottom:1.5px solid #1a1a1a;padding-bottom:2px;margin-bottom:5px;}
