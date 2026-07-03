@@ -708,10 +708,11 @@ function UnitRow({ u, i, selected, onSelect }) {
 
 function OptionRow({ active, disabled, name, cost, text, onToggle, children }) {
   const [open, setOpen] = useState(false);
+  const tip = text ? (typeof text === "string" ? text : [text.flavor, flatRule(text.rule)].filter(Boolean).join(" ")) : undefined;
   return (
     <div className={`xr-row ${active ? "on" : ""} ${disabled ? "off" : ""}`}>
       <div className="xr-row-line">
-        <button className="xr-row-hit" onClick={onToggle} disabled={disabled}>
+        <button className="xr-row-hit" onClick={onToggle} disabled={disabled} title={tip}>
           <span className={`xr-row-cost ${cost < 0 ? "neg" : cost > 0 ? "pos" : ""}`}>{costLabel(cost)}</span>
           <span className="xr-check" aria-hidden="true">{active ? <Check size={16} /> : null}</span>
           <span className="xr-row-name">{name}</span>
@@ -853,17 +854,12 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool })
       </div>
 
       <div className="xr-panel-tools">
-        {hasAbilities && (
-          <button className="xr-btn primary" onClick={onBuyAbilities} title="Buy loadout options and xeno rules">
-            <Plus size={17} /> Buy abilities
-          </button>
-        )}
-        <button className="xr-btn small" onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit"><CopyIc size={17} /> Duplicate</button>
-        <button className="xr-btn small danger" onClick={() => { dispatch({ type: "del", key: u.key }); onClose(); }} title="Remove this unit"><Trash size={17} /> Remove</button>
         <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })}
           title={u.isCmd ? "This unit is your Commander" : "Make this unit your Commander (free)"}>
           <Crown size={17} /> {u.isCmd ? "Commander" : "Make Commander"}
         </button>
+        <button className="xr-btn small icon" onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
+        <button className="xr-btn small icon danger" onClick={() => { dispatch({ type: "del", key: u.key }); onClose(); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
       </div>
 
       <div className="xr-panel-cols">
@@ -884,7 +880,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool })
           <div className="xr-abil">
             <div className="xr-abil-head">
               <h3 className="xr-abil-h">Abilities</h3>
-              <button className="xr-btn small" onClick={onBuyAbilities} title="Add or remove loadout options and xeno rules"><Plus size={15} /> Manage</button>
+              <button className="xr-btn small xr-manage" onClick={onBuyAbilities} title="Add or remove loadout options and xeno rules"><Plus size={16} /> Manage abilities</button>
             </div>
             {boughtOpts.length + boughtXenos.length + custom.length > 0 ? (
               <div className="xr-abil-list">
@@ -1843,7 +1839,11 @@ const CSS = `
 .xr-btn.primary:hover{background:var(--iris);border-color:var(--iris);}
 .xr-btn.danger:hover{background:var(--coral);border-color:var(--coral-ink);color:#fff;}
 .xr-btn.small{min-height:42px;padding:8px 13px;font-size:15.5px;}
+.xr-btn.small.icon{padding:8px 10px;}
 .xr-btn.gold{background:var(--brass);border-color:var(--brass);color:var(--cream);}
+.xr-btn.xr-manage{background:var(--iris);border-color:var(--iris);color:var(--cream);}
+.xr-btn.xr-manage:hover{background:#573a76;border-color:#573a76;}
+.xr-panel-tools-sp{flex:1;}
 .xr-btn:disabled{opacity:.45;cursor:not-allowed;}
 .xr-iconbtn{width:46px;height:46px;flex:none;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink);border-radius:10px;color:var(--ink);background:var(--paper-2);transition:.12s;}
 .xr-iconbtn:hover{background:var(--paper-3);}

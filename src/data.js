@@ -1922,7 +1922,7 @@ export const COMMANDER_TABLES = {
   },
   "warlord": {
     "label": "Warlord",
-    "blurb": "For Commanders who like holding, and using, a massive gun.",
+    "blurb": "For Commanders who like holding (and using) a massive gun.",
     "traits": [
       {
         "name": "Runt",
