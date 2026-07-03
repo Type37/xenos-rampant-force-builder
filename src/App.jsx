@@ -289,7 +289,7 @@ function Die({ k, free, children }) {
   return (
     <span className={`xr-die k-${k}${free ? " free" : ""}`}
       title={free ? "Free action: this activates on its own, no 2d6 roll needed" : "Order value: roll 2d6 this or higher to activate this action"}>
-      {children}{free && <i className="xr-die-free">free</i>}
+      {children}{free && <sup className="xr-die-free">F</sup>}
     </span>
   );
 }
@@ -535,8 +535,9 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
         ) : (
           <div className="xr-home-grid">
             {arr.map((l) => {
-              const { issues, used, count } = validate(l.roster, l.budget, l.freeplay);
-              const err = issues.some((i) => i.lvl === "err");
+              const { used, count } = validate(l.roster, l.budget, l.freeplay);
+              const cmdIdx = l.roster.findIndex((u) => u.isCmd);
+              const cmd = cmdIdx >= 0 ? l.roster[cmdIdx] : null;
               return (
                 <div className="xr-list-card" key={l.id}>
                   <button className="xr-list-open" onClick={() => onOpen(l.id)}>
@@ -545,10 +546,8 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
                     <span className="xr-list-meta">
                       <b>{used}</b>/{l.budget} pts, {count} {count === 1 ? "unit" : "units"}
                     </span>
-                    {(count === 0 || err) && (
-                      <span className={`xr-list-status ${count === 0 ? "empty" : "err"}`}>
-                        {count === 0 ? "Empty" : "Has issues"}
-                      </span>
+                    {cmd && (
+                      <span className="xr-list-cmd"><Crown size={14} /> {unitDisplayName(cmd, cmdIdx)} <em>{UNIT_BY_ID[cmd.typeId].name}</em></span>
                     )}
                   </button>
                   <div className="xr-list-tools">
@@ -1183,9 +1182,12 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
       <div className={`xr-build-body ${sel ? "has-sel" : ""}`}>
         <main className="xr-ulist" aria-label="Detachment roster">
           {roster.length === 0 ? (
-            <button className="xr-home-empty" onClick={() => setAdding(true)}>
-              <Alien size={40} />
-              <span>Add your first unit</span>
+            <button className="xr-firstunit" onClick={() => setAdding(true)}>
+              <span className="xr-firstunit-badge"><Plus size={30} /></span>
+              <span className="xr-firstunit-txt">
+                <b>Add your first unit</b>
+                <i>Infantry, xenomorphs and vehicles from the rulebook.</i>
+              </span>
             </button>
           ) : (
             <>
@@ -1619,13 +1621,13 @@ const CSS = `
 .xr-iconbtn:active{transform:scale(.95);}
 
 /* die chips */
-.xr-die{display:inline-flex;align-items:center;justify-content:center;min-width:44px;padding:3px 9px;border-radius:9px;border:1.5px solid var(--ink-30);background:var(--paper-2);font-family:var(--mono);font-weight:700;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-die{position:relative;display:inline-flex;align-items:center;justify-content:center;width:50px;padding:3px 4px;border-radius:9px;border:1.5px solid var(--ink-30);background:var(--paper-2);font-family:var(--mono);font-weight:700;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums;}
 .xr-die.k-atk{background:#F4604C22;border-color:var(--coral-ink);}
 .xr-die.k-mov{background:#5C7A5222;border-color:var(--sage);}
 .xr-die.k-sho{background:#6A4A8C22;border-color:var(--iris);}
 .xr-die.k-cou{background:#8A6A1F22;border-color:var(--brass);}
-.xr-die.free{border-style:solid;border-width:2px;border-color:var(--coral-ink);background:var(--coral);color:#3a1206;padding-right:7px;}
-.xr-die-free{font-family:var(--ui);font-style:normal;font-weight:700;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#3a1206;background:rgba(255,255,255,.55);border-radius:5px;padding:1px 5px;margin-left:6px;}
+.xr-die.free{border-style:solid;border-width:2px;border-color:var(--coral-ink);background:var(--coral);color:#3a1206;}
+.xr-die-free{position:absolute;top:1px;right:4px;font-family:var(--ui);font-style:normal;font-weight:700;font-size:9px;line-height:1;color:#3a1206;}
 .xr-dash{color:var(--ink-2);opacity:.45;}
 .xr-rng{font-family:var(--mono);font-style:normal;font-size:15px;color:var(--ink-2);margin-left:5px;}
 
@@ -1642,7 +1644,7 @@ const CSS = `
 /* masthead + wordmark */
 .xr-titlestack{display:inline-flex;flex-direction:column;align-items:stretch;}
 .xr-word{font-family:var(--title);font-weight:400;font-size:clamp(30px,4.6vw,46px);letter-spacing:.02em;line-height:1.02;color:var(--ink);white-space:nowrap;}
-.xr-sub{display:block;font-family:var(--flavor);font-style:italic;font-size:clamp(15px,1.5vw,19px);color:var(--coral-ink);text-align:justify;text-align-last:justify;line-height:1;margin-top:2px;}
+.xr-sub{display:block;font-family:var(--flavor);font-style:italic;font-size:clamp(15px,1.6vw,20px);color:var(--coral-ink);line-height:1;margin-top:3px;}
 
 /* ---------- dashboard ---------- */
 .xr-home{display:flex;flex-direction:column;min-height:100vh;}
@@ -1657,16 +1659,21 @@ const CSS = `
 .xr-list-name{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.15;}
 .xr-list-meta{font-family:var(--ui);font-weight:500;font-size:15px;color:var(--ink-2);}
 .xr-list-meta b{color:var(--ink);font-family:var(--mono);font-weight:700;font-size:16px;}
-.xr-list-status{font-family:var(--ui);font-size:14px;font-weight:600;padding:3px 10px;border-radius:8px;border:1.5px solid;}
-.xr-list-status.ok{color:var(--sage);border-color:var(--sage);}
-.xr-list-status.err{color:var(--coral-ink);border-color:var(--coral-ink);}
-.xr-list-status.empty{color:var(--ink-2);border-color:var(--ink-30);}
+.xr-list-cmd{display:inline-flex;align-items:center;gap:5px;font-family:var(--ui);font-size:14px;font-weight:600;color:var(--brass);}
+.xr-list-cmd em{font-style:normal;font-weight:500;color:var(--ink-2);}
 .xr-list-tools{display:flex;gap:8px;padding:0 16px 14px;}
 .xr-list-tools button{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink-30);border-radius:9px;color:var(--ink-2);transition:.12s;}
 .xr-list-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
 .xr-list-tools button:last-child:hover{background:var(--coral);border-color:var(--coral-ink);color:#fff;}
 .xr-home-empty{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;border:3px dashed var(--ink-30);border-radius:var(--r);padding:56px 24px;color:var(--ink-2);font-family:var(--display);font-weight:600;font-size:20px;transition:.14s;}
 .xr-home-empty:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-2);}
+/* builder first-unit call */
+.xr-firstunit{display:flex;align-items:center;gap:16px;width:100%;text-align:left;border:2.5px solid var(--ink);border-radius:14px;background:var(--paper-2);padding:20px 22px;transition:transform .14s cubic-bezier(.2,.8,.2,1),box-shadow .14s,background .14s;}
+.xr-firstunit:hover{background:var(--paper-3);transform:translateY(-2px);box-shadow:0 6px 16px rgba(31,61,46,.15);}
+.xr-firstunit-badge{flex:none;width:60px;height:60px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--coral);color:var(--ink);border:2.5px solid var(--ink);}
+.xr-firstunit-txt{display:flex;flex-direction:column;gap:3px;}
+.xr-firstunit-txt b{font-family:var(--display);font-weight:700;font-size:22px;color:var(--ink);}
+.xr-firstunit-txt i{font-family:var(--flavor);font-style:italic;font-size:15.5px;color:var(--ink-2);}
 
 /* ---------- builder ---------- */
 /* ---------- nav rail (view controls, grouped) ---------- */
@@ -2074,7 +2081,7 @@ const CSS = `
 .xr-pcard-type{font-size:15px;font-style:italic;color:var(--ink-2);}
 .xr-pcard-dice{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .xr-pcard-die{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.xr-pcard-die .xr-die{min-width:52px;font-size:21px;padding:6px 10px;}
+.xr-pcard-die .xr-die{width:56px;font-size:21px;padding:6px 4px;}
 .xr-pcard-die i{font-style:normal;font-size:13.5px;font-weight:600;color:var(--ink-2);}
 .xr-pcard-sp{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
 .xr-pip{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:var(--coral-ink);transition:.12s;}
@@ -2129,10 +2136,10 @@ const CSS = `
 /* ---------- @media print ---------- */
 @media print{
   .xr-app{background:#fff;}
-  .xr-print-chrome,.game-info-footer{display:none !important;}
-  .xr-printview{background:#fff;}
+  .xr-rail,.xr-print-chrome,.game-info-footer{display:none !important;}
+  .xr-printview{background:#fff;padding-left:0;}
   .xr-sheet{box-shadow:none;margin:0;max-width:none;padding:0;}
-  .xr-sheet-table th,.xr-sheet-table td{padding:4px 5px;}
-  @page{margin:14mm;}
+  .xr-pc{break-inside:avoid;}
+  @page{margin:13mm;}
 }
 `;
