@@ -1278,11 +1278,13 @@ export const XENO_RULES = [
   "tiers": [
    {
     "label": "Zealots",
-    "cost": 4
+    "cost": 4,
+    "desc": "Costs 4 points, but only while the enemy actually fields a unit of your targeted type."
    },
    {
     "label": "Worship a powerful alien",
-    "cost": 0
+    "cost": 0,
+    "desc": "Free: use this when your targeted type is a revered alien you worship rather than a hated foe."
    }
   ]
  },
@@ -1307,11 +1309,13 @@ export const XENO_RULES = [
   "tiers": [
    {
     "label": "Small charge",
-    "cost": 1
+    "cost": 1,
+    "desc": "Detonates automatically on reaching 0 Strength Points, before models are removed."
    },
    {
     "label": "Large charge",
-    "cost": 2
+    "cost": 2,
+    "desc": "Detonates only by choice, as an ordered activation on a 5+."
    }
   ]
  },
@@ -1366,15 +1370,18 @@ export const XENO_RULES = [
   "tiers": [
    {
     "label": "Class I",
-    "cost": 1
+    "cost": 1,
+    "desc": "Lose a Strength Point to Shooting, roll a die per point; each 6 cancels one."
    },
    {
     "label": "Class II",
-    "cost": 2
+    "cost": 2,
+    "desc": "As Class I, but each 5 or 6 cancels a lost Strength Point."
    },
    {
     "label": "Class III",
-    "cost": 3
+    "cost": 3,
+    "desc": "As Class II, and it protects against Attacks as well as Shooting."
    }
   ]
  },
@@ -1446,7 +1453,39 @@ export const XENO_RULES = [
    "rule": "Before deployment (after Attacker and Defender are set), roll one die per Mercenary unit. 1, AWOL: the unit cannot be used this battle but is not a casualty for scenario purposes. 2, Late: roll a die for the earliest turn it may arrive, then it enters with a Move action from your deployment edge. 3, Reluctant: -1 to all Attack and Shoot ordered activations. 4, Eager: +1 to all Attack and Shoot ordered activations. 5, Bloodthirsty: gains Wild Charge, or automatically passes Wild Charge tests if it already has the rule. 6, Raiders: roll a die; the cheapest enemy unit loses that many Strength Points before the game begins (not below 1, and without triggering a Courage test)."
   },
   "costText": "-1 point.",
-  "cost": -1
+  "cost": -1,
+  "table": [
+   {
+    "roll": 1,
+    "name": "AWOL",
+    "text": "Not where they should be. You cannot use the unit this battle, but it does not count as a casualty for scenario victory."
+   },
+   {
+    "roll": 2,
+    "name": "Late",
+    "text": "Roll a die: that is the earliest turn the unit can arrive, entering with a Move action from your deployment edge."
+   },
+   {
+    "roll": 3,
+    "name": "Reluctant",
+    "text": "Just not in the mood. The unit takes a -1 modifier on all Attack and Shoot ordered activations."
+   },
+   {
+    "roll": 4,
+    "name": "Eager",
+    "text": "Keen to earn their pay. The unit gains +1 on all Attack and Shoot ordered activations."
+   },
+   {
+    "roll": 5,
+    "name": "Bloodthirsty",
+    "text": "The unit gains Wild Charge; if it already has Wild Charge, it now passes those tests automatically."
+   },
+   {
+    "roll": 6,
+    "name": "Raiders",
+    "text": "Roll a die: the cheapest enemy unit loses that many Strength Points before the game (never below 1, no Courage test)."
+   }
+  ]
  },
  {
   "id": "mono-molecular-blades",
@@ -1471,25 +1510,29 @@ export const XENO_RULES = [
     "label": "Delta-Class",
     "sub": "1 power",
     "powers": 1,
-    "cost": 1
+    "cost": 1,
+    "desc": "Knows one psychic power."
    },
    {
     "label": "Gamma-Class",
     "sub": "2 powers",
     "powers": 2,
-    "cost": 2
+    "cost": 2,
+    "desc": "Knows two psychic powers."
    },
    {
     "label": "Beta-Class",
     "sub": "3 powers",
     "powers": 3,
-    "cost": 3
+    "cost": 3,
+    "desc": "Knows three psychic powers."
    },
    {
     "label": "Alpha-Class",
     "sub": "3 powers, +6\" range",
     "powers": 3,
-    "cost": 4
+    "cost": 4,
+    "desc": "Knows three powers, and adds 6\" to the range of every power."
    }
   ]
  },
@@ -1525,15 +1568,18 @@ export const XENO_RULES = [
   "tiers": [
    {
     "label": "Tier 1",
-    "cost": 1
+    "cost": 1,
+    "desc": "Manifest Difficulty 6+ powers as a Free Action."
    },
    {
     "label": "Tier 2",
-    "cost": 2
+    "cost": 2,
+    "desc": "Manifest Difficulty 6+ or 7+ powers as a Free Action."
    },
    {
     "label": "Tier 3",
-    "cost": 3
+    "cost": 3,
+    "desc": "Manifest any power as a Free Action."
    }
   ],
   "requiresXeno": "psychic"

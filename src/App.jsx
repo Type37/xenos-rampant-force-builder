@@ -335,7 +335,7 @@ function StatTable({ t, sp }) {
               {o ? <Die k={d.key} free={o.free}>{o.val}</Die> : <span className="xr-dash">-</span>}
             </span>
             <span className="xr-stt-cell">
-              {v ? <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range}</i>}</> : <span className="xr-dash">-</span>}
+              {v ? <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range} range</i>}</> : <span className="xr-dash">-</span>}
             </span>
           </div>
         );
@@ -914,66 +914,156 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool })
   );
 }
 
-/* psychic tab: pick the Psychic class, then choose powers up to that class limit */
-function PsychicTab({ u, rules, dispatch }) {
-  const psySel = "psychic" in u.xenos;
-  const psyRule = XENO_BY_ID["psychic"];
-  const tierIdx = typeof u.xenos.psychic === "number" ? u.xenos.psychic : 0;
-  const limit = psySel ? psyRule.tiers[tierIdx].powers : 0;
-  const chosen = u.psychic || [];
+/* which xeno rules open a config step when selected */
+const isConfigurable = (x) => !!x.tiers || x.id === "mercenary";
+const MERC_TABLE = XENO_BY_ID["mercenary"].table || [];
+
+/* a one-line summary of a configurable rule's current setting, shown on its row */
+function configSummary(x, u) {
+  if (x.id === "mercenary") {
+    const r = u.mercRoll ? MERC_TABLE.find((t) => t.roll === u.mercRoll) : null;
+    return r ? `Rolled ${r.roll}: ${r.name}` : "Not rolled yet";
+  }
+  if (x.tiers) {
+    const i = typeof u.xenos[x.id] === "number" ? u.xenos[x.id] : 0;
+    const t = x.tiers[i];
+    let s = t.label + (t.sub ? `, ${t.sub}` : "");
+    if (x.id === "psychic") { const n = (u.psychic || []).length; s += ` · ${n} of ${t.powers} powers`; }
+    return s;
+  }
+  return "";
+}
+
+/* a xeno rule row: toggle to buy, and if it needs setup, a Configure button */
+function XenoRow({ x, u, dispatch, onConfigure }) {
+  const sel = x.id in u.xenos;
+  const reqMet = xenoReqMet(x, u);
+  const disabled = !sel && !reqMet;
+  const cfg = isConfigurable(x);
+  const toggle = () => {
+    dispatch({ type: "xeno", key: u.key, xid: x.id });
+    if (!sel && cfg) onConfigure(x.id, x.id === "psychic" ? "class" : x.id === "mercenary" ? "merc" : "tier");
+  };
+  return (
+    <OptionRow active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, u.xenos[x.id])}
+      text={disabled && x.requiresXeno ? withPrereqNote(x.text, `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule.`) : x.text}
+      onToggle={toggle}>
+      {sel && cfg && (
+        <div className="xr-xcfg">
+          <span className="xr-xcfg-cur">{configSummary(x, u)}</span>
+          <button className="xr-btn small" onClick={() => onConfigure(x.id, x.id === "psychic" ? "powers" : x.id === "mercenary" ? "merc" : "tier")}>
+            <Gear size={15} /> Configure
+          </button>
+        </div>
+      )}
+    </OptionRow>
+  );
+}
+
+/* the psychic tab is now just its list of rules; setup happens in the config modal */
+function PsychicTab({ u, rules, dispatch, onConfigure }) {
   return (
     <div className="xr-psy">
-      {rules.map((x) => {
-        const sel = x.id in u.xenos;
-        const reqMet = xenoReqMet(x, u);
-        const disabled = !sel && !reqMet;
-        const val = u.xenos[x.id];
-        return (
-          <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
-            text={disabled && x.requiresXeno ? withPrereqNote(x.text, `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule.`) : x.text}
-            onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
-            {sel && x.tiers && (
-              <div className="xr-tiers">
-                {x.tiers.map((tier, i) => (
-                  <button key={i} className={`xr-tier ${val === i ? "on" : ""}`}
-                    onClick={() => dispatch({ type: "tier", key: u.key, xid: x.id, i })}>
-                    <span className="xr-tier-l">{tier.label}{tier.sub && <em>{tier.sub}</em>}</span> <i>{costLabel(tier.cost)}</i>
+      {rules.map((x) => <XenoRow key={x.id} x={x} u={u} dispatch={dispatch} onConfigure={onConfigure} />)}
+    </div>
+  );
+}
+
+/* focused setup for a configurable rule: tier cards, the psychic class-then-powers
+   flow, or the mercenary table with a roll. */
+function XenoConfigModal({ rule, u, dispatch, onClose, initialStep }) {
+  const [step, setStep] = useState(initialStep || "tier");
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const tierIdx = typeof u.xenos[rule.id] === "number" ? u.xenos[rule.id] : 0;
+
+  const tierCards = (onPick) => (
+    <div className="xr-cfg-cards">
+      {rule.tiers.map((t, i) => (
+        <button key={i} className={`xr-cfg-card ${tierIdx === i ? "on" : ""}`} onClick={() => onPick(i)}>
+          <span className="xr-cfg-card-top"><b>{t.label}</b><i>{costLabel(t.cost)}</i></span>
+          {t.sub && <span className="xr-cfg-card-sub">{t.sub}</span>}
+          {t.desc && <span className="xr-cfg-card-desc">{t.desc}</span>}
+          <span className="xr-cfg-card-check" aria-hidden="true">{tierIdx === i && <Check size={16} />}</span>
+        </button>
+      ))}
+    </div>
+  );
+
+  const isPsychic = rule.id === "psychic";
+  const isMerc = rule.id === "mercenary";
+  const limit = isPsychic ? rule.tiers[tierIdx].powers : 0;
+  const chosen = u.psychic || [];
+  const title = isMerc ? "Mercenary" : isPsychic ? (step === "powers" ? `${rule.tiers[tierIdx].label} powers` : `${rule.name} class`) : `${rule.name}`;
+
+  return (
+    <div className="xr-modal-backdrop" onClick={onClose}>
+      <div className="xr-modal xr-modal-tall" role="dialog" aria-modal="true" aria-label={`Configure ${rule.name}`} onClick={(e) => e.stopPropagation()}>
+        <div className="xr-modal-head">
+          {isPsychic && step === "powers" && <button className="xr-iconbtn" onClick={() => setStep("class")} aria-label="Back to class"><Back size={20} /></button>}
+          <span className="xr-modal-title"><Gear size={20} /> {title}</span>
+          <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
+        </div>
+        <div className="xr-modal-body">
+          {isMerc && (
+            <>
+              <div className="xr-merc-roll">
+                <button className="xr-btn primary" onClick={() => dispatch({ type: "mercroll", key: u.key, roll: 1 + Math.floor(Math.random() * 6) })}>
+                  <Dice size={18} /> Roll the die
+                </button>
+                <span className="xr-merc-note">Roll before the game, after Attacker and Defender are set. Or just pick a result.</span>
+              </div>
+              <div className="xr-merc-table">
+                {MERC_TABLE.map((row) => (
+                  <button key={row.roll} className={`xr-merc-row ${u.mercRoll === row.roll ? "on" : ""}`} onClick={() => dispatch({ type: "mercroll", key: u.key, roll: row.roll })}>
+                    <span className="xr-merc-d">{row.roll}</span>
+                    <span className="xr-merc-body"><b>{row.name}</b><i>{row.text}</i></span>
+                    <span className="xr-merc-check" aria-hidden="true">{u.mercRoll === row.roll && <Check size={16} />}</span>
                   </button>
                 ))}
               </div>
-            )}
-          </OptionRow>
-        );
-      })}
-      {psySel && (
-        <div className="xr-psy-powers">
-          <div className="xr-psy-powers-h">
-            <h4>Psychic powers</h4>
-            <span className={`xr-psy-count ${chosen.length >= limit ? "full" : ""}`}>{chosen.length} of {limit} chosen</span>
-          </div>
-          <div className="xr-psy-table">
-            <div className="xr-psy-tr xr-psy-head">
-              <span aria-hidden="true" /><span>Power</span><span>Diff.</span><span>Target</span><span>Duration</span><span>Effect</span>
+            </>
+          )}
+
+          {isPsychic && step === "class" && tierCards((i) => { dispatch({ type: "tier", key: u.key, xid: rule.id, i }); setStep("powers"); })}
+
+          {isPsychic && step === "powers" && (
+            <div className="xr-psy-powers">
+              <div className="xr-psy-powers-h">
+                <h4>Choose powers</h4>
+                <span className={`xr-psy-count ${chosen.length >= limit ? "full" : ""}`}>{chosen.length} of {limit} chosen</span>
+              </div>
+              <div className="xr-psy-table">
+                <div className="xr-psy-tr xr-psy-head"><span aria-hidden="true" /><span>Power</span><span>Diff.</span><span>Target</span><span>Duration</span><span>Effect</span></div>
+                {PSYCHIC_POWERS.map((pw) => {
+                  const on = chosen.includes(pw.name);
+                  const atLimit = chosen.length >= limit && !on;
+                  return (
+                    <button key={pw.name} className={`xr-psy-tr xr-psy-row ${on ? "on" : ""}`} disabled={atLimit}
+                      onClick={() => dispatch({ type: "psypower", key: u.key, power: pw.name })}
+                      title={on ? "Remove this power" : atLimit ? "This class has no free power slots" : "Add this power"}>
+                      <span className="xr-psy-check">{on && <Check size={14} />}</span>
+                      <span className="xr-psy-name">{pw.name}</span>
+                      <span className="xr-psy-diff">{pw.difficulty}</span>
+                      <span className="xr-psy-target">{pw.target}</span>
+                      <span className="xr-psy-dur">{pw.duration}</span>
+                      <span className="xr-psy-effect">{pw.effect}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            {PSYCHIC_POWERS.map((pw) => {
-              const on = chosen.includes(pw.name);
-              const atLimit = chosen.length >= limit && !on;
-              return (
-                <button key={pw.name} className={`xr-psy-tr xr-psy-row ${on ? "on" : ""}`} disabled={atLimit}
-                  onClick={() => dispatch({ type: "psypower", key: u.key, power: pw.name })}
-                  title={on ? "Remove this power" : atLimit ? "This class has no free power slots" : "Add this power"}>
-                  <span className="xr-psy-check">{on && <Check size={14} />}</span>
-                  <span className="xr-psy-name">{pw.name}</span>
-                  <span className="xr-psy-diff">{pw.difficulty}</span>
-                  <span className="xr-psy-target">{pw.target}</span>
-                  <span className="xr-psy-dur">{pw.duration}</span>
-                  <span className="xr-psy-effect">{pw.effect}</span>
-                </button>
-              );
-            })}
-          </div>
+          )}
+
+          {!isMerc && !isPsychic && tierCards((i) => { dispatch({ type: "tier", key: u.key, xid: rule.id, i }); onClose(); })}
         </div>
-      )}
+        <div className="xr-modal-foot">
+          <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -993,7 +1083,8 @@ function AbilitiesModal({ u, dispatch, onClose }) {
   if (eligPsy.length) tabs.push({ id: "psychic", label: "Psychic", n: eligPsy.filter((x) => x.id in u.xenos).length });
   tabs.push({ id: "custom", label: "Custom", n: custom.length });
   const [tab, setTab] = useState(tabs[0] ? tabs[0].id : "load");
-  const xenoList = tab === "psychic" ? eligPsy : tab === "xeno" ? eligXeno : [];
+  const [config, setConfig] = useState(null);
+  const openConfig = (id, step) => setConfig({ id, step });
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -1001,6 +1092,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
   }, [onClose]);
   const bought = t.options.filter((o) => u.options[o.id]).length + Object.keys(u.xenos).length + custom.length;
   return (
+    <>
     <div className="xr-modal-backdrop" onClick={onClose}>
       <div className="xr-modal xr-modal-tall" role="dialog" aria-modal="true" aria-label="Buy abilities" onClick={(e) => e.stopPropagation()}>
         <div className="xr-modal-head">
@@ -1034,29 +1126,8 @@ function AbilitiesModal({ u, dispatch, onClose }) {
               </OptionRow>
             );
           })}
-          {tab === "xeno" && xenoList.map((x) => {
-            const sel = x.id in u.xenos;
-            const reqMet = xenoReqMet(x, u);
-            const disabled = !sel && !reqMet;
-            const val = u.xenos[x.id];
-            return (
-              <OptionRow key={x.id} active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, val)}
-                text={disabled && x.requiresXeno ? withPrereqNote(x.text, `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule.`) : x.text}
-                onToggle={() => dispatch({ type: "xeno", key: u.key, xid: x.id })}>
-                {sel && x.tiers && (
-                  <div className="xr-tiers">
-                    {x.tiers.map((tier, i) => (
-                      <button key={i} className={`xr-tier ${val === i ? "on" : ""}`}
-                        onClick={() => dispatch({ type: "tier", key: u.key, xid: x.id, i })}>
-                        {tier.label} <i>{costLabel(tier.cost)}</i>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </OptionRow>
-            );
-          })}
-          {tab === "psychic" && <PsychicTab u={u} rules={eligPsy} dispatch={dispatch} />}
+          {tab === "xeno" && eligXeno.map((x) => <XenoRow key={x.id} x={x} u={u} dispatch={dispatch} onConfigure={openConfig} />)}
+          {tab === "psychic" && <PsychicTab u={u} rules={eligPsy} dispatch={dispatch} onConfigure={openConfig} />}
           {tab === "custom" && (
             <CustomTab u={u} custom={custom} dispatch={dispatch} />
           )}
@@ -1067,6 +1138,8 @@ function AbilitiesModal({ u, dispatch, onClose }) {
         </div>
       </div>
     </div>
+    {config && <XenoConfigModal rule={XENO_BY_ID[config.id]} u={u} dispatch={dispatch} initialStep={config.step} onClose={() => setConfig(null)} />}
+    </>
   );
 }
 
@@ -1631,12 +1704,14 @@ export default function App() {
           if (u.key !== a.key) return u;
           const rule = XENO_BY_ID[a.xid];
           const xenos = { ...u.xenos };
-          if (a.xid in xenos) delete xenos[a.xid];
+          let next = { ...u };
+          if (a.xid in xenos) { delete xenos[a.xid]; if (a.xid === "mercenary") next.mercRoll = undefined; }
           else xenos[a.xid] = rule.tiers ? 0 : true;
-          return sanitize({ ...u, xenos });
+          return sanitize({ ...next, xenos });
         }));
         break;
       case "tier": setRoster((r) => r.map((u) => (u.key === a.key ? sanitize({ ...u, xenos: { ...u.xenos, [a.xid]: a.i } }) : u))); break;
+      case "mercroll": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, mercRoll: a.roll } : u))); break;
       case "psypower":
         setRoster((r) => r.map((u) => {
           if (u.key !== a.key) return u;
@@ -1994,6 +2069,32 @@ const CSS = `
 .xr-abil-group{margin-bottom:18px;}
 .xr-abil-group-h{position:sticky;top:-16px;background:var(--paper);z-index:1;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;color:var(--ink);padding:6px 0 8px;border-bottom:2px solid var(--ink-30);margin-bottom:6px;}
 .xr-modal-foot{padding:12px 20px;border-top:2px solid var(--ink-30);display:flex;justify-content:flex-end;}
+/* configurable-xeno row: current setting + a Configure button */
+.xr-xcfg{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:4px 4px 10px 60px;}
+.xr-xcfg-cur{font-family:var(--ui);font-weight:600;font-size:14.5px;color:var(--iris);}
+/* config modal: tier cards */
+.xr-cfg-cards{display:grid;gap:11px;}
+.xr-cfg-card{position:relative;display:flex;flex-direction:column;gap:4px;text-align:left;border:2.5px solid var(--ink-30);background:var(--paper-2);border-radius:12px;padding:13px 46px 13px 15px;transition:border-color .12s,background .12s,transform .12s;}
+.xr-cfg-card:hover{border-color:var(--ink);background:var(--paper-3);}
+.xr-cfg-card.on{border-color:var(--iris);background:#6A4A8C10;}
+.xr-cfg-card-top{display:flex;align-items:baseline;gap:10px;}
+.xr-cfg-card-top b{font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);}
+.xr-cfg-card-top i{font-style:normal;font-family:var(--mono);font-weight:700;font-size:15px;color:var(--coral-ink);}
+.xr-cfg-card-sub{font-family:var(--ui);font-weight:600;font-size:13.5px;color:var(--ink-2);}
+.xr-cfg-card-desc{font-family:var(--body);font-size:15px;line-height:1.45;color:var(--ink);}
+.xr-cfg-card-check{position:absolute;top:13px;right:14px;color:var(--iris);}
+/* mercenary table */
+.xr-merc-roll{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.xr-merc-note{font-family:var(--flavor);font-style:italic;font-size:14.5px;color:var(--ink-2);flex:1;min-width:180px;}
+.xr-merc-table{display:grid;gap:8px;}
+.xr-merc-row{position:relative;display:flex;align-items:flex-start;gap:12px;text-align:left;border:2px solid var(--ink-30);background:var(--paper-2);border-radius:11px;padding:11px 44px 11px 11px;transition:border-color .12s,background .12s;}
+.xr-merc-row:hover{border-color:var(--ink);background:var(--paper-3);}
+.xr-merc-row.on{border-color:var(--coral-ink);background:#F4604C10;}
+.xr-merc-d{flex:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:2px solid var(--ink);background:var(--cream);font-family:var(--mono);font-weight:700;font-size:17px;}
+.xr-merc-body{display:flex;flex-direction:column;gap:2px;}
+.xr-merc-body b{font-family:var(--display);font-weight:700;font-size:16.5px;color:var(--ink);}
+.xr-merc-body i{font-family:var(--body);font-style:normal;font-size:14.5px;line-height:1.4;color:var(--ink-2);}
+.xr-merc-check{position:absolute;top:12px;right:14px;color:var(--coral-ink);}
 /* custom points value */
 .xr-budget-custom{width:66px;min-height:44px;font-family:var(--mono);font-weight:700;font-size:16px;text-align:center;color:var(--ink);background:var(--paper-2);border:2px dashed var(--ink-30);border-radius:9px;padding:6px 4px;margin-left:6px;}
 .xr-budget-custom:focus{outline:none;border-style:solid;border-color:var(--coral);}
