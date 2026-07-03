@@ -28,6 +28,7 @@ import icCaret from "@iconify-icons/ph/caret-down-bold";
 import icBook from "@iconify-icons/ph/book-open-fill";
 import icGear from "@iconify-icons/ph/gear-six-fill";
 import icImage from "@iconify-icons/ph/image-square-fill";
+import icBolt from "@iconify-icons/ph/lightning-fill";
 /* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
 import icoAttack from "./assets/stat/attack.png";
 import icoMove from "./assets/stat/move.png";
@@ -69,16 +70,16 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   Trash = mk(icTrash), Plus = mk(icPlus), XIc = mk(icX), Check = mk(icCheck),
   Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
   House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret),
-  Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage);
+  Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt);
 
 const STAT_ROWS = [
-  { key: "atk", label: "Attack", img: icoAttack, order: true, val: true, tip: "Attack: melee to-hit value. Order is the 2d6 target to activate an Attack." },
-  { key: "mov", label: "Move", img: icoMove, order: true, val: true, tip: "Move: maximum movement distance. Order is the 2d6 target to activate a Move." },
-  { key: "sho", label: "Shoot", img: icoShoot, order: true, val: true, tip: "Shoot: ranged to-hit value and range. Order is the 2d6 target to activate a Shoot." },
-  { key: "cou", label: "Courage", img: icoCourage, order: true, val: false, tip: "Courage: the 2d6 target for Courage and Rally tests." },
-  { key: "def", label: "Defence", img: icoDefence, order: false, val: true, tip: "Defence: the value an attacker must roll to hit this unit." },
-  { key: "arm", label: "Armour", img: icoArmour, order: false, val: true, tip: "Armour: hits needed before this unit loses a Strength Point." },
-  { key: "sp", label: "Strength", img: icoStrength, order: false, val: true, tip: "Strength Points: the unit's health and model count." },
+  { key: "atk", label: "Attack", img: icoAttack, order: true, val: true, tip: "Attack Value: the result needed on one die to hit when Attacking. 2d6 to carry out the order." },
+  { key: "mov", label: "Move", img: icoMove, order: true, val: true, tip: "Maximum Movement: the most inches a model in this unit may move. 2d6 to carry out the order." },
+  { key: "sho", label: "Shoot", img: icoShoot, order: true, val: true, tip: "Shoot Value / Range: the result needed on one die to hit when Shooting, and its range. 2d6 to carry out the order." },
+  { key: "cou", label: "Courage", img: icoCourage, order: true, val: false, tip: "Courage: the total needed on one or two dice to keep calm and carry on." },
+  { key: "def", label: "Defence Value", img: icoDefence, order: false, val: true, tip: "Defence Value: the result needed on one die to hit this unit when it is Attacked." },
+  { key: "arm", label: "Armour", img: icoArmour, order: false, val: true, tip: "Armour: the number of hits needed to remove one Strength Point." },
+  { key: "sp", label: "Strength Points", img: icoStrength, order: false, val: true, tip: "Strength Points: this unit's Strength Points, either 5, 10, or 15." },
 ];
 const ACT_KEYS = [
   { key: "atk", label: "Attack" }, { key: "mov", label: "Move" },
@@ -252,18 +253,28 @@ const nav = (h) => { window.location.hash = h; };
 
 /* read an image file, downscale it to fit maxPx, hand back a compact JPEG data URL.
    keeps localStorage small: full-res photos would blow the quota. */
+function drawDownscaled(source, w, h, cb) {
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  canvas.getContext("2d").drawImage(source, 0, 0, w, h);
+  try { cb(canvas.toDataURL("image/jpeg", 0.82)); } catch { cb(null); }
+}
+/* phone photos are stored sideways with an EXIF orientation tag; createImageBitmap
+   auto-rotates using it, so the crop below lands on the right part of the picture. */
 function downscaleImage(file, maxPx, cb) {
+  if (window.createImageBitmap) {
+    window.createImageBitmap(file, { imageOrientation: "from-image" }).then((bmp) => {
+      const scale = Math.min(1, maxPx / Math.max(bmp.width, bmp.height));
+      drawDownscaled(bmp, Math.max(1, Math.round(bmp.width * scale)), Math.max(1, Math.round(bmp.height * scale)), cb);
+    }).catch(() => cb(null));
+    return;
+  }
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new window.Image();
     img.onload = () => {
       const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-      const w = Math.max(1, Math.round(img.width * scale));
-      const h = Math.max(1, Math.round(img.height * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = w; canvas.height = h;
-      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-      try { cb(canvas.toDataURL("image/jpeg", 0.82)); } catch { cb(null); }
+      drawDownscaled(img, Math.max(1, Math.round(img.width * scale)), Math.max(1, Math.round(img.height * scale)), cb);
     };
     img.onerror = () => cb(null);
     img.src = e.target.result;
@@ -292,8 +303,8 @@ function ImageUpload({ image, onChange, title, shape }) {
 function Die({ k, free, children }) {
   return (
     <span className={`xr-die k-${k}${free ? " free" : ""}`}
-      title={free ? "Free action: this activates on its own, no 2d6 roll needed" : "Order value: roll 2d6 this or higher to activate this action"}>
-      {children}{free && <sup className="xr-die-free">F</sup>}
+      title={free ? "Free action: this activates on its own, no 2d6 roll needed" : "Roll 2d6: this or higher activates the action"}>
+      {children}{free && <Bolt size={11} className="xr-die-free" />}
     </span>
   );
 }
@@ -312,7 +323,7 @@ function StatTable({ t, sp }) {
   return (
     <div className="xr-stt">
       <div className="xr-stt-head">
-        <span>Stat</span><span>Order <em>2d6</em></span><span>Profile</span>
+        <span>Stat</span><span>Activate <em>2d6</em></span><span>Value</span>
       </div>
       {STAT_ROWS.map((d) => {
         const o = d.order ? orderCell(t, d.key) : null;
@@ -324,7 +335,7 @@ function StatTable({ t, sp }) {
               {o ? <Die k={d.key} free={o.free}>{o.val}</Die> : <span className="xr-dash">-</span>}
             </span>
             <span className="xr-stt-cell">
-              {v ? <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range} range</i>}</> : <span className="xr-dash">-</span>}
+              {v ? <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range}</i>}</> : <span className="xr-dash">-</span>}
             </span>
           </div>
         );
@@ -626,6 +637,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
                     {cmd && (
                       <span className="xr-list-cmd"><Crown size={14} /> {unitDisplayName(cmd, cmdIdx)} <em>{UNIT_BY_ID[cmd.typeId].name}</em></span>
                     )}
+                    {l.description && <span className="xr-list-desc">{l.description}</span>}
                   </button>
                   <div className="xr-list-tools">
                     <button onClick={() => onDup(l.id)} aria-label="Duplicate" title="Duplicate"><CopyIc size={19} /></button>
@@ -817,7 +829,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool })
         </div>
         <div className="xr-panel-right">
           {stdRules.length > 0 && (
-            <Section title="Standard rules" count={stdRules.length} defaultOpen>
+            <Section title="Special rules" count={stdRules.length} defaultOpen>
               <div className="xr-chips">
                 {stdRules.map((name) => (
                   <RuleChip key={name} name={name} text={SPECIAL_RULES[name]} />
@@ -1159,7 +1171,7 @@ function AddUnitModal({ onAdd, onClose }) {
   );
 }
 
-function Builder({ list, selectedKey, dispatch, updateList }) {
+function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const { roster, budget } = list;
   const [adding, setAdding] = useState(false);
   const [issuesOpen, setIssuesOpen] = useState(false);
@@ -1209,6 +1221,11 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
                 <>
                   <button className="xr-settings-scrim" aria-label="Close settings" onClick={() => setSettingsOpen(false)} />
                   <div className="xr-settings-pop" role="dialog" aria-label="Detachment settings">
+                    <label className="xr-set-field">
+                      <span className="xr-set-field-l">Description <em>optional</em></span>
+                      <textarea className="xr-field-in xr-field-area" value={list.description || ""} onChange={(e) => updateList({ description: e.target.value })}
+                        placeholder="Backstory, how to play, a note to your future self..." rows={3} />
+                    </label>
                     <div className="xr-set-field">
                       <span className="xr-set-field-l">Faction</span>
                       <button className="xr-faction-pick" onClick={() => { setSettingsOpen(false); setFactionOpen(true); }}>
@@ -1240,6 +1257,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
                         <span className="xr-set-field-rule">{NATIONAL_BY_ID[list.nationalTrait].rule}</span>
                       )}
                     </label>
+                    <button className="xr-btn small danger xr-set-delete" onClick={onDelete}><Trash size={16} /> Delete this detachment</button>
                   </div>
                 </>
               )}
@@ -1333,7 +1351,7 @@ function PrintView({ list }) {
         <h2 className="xr-print-h">Print</h2>
         <div className="xr-print-opts">
           <span className="xr-print-optlabel">Sections</span>
-          {[["stats", "Stat table"], ["upgrades", "Upgrades and xeno rules"], ["glossary", "Standard rules glossary"], ["traits", "Commander trait"]].map(([k, lab]) => (
+          {[["stats", "Stat table"], ["upgrades", "Upgrades and xeno rules"], ["glossary", "Special rules glossary"], ["traits", "Commander trait"]].map(([k, lab]) => (
             <label key={k} className="xr-print-check">
               <input type="checkbox" checked={opts[k]} onChange={() => tog(k)} /> {lab}
             </label>
@@ -1384,8 +1402,8 @@ function PrintView({ list }) {
                   </div>
                   {opts.stats && (
                     <div className="xr-pc-stats">
-                      <div className="xr-pc-line"><span className="xr-pc-ll">Order</span>{order.map((o) => <span className="xr-pc-cell" key={o.label}><em>{o.label}</em><b>{o.val}{o.free && <sup className="fmk">F</sup>}</b></span>)}</div>
-                      <div className="xr-pc-line"><span className="xr-pc-ll">Profile</span>{prof.map((o) => <span className="xr-pc-cell" key={o.label}><em>{o.label}</em><b>{o.val}</b></span>)}</div>
+                      <div className="xr-pc-line"><span className="xr-pc-ll">Activate</span>{order.map((o) => <span className="xr-pc-cell" key={o.label}><em>{o.label}</em><b>{o.val}{o.free && <sup className="fmk">F</sup>}</b></span>)}</div>
+                      <div className="xr-pc-line"><span className="xr-pc-ll">Value</span>{prof.map((o) => <span className="xr-pc-cell" key={o.label}><em>{o.label}</em><b>{o.val}</b></span>)}</div>
                     </div>
                   )}
                   {opts.upgrades && hasRules && (
@@ -1402,11 +1420,11 @@ function PrintView({ list }) {
             })}
           </div>
         )}
-        {opts.stats && <p className="xr-sheet-note"><b className="fmk">F</b> = free action, activates on its own. Order is the 2d6 activation target; Profile is how the action resolves.</p>}
+        {opts.stats && <p className="xr-sheet-note"><b className="fmk">F</b> = free action, activates on its own, no roll needed.</p>}
 
         {opts.glossary && glossary.length > 0 && (
           <div className="xr-sheet-gloss">
-            <h2>Standard rules</h2>
+            <h2>Special rules</h2>
             {glossary.map((g) => (
               <p key={g.name}>
                 <b>{g.name}.</b>{" "}
@@ -1468,8 +1486,8 @@ function PlayView({ list }) {
                   const c = orderCell(t, key);
                   return (
                     <span className="xr-pcard-die" key={key}>
-                      <Die k={key}>{c ? c.val : "-"}</Die>
-                      <i>{label}{c && c.free ? " (free)" : ""}</i>
+                      <Die k={key} free={c && c.free}>{c ? c.val : "-"}</Die>
+                      <i>{label}</i>
                     </span>
                   );
                 })}
@@ -1661,7 +1679,7 @@ export default function App() {
     <div className="xr-app">
       <style>{CSS}</style>
       {route.view === "home" && <Dashboard lists={lists} onOpen={openList} onCreate={createList} onLoadPreset={loadPreset} onDup={dupList} onDel={delList} />}
-      {route.view === "build" && <Builder list={current} selectedKey={route.unitKey} dispatch={dispatch} updateList={updateList} />}
+      {route.view === "build" && <Builder list={current} selectedKey={route.unitKey} dispatch={dispatch} updateList={updateList} onDelete={() => delList(current.id)} />}
       {route.view === "print" && <PrintView list={current} />}
       {route.view === "play" && <PlayView list={current} />}
     </div>
@@ -1720,19 +1738,20 @@ const CSS = `
 .xr-die.k-sho{background:#6A4A8C22;border-color:var(--iris);}
 .xr-die.k-cou{background:#8A6A1F22;border-color:var(--brass);}
 .xr-die.free{border-style:solid;border-width:2px;border-color:var(--coral-ink);background:var(--coral);color:#3a1206;}
-.xr-die-free{position:absolute;top:1px;right:4px;font-family:var(--ui);font-style:normal;font-weight:700;font-size:9px;line-height:1;color:#3a1206;}
+.xr-die-free{position:absolute;top:2px;right:3px;color:#3a1206;}
 .xr-dash{color:var(--ink-2);opacity:.45;}
-.xr-rng{font-family:var(--mono);font-style:normal;font-size:15px;color:var(--ink-2);margin-left:5px;}
+.xr-rng{font-family:var(--body);font-style:italic;font-size:15px;color:var(--ink-2);margin-left:3px;white-space:nowrap;}
 
 /* stat table */
 .xr-stt{padding:4px 0 0;}
-.xr-stt-head{display:grid;grid-template-columns:150px 86px 1fr;gap:6px 10px;padding:0 0 7px;border-bottom:2px solid var(--ink-30);font-family:var(--display);font-weight:600;letter-spacing:.02em;font-size:15.5px;color:var(--ink-2);}
+.xr-stt-head{display:grid;grid-template-columns:184px 86px 1fr;gap:6px 10px;padding:0 0 7px;border-bottom:2px solid var(--ink-30);font-family:var(--display);font-weight:600;letter-spacing:.02em;font-size:15.5px;color:var(--ink-2);}
 .xr-stt-head em{font-style:italic;font-variant:normal;font-size:13.5px;}
-.xr-stt-row{display:grid;grid-template-columns:150px 86px 1fr;gap:6px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--ink-18);}
+.xr-stt-row{display:grid;grid-template-columns:184px 86px 1fr;gap:6px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--ink-18);}
 .xr-stt-row:last-child{border-bottom:none;}
 .xr-stt-stat{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:600;font-size:17px;}
 .xr-stt-ic{width:28px;height:28px;object-fit:contain;flex:none;}
-.xr-stt-cell b{font-family:var(--mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;}
+.xr-stt-cell{display:flex;align-items:baseline;white-space:nowrap;min-width:0;}
+.xr-stt-cell b{font-family:var(--mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;flex:none;}
 
 /* masthead + wordmark */
 .xr-titlestack{display:inline-flex;flex-direction:column;align-items:stretch;}
@@ -1754,6 +1773,7 @@ const CSS = `
 .xr-list-meta b{color:var(--ink);font-family:var(--mono);font-weight:700;font-size:16px;}
 .xr-list-cmd{display:inline-flex;align-items:center;gap:5px;font-family:var(--ui);font-size:14px;font-weight:600;color:var(--brass);}
 .xr-list-cmd em{font-style:normal;font-weight:500;color:var(--ink-2);}
+.xr-list-desc{font-family:var(--flavor);font-style:italic;font-size:14.5px;color:var(--ink-2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .xr-list-tools{display:flex;gap:8px;padding:0 16px 14px;}
 .xr-list-tools button{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink-30);border-radius:9px;color:var(--ink-2);transition:.12s;}
 .xr-list-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
@@ -1829,6 +1849,7 @@ const CSS = `
 .xr-settingswrap{position:relative;}
 .xr-settings-scrim{position:fixed;inset:0;z-index:39;background:transparent;border:none;cursor:default;}
 .xr-settings-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:min(320px,86vw);display:flex;flex-direction:column;gap:14px;background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;box-shadow:0 12px 34px rgba(31,61,46,.26);padding:14px;animation:xr-pop .18s cubic-bezier(.2,.8,.2,1);}
+.xr-set-delete{justify-content:center;margin-top:2px;border-top:2px solid var(--ink-18);padding-top:14px;border-radius:0;border-left:none;border-right:none;border-bottom:none;}
 .xr-set-toggle{display:flex;align-items:flex-start;gap:10px;text-align:left;padding:9px;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);transition:.13s;}
 .xr-set-toggle:hover{border-color:var(--ink);}
 .xr-set-toggle.on{border-color:var(--iris);background:#6A4A8C14;}
@@ -1922,8 +1943,8 @@ const CSS = `
 .xr-group-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:19px;color:var(--ink);padding-bottom:6px;border-bottom:2px solid var(--ink-30);margin-bottom:10px;}
 /* abilities summary in the unit panel */
 .xr-abil{margin-top:18px;border-top:2px solid var(--ink-30);padding-top:14px;}
-.xr-abil-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
-.xr-abil-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.xr-abil-bar{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.xr-abil-head{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
 .xr-abil-h{font-family:var(--display);font-weight:700;font-size:19px;color:var(--ink);}
 .xr-abil-list{display:flex;flex-direction:column;gap:7px;}
 .xr-abil-item{border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);overflow:hidden;transition:border-color .12s;}
@@ -2025,7 +2046,7 @@ const CSS = `
 .xr-tier.on .xr-tier-l em{color:var(--cream);}
 /* psychic powers picker */
 .xr-psy-powers{margin-top:16px;border-top:2px solid var(--ink-30);padding-top:14px;}
-.xr-psy-powers-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;}
+.xr-psy-powers-h{display:flex;align-items:center;gap:14px;margin-bottom:9px;}
 .xr-psy-powers-h h4{font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);}
 .xr-psy-count{font-family:var(--mono);font-weight:700;font-size:13.5px;color:var(--ink-2);padding:3px 9px;border:1.5px solid var(--ink-30);border-radius:8px;}
 .xr-psy-count.full{color:var(--iris);border-color:var(--iris);background:#6A4A8C10;}
