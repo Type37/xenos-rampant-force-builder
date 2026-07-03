@@ -1849,11 +1849,11 @@ const CSS = `
 
 /* stat table */
 .xr-stt{padding:4px 0 0;}
-.xr-stt-head{display:grid;grid-template-columns:184px 86px 1fr;gap:6px 10px;padding:0 0 7px;border-bottom:2px solid var(--ink-30);font-family:var(--display);font-weight:600;letter-spacing:.02em;font-size:15.5px;color:var(--ink-2);}
+.xr-stt-head{display:grid;grid-template-columns:170px 76px 1fr;gap:4px 8px;padding:0 0 6px;border-bottom:2px solid var(--ink-30);font-family:var(--display);font-weight:600;letter-spacing:.02em;font-size:15.5px;color:var(--ink-2);}
 .xr-stt-head em{font-style:italic;font-variant:normal;font-size:13.5px;}
-.xr-stt-row{display:grid;grid-template-columns:184px 86px 1fr;gap:6px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--ink-18);}
+.xr-stt-row{display:grid;grid-template-columns:170px 76px 1fr;gap:4px 8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--ink-18);}
 .xr-stt-row:last-child{border-bottom:none;}
-.xr-stt-stat{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:600;font-size:17px;}
+.xr-stt-stat{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:17px;}
 .xr-stt-ic{width:28px;height:28px;object-fit:contain;flex:none;}
 .xr-stt-cell{display:flex;align-items:baseline;white-space:nowrap;min-width:0;}
 .xr-stt-cell b{font-family:var(--mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;flex:none;}
@@ -1904,7 +1904,7 @@ const CSS = `
 
 /* ---------- collapsible section (progressive disclosure) ---------- */
 .xr-sec{border-top:2px solid var(--ink-30);}
-.xr-sec-h{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:14px 2px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:19px;color:var(--ink);min-height:52px;}
+.xr-sec-h{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:11px 2px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:19px;color:var(--ink);min-height:46px;}
 .xr-sec-title{flex:1;}
 .xr-sec-count{font-family:var(--mono);font-style:normal;font-weight:700;font-size:14px;min-width:26px;height:26px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--cream);border-radius:13px;}
 .xr-sec-caret{color:var(--ink-2);transition:transform .15s;flex:none;}
@@ -2037,7 +2037,7 @@ const CSS = `
 .xr-panel-pts{font-family:var(--mono);font-weight:700;white-space:nowrap;}
 .xr-panel-pts b{font-size:26px;}
 .xr-panel-pts i{font-style:normal;font-size:14px;color:var(--ink-2);margin-left:3px;}
-.xr-panel-tools{display:flex;gap:8px;flex-wrap:wrap;padding:12px 0;}
+.xr-panel-tools{display:flex;gap:8px;flex-wrap:wrap;padding:10px 0;}
 /* two-column panel: stats left, rules + abilities on the right */
 .xr-panel-cols{display:grid;grid-template-columns:minmax(320px,380px) 1fr;gap:14px 30px;align-items:start;}
 .xr-panel-right{min-width:0;}
