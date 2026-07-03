@@ -43,6 +43,10 @@ import {
   NATIONAL_TRAITS, NATIONAL_BY_ID, PSYCHIC_POWERS,
 } from "./data.js";
 import { SETTINGS } from "./premade.js";
+import { ALL_GENRES, randomName } from "./factions.js";
+
+const FACTION_BASE = import.meta.env.BASE_URL;
+const factionIconUrl = (icon) => (icon ? `${FACTION_BASE}factions/${icon}` : null);
 
 /* ================================================================== *
  * XENOS RAMPANT: FORCE BUILDER
@@ -416,17 +420,78 @@ function BudgetPicker({ budget, onChange }) {
   );
 }
 
-/* new-army creation modal */
-function NewArmyModal({ onCreate, onClose }) {
-  const [name, setName] = useState("");
-  const [budget, setBudget] = useState(24);
-  const [desc, setDesc] = useState("");
+/* faction picker: genre -> group -> faction. picking one themes the detachment
+   (sets its icon) and hands over a name pool for the randomiser. */
+function FactionModal({ onPick, onClose }) {
+  const [gid, setGid] = useState(ALL_GENRES[0].id);
+  const genre = ALL_GENRES.find((g) => g.id === gid) || ALL_GENRES[0];
+  const [grpId, setGrpId] = useState(genre.groups[0].id);
+  const group = genre.groups.find((g) => g.id === grpId) || genre.groups[0];
+  const [q, setQ] = useState("");
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-  const create = () => onCreate({ name: name.trim(), budget, description: desc.trim() });
+  const pickGenre = (id) => { setGid(id); const g = ALL_GENRES.find((x) => x.id === id); setGrpId(g.groups[0].id); setQ(""); };
+  const needle = q.trim().toLowerCase();
+  const factions = group.factions.filter((f) => !needle || f.name.toLowerCase().includes(needle) || (f.tag || "").toLowerCase().includes(needle));
+  return (
+    <div className="xr-modal-backdrop" onClick={onClose}>
+      <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Pick a faction" onClick={(e) => e.stopPropagation()}>
+        <div className="xr-modal-head">
+          <span className="xr-modal-title"><Dice size={22} /> Pick a faction</span>
+          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        </div>
+        <div className="xr-modal-tabs" role="tablist">
+          {ALL_GENRES.map((g) => (
+            <button key={g.id} role="tab" aria-selected={gid === g.id} className={`xr-modal-tab ${gid === g.id ? "on" : ""}`} onClick={() => pickGenre(g.id)}>{g.label}</button>
+          ))}
+        </div>
+        <div className="xr-fac-sub">
+          <div className="xr-fac-groups">
+            {genre.groups.map((g) => (
+              <button key={g.id} className={`xr-fac-grp ${grpId === g.id ? "on" : ""}`} onClick={() => { setGrpId(g.id); setQ(""); }}>{g.label}</button>
+            ))}
+          </div>
+          <input className="xr-fac-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search factions" spellCheck={false} />
+        </div>
+        <div className="xr-modal-body">
+          <div className="xr-fac-grid">
+            {factions.map((f) => {
+              const url = factionIconUrl(f.icon);
+              return (
+                <button key={f.id} className="xr-fac-card" onClick={() => onPick({ ...f, genre: genre.id, group: group.id })} title={`${f.pool.length} names`}>
+                  <span className="xr-fac-ic">{url ? <img src={url} alt="" loading="lazy" /> : <Alien size={22} />}</span>
+                  <span className="xr-fac-body">
+                    <span className="xr-fac-name">{f.name}</span>
+                    <span className="xr-fac-tag">{f.tag}</span>
+                  </span>
+                </button>
+              );
+            })}
+            {factions.length === 0 && <p className="xr-fac-empty">No factions match that search.</p>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* new-army creation modal */
+function NewArmyModal({ onCreate, onClose }) {
+  const [name, setName] = useState("");
+  const [budget, setBudget] = useState(24);
+  const [desc, setDesc] = useState("");
+  const [faction, setFaction] = useState(null);
+  const [picking, setPicking] = useState(false);
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const roll = () => { if (faction) setName(randomName(faction.pool, name)); };
+  const create = () => onCreate({ name: name.trim(), budget, description: desc.trim(), faction: faction || undefined });
   return (
     <div className="xr-modal-backdrop" onClick={onClose}>
       <div className="xr-modal xr-modal-narrow" role="dialog" aria-modal="true" aria-label="New detachment" onClick={(e) => e.stopPropagation()}>
@@ -435,10 +500,21 @@ function NewArmyModal({ onCreate, onClose }) {
           <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
         </div>
         <div className="xr-modal-body">
+          <div className="xr-field">
+            <span className="xr-field-l">Faction <em>sets a theme and a name pool</em></span>
+            <button className="xr-faction-pick" onClick={() => setPicking(true)}>
+              {faction
+                ? <><span className="xr-fac-ic sm">{factionIconUrl(faction.icon) ? <img src={factionIconUrl(faction.icon)} alt="" /> : <Alien size={18} />}</span><b>{faction.name}</b><i>{faction.tag}</i></>
+                : <><Dice size={18} /> Pick a faction</>}
+            </button>
+          </div>
           <label className="xr-field">
             <span className="xr-field-l">Name</span>
-            <input className="xr-field-in" value={name} onChange={(e) => setName(e.target.value)} placeholder="Eg. Fennec Fusiliers" autoFocus
-              onKeyDown={(e) => { if (e.key === "Enter") create(); }} spellCheck={false} />
+            <div className="xr-field-roll">
+              <input className="xr-field-in" value={name} onChange={(e) => setName(e.target.value)} placeholder="Eg. Fennec Fusiliers" autoFocus
+                onKeyDown={(e) => { if (e.key === "Enter") create(); }} spellCheck={false} />
+              <button className="xr-iconbtn" onClick={roll} disabled={!faction} title={faction ? "Roll a name from the faction pool" : "Pick a faction first"} aria-label="Roll a name"><Dice size={19} /></button>
+            </div>
           </label>
           <div className="xr-field">
             <span className="xr-field-l">Game size</span>
@@ -454,6 +530,7 @@ function NewArmyModal({ onCreate, onClose }) {
           <button className="xr-btn primary" onClick={create}><Plus size={17} /> Create detachment</button>
         </div>
       </div>
+      {picking && <FactionModal onPick={(f) => { setFaction(f); if (!name.trim()) setName(randomName(f.pool)); setPicking(false); }} onClose={() => setPicking(false)} />}
     </div>
   );
 }
@@ -541,7 +618,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
               return (
                 <div className="xr-list-card" key={l.id}>
                   <button className="xr-list-open" onClick={() => onOpen(l.id)}>
-                    {l.image && <span className="xr-list-img" style={{ backgroundImage: `url(${l.image})` }} aria-hidden="true" />}
+                    {(l.image || factionIconUrl(l.faction && l.faction.icon)) && <span className="xr-list-img" style={{ backgroundImage: `url(${l.image || factionIconUrl(l.faction.icon)})` }} aria-hidden="true" />}
                     <span className="xr-list-name">{l.name || "Untitled detachment"}</span>
                     <span className="xr-list-meta">
                       <b>{used}</b>/{l.budget} pts, {count} {count === 1 ? "unit" : "units"}
@@ -687,7 +764,7 @@ function TraitPicker({ u, tbl, trait, dispatch }) {
   );
 }
 
-function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
+function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const sp = unitSP(u);
@@ -713,6 +790,10 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities }) {
               onChange={(e) => dispatch({ type: "name", key: u.key, name: e.target.value })} spellCheck={false} />
           </label>
         </div>
+        {factionPool && factionPool.length > 0 && (
+          <button className="xr-iconbtn xr-name-roll" onClick={() => dispatch({ type: "name", key: u.key, name: randomName(factionPool, u.name) })}
+            title="Roll a name from the faction pool" aria-label="Roll a unit name"><Dice size={19} /></button>
+        )}
         <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
       </div>
 
@@ -1084,6 +1165,8 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
   const [issuesOpen, setIssuesOpen] = useState(false);
   const [abilOpen, setAbilOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [factionOpen, setFactionOpen] = useState(false);
+  const detImg = list.image || factionIconUrl(list.faction && list.faction.icon);
   const { issues, used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const errors = issues.filter((i) => i.lvl === "err");
   const status = errors.length ? "err" : count === 0 ? "empty" : "ok";
@@ -1113,7 +1196,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
       <RailNav view="build" />
       <header className="xr-mast">
         <div className="xr-mast-row">
-          {list.image && <span className="xr-mast-img" style={{ backgroundImage: `url(${list.image})` }} aria-hidden="true" />}
+          {detImg && <span className="xr-mast-img" style={{ backgroundImage: `url(${detImg})` }} aria-hidden="true" />}
           <input className="xr-detname" value={list.name} placeholder="Name your detachment"
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
           <div className="xr-actions">
@@ -1126,11 +1209,20 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
                 <>
                   <button className="xr-settings-scrim" aria-label="Close settings" onClick={() => setSettingsOpen(false)} />
                   <div className="xr-settings-pop" role="dialog" aria-label="Detachment settings">
+                    <div className="xr-set-field">
+                      <span className="xr-set-field-l">Faction</span>
+                      <button className="xr-faction-pick" onClick={() => { setSettingsOpen(false); setFactionOpen(true); }}>
+                        {list.faction
+                          ? <><span className="xr-fac-ic sm">{factionIconUrl(list.faction.icon) ? <img src={factionIconUrl(list.faction.icon)} alt="" /> : <Alien size={18} />}</span><b>{list.faction.name}</b><i>{list.faction.tag}</i></>
+                          : <><Dice size={18} /> Pick a faction</>}
+                      </button>
+                      <span className="xr-set-field-h">Sets the detachment icon and the name pool used to roll unit names.</span>
+                    </div>
                     <div className="xr-set-field xr-set-img">
-                      <span className="xr-set-field-l">Detachment picture</span>
+                      <span className="xr-set-field-l">Custom picture</span>
                       <div className="xr-set-img-row">
                         <ImageUpload image={list.image} onChange={(img) => updateList({ image: img || undefined })} title="Upload a detachment picture" />
-                        <span className="xr-set-field-h">Shows on the dashboard card and the build header.</span>
+                        <span className="xr-set-field-h">Overrides the faction icon on the card and header.</span>
                       </div>
                     </div>
                     <button className={`xr-set-toggle ${list.freeplay ? "on" : ""}`} onClick={() => updateList({ freeplay: !list.freeplay })} aria-pressed={!!list.freeplay}>
@@ -1203,7 +1295,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
         </main>
         <div className="xr-detail">
           {sel ? (
-            <UnitPanel key={sel.key} u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} />
+            <UnitPanel key={sel.key} u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} factionPool={list.faction && list.faction.pool} />
           ) : (
             roster.length > 0 && <div className="xr-detail-hint"><Alien size={36} /><span>Select a unit</span></div>
           )}
@@ -1212,6 +1304,7 @@ function Builder({ list, selectedKey, dispatch, updateList }) {
 
       {adding && <AddUnitModal onAdd={(id) => { dispatch({ type: "add", typeId: id }); setAdding(false); }} onClose={() => setAdding(false)} />}
       {abilOpen && sel && <AbilitiesModal u={sel} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
+      {factionOpen && <FactionModal onPick={(f) => { updateList({ faction: f }); setFactionOpen(false); }} onClose={() => setFactionOpen(false)} />}
       <SiteFooter />
     </div>
   );
@@ -1530,7 +1623,7 @@ export default function App() {
 
   const createList = (opts = {}) => {
     const id = uid();
-    setLists((ls) => ({ ...ls, [id]: { id, name: opts.name || "", budget: opts.budget || 24, description: opts.description || "", roster: [], updated: Date.now() } }));
+    setLists((ls) => ({ ...ls, [id]: { id, name: opts.name || "", budget: opts.budget || 24, description: opts.description || "", roster: [], faction: opts.faction || undefined, updated: Date.now() } }));
     setCurrentId(id);
     nav("#/build");
   };
@@ -1859,6 +1952,31 @@ const CSS = `
 .xr-field-l{display:block;font-family:var(--display);font-weight:600;letter-spacing:.03em;font-size:16px;color:var(--ink-2);margin-bottom:6px;}
 .xr-field-l em{font-style:italic;font-variant:normal;font-size:13.5px;margin-left:6px;}
 .xr-field-in{width:100%;font-family:var(--body);font-size:17px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:10px;padding:11px 13px;min-height:48px;}
+.xr-field-roll{display:flex;gap:8px;align-items:stretch;}
+.xr-field-roll .xr-field-in{flex:1;}
+/* faction picker */
+.xr-faction-pick{display:inline-flex;align-items:center;gap:9px;width:100%;text-align:left;font-family:var(--ui);font-weight:600;font-size:15.5px;color:var(--ink);border:2px solid var(--ink-30);background:var(--paper-2);border-radius:10px;padding:9px 12px;min-height:50px;transition:border-color .12s,background .12s;}
+.xr-faction-pick:hover{border-color:var(--ink);background:var(--paper-3);}
+.xr-faction-pick b{font-weight:700;}
+.xr-faction-pick i{font-style:normal;font-size:13.5px;color:var(--ink-2);margin-left:auto;}
+.xr-fac-sub{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:10px clamp(14px,3vw,22px) 0;}
+.xr-fac-groups{display:flex;gap:7px;flex-wrap:wrap;}
+.xr-fac-grp{font-family:var(--ui);font-weight:600;font-size:14.5px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);border-radius:8px;padding:6px 13px;min-height:40px;transition:.12s;}
+.xr-fac-grp:hover{border-color:var(--ink);color:var(--ink);}
+.xr-fac-grp.on{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+.xr-fac-search{margin-left:auto;min-width:180px;font-family:var(--body);font-size:15px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:8px 11px;min-height:40px;}
+.xr-fac-search:focus{outline:none;border-color:var(--coral);}
+.xr-fac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.xr-fac-card{display:flex;align-items:center;gap:11px;text-align:left;border:2px solid var(--ink-30);background:var(--paper-2);border-radius:11px;padding:10px 12px;min-height:62px;transition:transform .12s cubic-bezier(.2,.8,.2,1),border-color .12s,box-shadow .12s;}
+.xr-fac-card:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 5px 13px rgba(31,61,46,.14);}
+.xr-fac-ic{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9px;border:2px solid var(--ink);background:var(--cream);color:var(--ink-2);overflow:hidden;}
+.xr-fac-ic img{width:100%;height:100%;object-fit:contain;padding:3px;}
+.xr-fac-ic.sm{width:30px;height:30px;border-radius:7px;}
+.xr-fac-ic.sm img{padding:2px;}
+.xr-fac-body{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.xr-fac-name{font-family:var(--ui);font-weight:600;font-size:15px;color:var(--ink);line-height:1.2;}
+.xr-fac-tag{font-family:var(--flavor);font-style:italic;font-size:13px;color:var(--ink-2);}
+.xr-fac-empty{font-family:var(--flavor);font-style:italic;color:var(--ink-2);padding:10px 2px;}
 .xr-field-in:focus{outline:none;border-color:var(--coral);}
 .xr-field-area{resize:vertical;min-height:76px;line-height:1.5;}
 /* custom abilities tab */
