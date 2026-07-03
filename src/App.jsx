@@ -706,9 +706,11 @@ function UnitRow({ u, i, selected, onSelect }) {
   );
 }
 
-function OptionRow({ active, disabled, name, cost, text, onToggle, children }) {
+function OptionRow({ active, disabled, name, cost, text, onToggle, children, showLore }) {
   const [open, setOpen] = useState(false);
   const tip = text ? (typeof text === "string" ? text : [text.flavor, flatRule(text.rule)].filter(Boolean).join(" ")) : undefined;
+  const lore = text && typeof text === "object" ? text.flavor : null;
+  const expanded = open || active;
   return (
     <div className={`xr-row ${active ? "on" : ""} ${disabled ? "off" : ""}`}>
       <div className="xr-row-line">
@@ -717,9 +719,10 @@ function OptionRow({ active, disabled, name, cost, text, onToggle, children }) {
           <span className="xr-check" aria-hidden="true">{active ? <Check size={16} /> : null}</span>
           <span className="xr-row-name">{name}</span>
         </button>
-        <button className="xr-row-info" onClick={() => setOpen((o) => !o)} aria-label={open ? "Hide rule text" : "Show rule text"} aria-expanded={open}>?</button>
+        <button className="xr-row-info" onClick={() => setOpen((o) => !o)} aria-label={open ? "Hide rule" : "Show rule"} aria-expanded={open}>?</button>
       </div>
-      {(open || active) && <RuleText data={text} className="xr-row-text" />}
+      {showLore && lore && !expanded && <p className="xr-row-lore">{lore}</p>}
+      {expanded && <RuleText data={text} className="xr-row-text" />}
       {children}
     </div>
   );
@@ -954,7 +957,7 @@ function XenoRow({ x, u, dispatch, onConfigure }) {
     if (!sel && cfg) onConfigure(x.id, x.id === "psychic" ? "class" : x.id === "mercenary" ? "merc" : "tier");
   };
   return (
-    <OptionRow active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, u.xenos[x.id])}
+    <OptionRow active={sel} disabled={disabled} name={x.name} cost={xenoCost(x, u.xenos[x.id])} showLore
       text={disabled && x.requiresXeno ? withPrereqNote(x.text, `Requires the ${XENO_BY_ID[x.requiresXeno].name} xeno rule.`) : x.text}
       onToggle={toggle}>
       {sel && cfg && (
@@ -2187,6 +2190,7 @@ const CSS = `
 .xr-row-info{flex:none;width:34px;align-self:center;height:34px;border:1.5px solid var(--ink-30);border-radius:50%;color:var(--ink-2);font-weight:700;font-size:16px;transition:.12s;}
 .xr-row-info:hover{background:var(--ink);border-color:var(--ink);color:var(--cream);}
 .xr-row-text{font-family:var(--body);font-style:normal;font-size:16px;color:var(--ink);line-height:1.5;padding:2px 4px 8px 60px;}
+.xr-row-lore{font-family:var(--flavor);font-style:italic;font-size:15px;line-height:1.4;color:var(--ink-2);padding:0 4px 8px 60px;}
 .xr-subs{margin-left:44px;border-left:2px solid var(--ink-18);padding-left:8px;}
 .xr-tiers{display:flex;gap:7px;flex-wrap:wrap;padding:2px 4px 10px 60px;}
 .xr-tier{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:42px;transition:border-color .12s,background .12s;}

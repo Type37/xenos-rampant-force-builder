@@ -1216,7 +1216,7 @@ export const XENO_RULES = [
   "id": "boarding-shields",
   "name": "Boarding Shields",
   "text": {
-   "flavor": "Portable cover for a very bad day: hefty shields built to soak up return fire.",
+   "flavor": "Boarding actions are characterised by sudden, heavy torrents of short-range gunfire and the use of fearsome breaching tools to cut through bulkheads and bodies alike. Portable cover, in the form of hefty boarding shields, is extremely desirable.",
    "rule": "Improves this unit's Defence Value by 1 (e.g. from 4+ to 3+) and grants +1 Armour against Shoot actions and Firefight reactions."
   },
   "costText": "2 points.",
@@ -1226,7 +1226,7 @@ export const XENO_RULES = [
   "id": "brutal-leader",
   "name": "Brutal Leader",
   "text": {
-   "flavor": "Discipline enforced by the barrel of a gun pointed at their own side.",
+   "flavor": "One or more members of this unit keep their comrades in line through the application of carefully targeted violence. They may be fanatical priests, political officers, or wardens armed with the trigger for the Detachment's explosive collars.",
    "rule": "This unit, plus any other friendly unit within 6\", may re-roll one failed Courage test (including Rallying) per test, so long as the Brutal Leader's unit is not Suppressed (it cannot use this to Rally itself). Whenever a re-roll is used this way, the re-rolling unit loses an extra Strength Point on top of any lost to the test; this extra loss does not trigger a further Courage test."
   },
   "costText": "1 point.",
@@ -1236,7 +1236,7 @@ export const XENO_RULES = [
   "id": "cloaking-device",
   "name": "Cloaking Device",
   "text": {
-   "flavor": "Not invisible, just very hard to keep in your sights.",
+   "flavor": "Although not completely hidden from sight, this unit conceals itself using powerful psychic abilities, light-refracting stealth technology, or by having a gaseous form.",
    "rule": "This unit can only be targeted by ranged attacks within 12\", and gains +1 Armour against Shoot actions and Firefight reactions. Psychic powers and Attacks work against it as normal. Recon Infantry get the same effect for free via Hard to Target."
   },
   "costText": "3 points.",
@@ -1246,7 +1246,7 @@ export const XENO_RULES = [
   "id": "combat-medic",
   "name": "Combat Medic",
   "text": {
-   "flavor": "Someone in the unit knows how to keep the wounded moving.",
+   "flavor": "One or more members of this unit are trained in combat medicine.",
    "rule": "Whenever this unit, or a friendly unit within 6\", loses Strength Points (except from a failed Courage test or the Brutal Leader rule), roll one die, subtracting 1 if the Combat Medic's unit is at half Strength Points or below. On a 4+, reduce the Strength Points lost by one. Has no effect on Demonic, Mechanoid, or Undead units unless the Combat Medic's unit shares that xeno rule, and cannot be used while the Combat Medic's unit is Suppressed."
   },
   "costText": "2 points.",
@@ -1256,7 +1256,7 @@ export const XENO_RULES = [
   "id": "contagious",
   "name": "Contagious",
   "text": {
-   "flavor": "Hack off the bitten arm, or risk catching whatever's animating them.",
+   "flavor": "Sometimes it's better to hack off a bitten arm than risk infection by whatever it is that's animating those things.",
    "rule": "Whenever this unit inflicts Strength Point loss on an enemy infantry unit during an Attack (Attacking or Defending), it regains one Strength Point it has lost this game."
   },
   "costText": "1 point. Demonic or Undead infantry units only.",
@@ -1271,7 +1271,7 @@ export const XENO_RULES = [
   "id": "crusader",
   "name": "Crusader",
   "text": {
-   "flavor": "Zeal enough to turn back an army twice the size, so long as it's the right army.",
+   "flavor": "Advances in science and technology, and even encounters with alien species, may not be enough to dim the religious zeal of some warriors. Sometimes the aliens themselves might be so powerful as to cause lesser beings to worship them as gods.",
    "rule": [
     "Before deployment, pick a target: any unit with the Demonic, Mechanoid, or Undead xeno rule, a particular alien species (humans included), or a rival faith or nationality visibly opposed on the table.",
     "Against that target, it may re-roll all misses during Shooting and Attacks, including Firefights and while Defending, and ignores the effects of Fearsome units of the targeted type.",
@@ -1297,7 +1297,7 @@ export const XENO_RULES = [
   "id": "demonic",
   "name": "Demonic",
   "text": {
-   "flavor": "Something that shouldn't exist by the rules of physics you grew up with.",
+   "flavor": "Whilst a demon could be a creature from fire-and-brimstone Hell, it could just as easily be an entity from a parallel plane of existence, or a creature from distant realms of space where the laws of physics work differently than in our small corner of the universe.",
    "rule": [
     "Ignores the effects of Stun Weapons and of Fearsome units, and counts as Fearsome itself at no extra cost.",
     "Enemies targeting it with a psychic power take a +2 modifier to their activation roll.",
@@ -1312,7 +1312,7 @@ export const XENO_RULES = [
   "id": "exploder",
   "name": "Exploder",
   "text": {
-   "flavor": "It was always going to end in a bang; the only question was when.",
+   "flavor": "This unit is either innately highly volatile, such as strange hydrogen-filled jellyfish or armoured guzzoline tankers, or is carrying explosives that it can detonate at will.",
    "rule": [
     "Small charge (1 point): explodes automatically on reaching 0 Strength Points, before models are removed. It does not explode if removed some other way, such as routing.",
     "Large charge (2 points): explodes only by choice, as an ordered activation on a 5+; a failed test still destroys the unit with no further effect.",
@@ -1338,7 +1338,7 @@ export const XENO_RULES = [
   "id": "fanatical-discipline",
   "name": "Fanatical Discipline",
   "text": {
-   "flavor": "Courageous to the point of foolhardiness.",
+   "flavor": "This unit is courageous to the point of foolhardiness.",
    "rule": "Improves this unit's Courage score by 1, to a maximum of 3+ (for example, Courage 5+ becomes 4+)."
   },
   "costText": "2 points.",
@@ -1348,7 +1348,7 @@ export const XENO_RULES = [
   "id": "fearsome",
   "name": "Fearsome",
   "text": {
-   "flavor": "Some things still make even hardened soldiers flinch.",
+   "flavor": "In a universe of plasma bolts and clawed monstrosities, there are still some things that strike terror into the hearts of even the most hardened soldiers.",
    "rule": [
     "Courage tests caused by its Attacks, but not its Shooting, suffer an additional -1, unless it is the one Defending.",
     "Demonic, Mechanoid, and Undead units, and units that are themselves Fearsome, are unaffected."
@@ -1361,7 +1361,7 @@ export const XENO_RULES = [
   "id": "fearful",
   "name": "Fearful",
   "text": {
-   "flavor": "Never should have been on a battlefield in the first place.",
+   "flavor": "Fearful units are really not suited to the battlefield. They may be civilians impressed into the army, or a prey species with an innate need not to be near danger.",
    "rule": "Every Courage and Rally test this unit takes suffers -1; if it is Attacked by a Fearsome unit, that penalty becomes -2 instead."
   },
   "costText": "-1 point.",
@@ -1371,7 +1371,7 @@ export const XENO_RULES = [
   "id": "flying",
   "name": "Flying",
   "text": {
-   "flavor": "Spends more time overhead than on the ground.",
+   "flavor": "This unit spends more time in the air than on the ground during combat, either due to possessing wings, jet packs, or bulging helium sacs.",
    "rule": [
     "Ignores all terrain when Moving or Attacking and never benefits from cover; a target it Shoots only benefits from overhead cover such as buildings or woods.",
     "May move over friendly and enemy units, but must still obey the 1\" proximity rule at the end of its move.",
@@ -1389,7 +1389,7 @@ export const XENO_RULES = [
   "id": "force-field",
   "name": "Force Field",
   "text": {
-   "flavor": "An energy field standing between this unit and incoming fire.",
+   "flavor": "This unit is protected by an energy field, either psychic or technological in nature, that absorbs incoming weapons fire.",
    "rule": [
     "Class I: when it loses Strength Points to Shooting (not Attacks), roll one die per point lost; each 6 cancels one.",
     "Class II: as Class I, but each 5 or 6 cancels a lost point.",
@@ -1419,7 +1419,7 @@ export const XENO_RULES = [
   "id": "hatred",
   "name": "Hatred",
   "text": {
-   "flavor": "Peace between species sounds nice; these soldiers didn't get the memo.",
+   "flavor": "Some believe that the future will be a place of bonding and mutual respect between cultures. The members of this unit do not subscribe to that view.",
    "rule": [
     "Before deployment, pick a target: any unit with the Demonic, Mechanoid, or Undead xeno rule, a particular alien species (humans included), or a rival faith or nationality visibly opposed on the table.",
     "Every unit in the Detachment with Hatred must share the same target.",
@@ -1433,7 +1433,7 @@ export const XENO_RULES = [
   "id": "hive-mind",
   "name": "Hive Mind",
   "text": {
-   "flavor": "Barely more than puppets to whatever is steering the swarm.",
+   "flavor": "Some alien species have an innate psychic connection, while others are dominated by powerful psychics or sentient plants and operate as little more than puppets to their overlords.",
    "rule": "While the Detachment's Commander is on the table and not Suppressed, every friendly unit with Hive Mind counts as being within 12\" of the Commander for bonuses to Courage and activation tests (and Commander traits). A unit actually within 12\" of the Commander also counts as Courage 0+. The Commander's own unit may not take this xeno rule."
   },
   "costText": "1 point.",
@@ -1443,7 +1443,7 @@ export const XENO_RULES = [
   "id": "immobile",
   "name": "Immobile",
   "text": {
-   "flavor": "Artillery, turret emplacements, and plants don't get around much.",
+   "flavor": "Artillery, fixed turret emplacements, and many plant-based aliens tend not to move much.",
    "rule": "This unit cannot take Move or Attack actions, and automatically routs if it would be forced to Retreat. It cannot board or disembark a transport, since it cannot Move. It cannot enter play after the start of Turn 1 unless it also has Special Insertion."
   },
   "costText": "-2 points.",
@@ -1453,7 +1453,7 @@ export const XENO_RULES = [
   "id": "infiltrators",
   "name": "Infiltrators",
   "text": {
-   "flavor": "Already in position before the first shot is fired.",
+   "flavor": "Instead of deploying normally, this unit has snuck forwards under cover of night, preliminary bombardment, or by the simple expedient of looking like harmless civilians.",
    "rule": "After deployment but before the game begins, each Infiltrators unit may make one Move activation with no activation test required, rolling a die to add that many inches to the move. This pre-game move cannot embark or disembark a vehicle. If both players have Infiltrators, the attacker moves theirs first."
   },
   "costText": "1 point.",
@@ -1463,7 +1463,7 @@ export const XENO_RULES = [
   "id": "inspirational-leader",
   "name": "Inspirational Leader",
   "text": {
-   "flavor": "One soldier the rest would follow anywhere.",
+   "flavor": "One member of this unit is a particularly inspiring leader, whether they are a well-respected NCO, evangelising priest, or an expert propagandist.",
    "rule": "This unit, plus any other friendly unit within 6\", may re-roll one failed Courage test (including Rallying) per test, so long as the Inspirational Leader's unit is not Suppressed (it cannot use this to Rally itself). Stacks with Commander bonuses, though with a smaller radius."
   },
   "costText": "2 points.",
@@ -1473,7 +1473,7 @@ export const XENO_RULES = [
   "id": "mechanoid",
   "name": "Mechanoid",
   "text": {
-   "flavor": "More machine than man, and it shows both in and out of combat.",
+   "flavor": "This rule covers all manner of artificial units, whether they be AI-controlled vehicles, androids, robots, synthetics, or cyborgs that are more machine than man.",
    "rule": [
     "Ignores the effects of Stun Weapons.",
     "May take one additional Free Action (Attack, Move, or Shoot), but takes a -1 modifier on ordered activation tests.",
@@ -1488,7 +1488,7 @@ export const XENO_RULES = [
   "id": "mercenary",
   "name": "Mercenary",
   "text": {
-   "flavor": "Cheaper than a standing army, and deniable if things go wrong.",
+   "flavor": "It's cheaper to hire mercenaries than it is to maintain a standing army. Better yet, if they do anything unsavoury, you can deny issuing any such order. The downside is that they're often somewhat unreliable.",
    "rule": [
     "Before deployment, after Attacker and Defender are set, roll one die per Mercenary unit.",
     "1, AWOL: cannot be used this battle, but does not count as a casualty for scenario purposes.",
@@ -1538,7 +1538,7 @@ export const XENO_RULES = [
   "id": "mono-molecular-blades",
   "name": "Mono-Molecular Blades",
   "text": {
-   "flavor": "An edge sharpened to one molecule, or something just as sharp.",
+   "flavor": "Science fiction throws up various excuses for keeping melee weapons viable in a universe of plasma cannons and orbital bombardments; one of these is by making the swords and axes themselves high-tech.",
    "rule": "During Attacks, whether Attacking or Defending, any 6s this unit rolls to hit count as two hits instead of one."
   },
   "costText": "2 points.",
@@ -1548,7 +1548,7 @@ export const XENO_RULES = [
   "id": "psychic",
   "name": "Psychic",
   "text": {
-   "flavor": "Turns up wherever wizards would in a more fantastical setting.",
+   "flavor": "Psychics turn up across science fiction, and can stand in for wizards or other magic-users in more fantastical settings.",
    "rule": "One or more members of the unit can Manifest psychic powers. Delta-Class knows one power, Gamma-Class two, Beta-Class three, and Alpha-Class three plus 6\" added to every power's range. Manifesting a power is an ordered activation needing the power's Difficulty or better, at -1 if the unit is at half Strength or below. Only one power can be active at a time, and powers are chosen before the scenario is picked. This unit's Shoot, Attack, Defence, and Armour may represent raw psychic force rather than weapons, though such Attacks and Shooting still don't count as psychic in game terms."
   },
   "costText": "1–4 points.",
@@ -1587,7 +1587,7 @@ export const XENO_RULES = [
   "id": "psychic-hazards",
   "name": "Psychic Hazards",
   "text": {
-   "flavor": "Powers like these come with a price: exploding heads, or worse.",
+   "flavor": "Psychic powers may be risky to use, with hazards ranging from bleeding eyes or shrivelled limbs, right up to exploding heads and full-on possession by extra-dimensional entities.",
    "rule": "If this unit rolls a double on an activation test to Manifest a power, it loses Strength Points equal to the number rolled (a double-4 costs four Strength Points), even though the power still Manifests on a success. If the unit is Suppressed or destroyed by that loss, any effect of the power ends immediately."
   },
   "costText": "-1 point. Psychic units only.",
@@ -1598,7 +1598,7 @@ export const XENO_RULES = [
   "id": "psychic-resistance",
   "name": "Psychic Resistance",
   "text": {
-   "flavor": "Some minds are just hard for psychics to get a grip on.",
+   "flavor": "Some species are psychically 'blunt', either because their minds are particularly unlike those of other species, or because they somehow radiate an anti-psychic aura that neutralises nearby psychic fields.",
    "rule": "Whenever this unit is targeted by a psychic power, friendly or hostile, roll one die; on a 4+ the power has no effect (the activation roll to Manifest it still counts as a success). Has no effect on Attacks or Shooting by a psychic unit, even when narratively powered by psychic ability."
   },
   "costText": "1 point.",
@@ -1608,7 +1608,7 @@ export const XENO_RULES = [
   "id": "psychic-species",
   "name": "Psychic Species",
   "text": {
-   "flavor": "Manifesting power comes as naturally to them as breathing.",
+   "flavor": "Most exhibitors of psychic power are rare within their species, but a few species are innately psychic, Manifesting powers as easily as other species breathe or move around.",
    "rule": "1 point lets this unit Manifest Difficulty 6+ powers as a Free Action. 2 points extends that to Difficulty 6+ or 7+. 3 points lets it Manifest any power as a Free Action."
   },
   "costText": "1–3 points. Psychic units only.",
@@ -1635,7 +1635,7 @@ export const XENO_RULES = [
   "id": "regeneration",
   "name": "Regeneration",
   "text": {
-   "flavor": "Wounds that should be fatal just aren't, for this thing.",
+   "flavor": "Some creatures have incredible regenerative abilities.",
    "rule": "As an ordered activation succeeding on a 7+, this unit restores one previously lost Strength Point (from any cause), never above its starting total."
   },
   "costText": "1 point.",
@@ -1645,7 +1645,7 @@ export const XENO_RULES = [
   "id": "skimmer",
   "name": "Skimmer",
   "text": {
-   "flavor": "Jet packs, hoverboards, or anti-grav; it never quite touches the ground.",
+   "flavor": "This unit is equipped with short-range jet packs, hoverboards, anti-gravity motors, localised teleportation, or similar.",
    "rule": "When moving, including during Retreats and Attacks, this unit ignores rough and impassable terrain. It may not end its move in impassable terrain."
   },
   "costText": "1 point.",
@@ -1655,7 +1655,7 @@ export const XENO_RULES = [
   "id": "slow",
   "name": "Slow",
   "text": {
-   "flavor": "Short legs, heavy kit, or just no hurry to get there.",
+   "flavor": "For whatever reason, whether short legs, heavy armour and equipment, or reluctance to fight, this unit is particularly slow.",
    "rule": "Reduces this unit's Maximum Movement by 2\". Cannot be combined with a Mobile option."
   },
   "costText": "-1 point.",
@@ -1665,7 +1665,7 @@ export const XENO_RULES = [
   "id": "special-insertion",
   "name": "Special Insertion",
   "text": {
-   "flavor": "Dropped behind the lines by teleporter, tunnel, or old-fashioned parachute.",
+   "flavor": "This xeno rule represents troops entering battle via teleportation, tunnelling, orbital drop vehicles, grav-belts, jet packs, or even old-fashioned parachutes, allowing them to deploy over key objectives or behind enemy lines.",
    "rule": [
     "Begins in reserve rather than deploying with the rest of the Detachment.",
     "A Psychic unit that Manifests the Summoner power can place one Special Insertion unit within 12\" of itself and at least 6\" from any enemy, with no activation test; the summoned unit cannot act until your next activation phase.",
@@ -1681,7 +1681,7 @@ export const XENO_RULES = [
   "id": "stabilised-weaponry",
   "name": "Stabilised Weaponry",
   "text": {
-   "flavor": "Smart weapons and powered armour let infantry shoot straight on the run.",
+   "flavor": "The difficulty of aiming while on the move has traditionally forced infantry to trade off mobility and firepower. In the far future, smart weapons, stabilised harnesses, or powered armour can allow foot soldiers to fire accurately on the move.",
    "rule": "This unit can Move and Shoot as a single ordered activation, the same way vehicles can."
   },
   "costText": "2 points. Infantry only.",
@@ -1692,7 +1692,7 @@ export const XENO_RULES = [
   "id": "stun-weapons",
   "name": "Stun Weapons",
   "text": {
-   "flavor": "Less-lethal, unless the point is to make what comes next easier.",
+   "flavor": "Some civilised cultures utilise less-lethal weaponry, from electro-shock batons and chemical incapacitants up to exotic energy weapons that remove the enemy's ability to fight without causing lasting harm. Less civilised cultures may use the same weapons only because it makes their victims easier to slaughter afterwards.",
    "rule": [
     "Applies to this unit's Attack and Shoot actions.",
     "Hits resolve as normal but never cause Strength Point loss; instead, count would-be casualties as double for the resulting Courage test.",
@@ -1708,7 +1708,7 @@ export const XENO_RULES = [
   "id": "teleport-jump",
   "name": "Teleport Jump",
   "text": {
-   "flavor": "Translating between two points in space without covering the distance between.",
+   "flavor": "Some species are innately capable of translating between dimensions when they move, while other species develop technology that allows for short range teleportation, perhaps utilising colour-coded portals.",
    "rule": [
     "As a Move action, it may teleport instead of moving normally: choose a direction, roll two dice, and move up to that many inches, ignoring all terrain including impassable terrain (or less, if preferred).",
     "It must still obey unit cohesion and the 1\" spacing rule on arrival, and cannot end split across separate areas; if it does not fully fit where it lands, place it further back along its route.",
@@ -1722,7 +1722,7 @@ export const XENO_RULES = [
   "id": "unarmed",
   "name": "Unarmed",
   "text": {
-   "flavor": "No gun, whether by nature, by role, or because someone took it away.",
+   "flavor": "Most units carry guns on the battlefield. Those that don't tend to be monstrous creatures, non-combatants such as medics, or units that have been temporarily disarmed.",
    "rule": "Changes this unit's Shoot and Shoot Value to '-'. Only a unit that would normally have a ranged attack may take this xeno rule, and it cannot be combined with any option or xeno rule that affects Shooting, unless (as with Stun Weapons) that rule also affects Attacks."
   },
   "costText": "-1 point.",
@@ -1732,7 +1732,7 @@ export const XENO_RULES = [
   "id": "undead",
   "name": "Undead",
   "text": {
-   "flavor": "Reanimated, and none too gentle about it.",
+   "flavor": "Reanimated corpses, whether due to alien viruses, cybernetic implants, psychic puppetry, or a straight-up zombie apocalypse, are a recurring feature in the genre.",
    "rule": [
     "Ignores the effects of Fearsome units and of Stun Weapons.",
     "Has a Courage value of 0+, so it never becomes Suppressed, though it still routs on a negative Courage test result.",
@@ -1747,7 +1747,7 @@ export const XENO_RULES = [
   "id": "unstable",
   "name": "Unstable",
   "text": {
-   "flavor": "Shoddy construction, an explosive power core, or something chemical; it's all one bad roll from going wrong.",
+   "flavor": "The unit may be composed of cheap and shoddily assembled robots, powered by an explosive power core, or pumped full of incredibly dangerous chemical enhancements, but whatever the cause, it is at real risk of suffering damage if it exerts itself too much.",
    "rule": "Whenever this unit rolls a double on any activation roll, including out-of-sequence ones like Wild Charge or Firefight (but not Rally tests), the order still succeeds or fails as normal, but the unit loses Strength Points equal to the result of one of the dice (a double-4 costs four Strength Points)."
   },
   "costText": "-2 points.",
@@ -1755,80 +1755,25 @@ export const XENO_RULES = [
  }
 ];
 export const SPECIAL_RULES = {
-  "Back Into The Fray": {
-    flavor: "Elite troops treat a fall-back as nothing more than a better run-up to the next assault.",
-    rule: "On a turn this unit makes a successful Rally action, it may also take an ordered activation. That activation still needs an activation test, even for an action that would normally be a Free Action.",
-  },
-  "Firefight": {
-    flavor: "Veterans keep their heads up and shoot back the instant they are fired on.",
-    rule: "This unit may attempt a Firefight reaction against the first enemy that fires on it each turn, provided that shooter is within this unit's own Shoot Value range. The reaction needs an activation test of 7+; on a success this unit rolls to hit the shooter too, before either side removes Strength Points.",
-  },
-  "Ranger": {
-    flavor: "At home in the wild, they fight through undergrowth as if it were open ground.",
-    rule: "This unit uses its normal Attack, Defence and Armour profile when fighting in rough terrain.",
-  },
-  "Go To Ground": {
-    flavor: "Rather than push on, they drop flat and ride out the incoming fire.",
-    rule: "Instead of moving during a Move action, this unit may Go To Ground. It gains Gone To Ground status: +1 Armour against Shooting, including Fire Support, on top of any cover, and its Defence Value counts as 5+ if Attacked. The status is lost the moment the unit takes any action or becomes Suppressed.",
-  },
-  "Counter-Charge": {
-    flavor: "Berserkers would sooner meet a charge head-on than wait to receive it.",
-    rule: "When an enemy infantry unit with Maximum Movement equal to or less than this unit's has rolled a successful Attack against it, but before that enemy moves, this unit may test for a Counter-Charge: an Attack at 7+. On a success it charges half its Maximum Movement into contact and both units count as Attacking. On a failure it stands and counts as Defending. It may not Counter-Charge while Suppressed.",
-  },
-  "Open Order": {
-    flavor: "They keep loose and pick their footing, never bunched tightly enough to be slowed.",
-    rule: "This unit does not halve its movement in rough terrain.",
-  },
-  "Wild Charge": {
-    flavor: "Blood up, they surge at the nearest enemy whether ordered to or not.",
-    rule: "This unit is subject to the rules for Wild Charges.",
-  },
-  "Spotters": {
-    flavor: "A second pair of eyes calls the fall of shot right onto the target.",
-    rule: "If this unit targets an enemy within 12\" of a friendly unit that has not activated this turn, that friendly unit may forgo its own action to spot, improving this unit's Shoot Value to 3+ for that action. Unless this unit has Indirect Fire, it must still draw line of sight to the enemy.",
-  },
-  "Never Attacks": {
-    flavor: "Gun crews are built to shoot, not to wade into a melee.",
-    rule: "This unit cannot take Attack actions. If it somehow gains Wild Charge and must act in the Wild Charge phase, it makes a Shoot action at the target instead of an Attack.",
-  },
-  "Hard to Target": {
-    flavor: "Ghosting from cover to cover, they are gone before a gun can settle on them.",
-    rule: "This unit counts as Armour 2 against Shoot actions and may only be targeted by enemies within 12\".",
-  },
-  "Skirmish": {
-    flavor: "They fight on the move, shooting as they slip from one position to the next.",
-    rule: "As an ordered activation on a 7+, this unit may both Move up to half its Maximum Movement and Shoot, in either order. Its Shoot Value counts as 6+ / 12\" while Skirmishing.",
-  },
-  "All-Terrain": {
-    flavor: "Tracks, legs or grav-plates carry it over ground that would bog others down.",
-    rule: "This vehicle does not halve its movement in rough terrain.",
-  },
-  "Anti-Tank": {
-    flavor: "Built to crack armour, its guns punch straight through a hull.",
-    rule: "When Shooting at enemy vehicles, including during a Firefight, count the target's Armour as half its usual value. It cannot be combined with Armour-Piercing.",
-  },
-  "Demolitions": {
-    flavor: "Breaching charges and cutting gear make short work of a war machine up close.",
-    rule: "During Attacks, whether Attacking or Defending, count the Armour of enemy vehicles as half its usual value. It cannot be combined with High-Powered Blades.",
-  },
-  "High-Powered Blades": {
-    flavor: "Powered edges bite through plate that would turn an ordinary blow.",
-    rule: "During Attacks, whether Attacking or Defending, count the target's Armour as 1 point lower than usual. It cannot be combined with Demolitions.",
-  },
-  "Line-Breaker": {
-    flavor: "Walls, wire and parapets are just things to drive through.",
-    rule: "This unit is not slowed by linear obstacles such as barricades, wire, low walls, fences or trench parapets. Where an obstacle could plausibly be crushed, remove a matching stretch of it after the unit passes over.",
-  },
-  "Vehicle": {
-    flavor: "A machine of war, with all the strengths and blind spots that brings.",
-    rule: "This unit is a vehicle and is subject to all the vehicle rules.",
-  },
-  "Transport (5)": {
-    flavor: "Its hold carries a squad into the fight under armour.",
-    rule: "This vehicle can carry one infantry unit of up to 5 Strength Points.",
-  },
+ "Back Into The Fray": "On a turn this unit makes a successful Rally action, it may also take an ordered activation. That activation still needs an activation test, even for an action that would normally be a Free Action.",
+ "Firefight": "This unit may attempt a Firefight reaction against the first enemy that fires on it each turn, provided that shooter is within this unit's own Shoot Value range. The reaction needs an activation test of 7+; on a success this unit rolls to hit the shooter too, before either side removes Strength Points.",
+ "Ranger": "This unit uses its normal Attack, Defence and Armour profile when fighting in rough terrain.",
+ "Go To Ground": "Instead of moving during a Move action, this unit may Go To Ground. It gains Gone To Ground status: +1 Armour against Shooting, including Fire Support, on top of any cover, and its Defence Value counts as 5+ if Attacked. The status is lost the moment the unit takes any action or becomes Suppressed.",
+ "Counter-Charge": "When an enemy infantry unit with Maximum Movement equal to or less than this unit's has rolled a successful Attack against it, but before that enemy moves, this unit may test for a Counter-Charge: an Attack at 7+. On a success it charges half its Maximum Movement into contact and both units count as Attacking. On a failure it stands and counts as Defending. It may not Counter-Charge while Suppressed.",
+ "Open Order": "This unit does not halve its movement in rough terrain.",
+ "Wild Charge": "This unit is subject to the rules for Wild Charges.",
+ "Spotters": "If this unit targets an enemy within 12\" of a friendly unit that has not activated this turn, that friendly unit may forgo its own action to spot, improving this unit's Shoot Value to 3+ for that action. Unless this unit has Indirect Fire, it must still draw line of sight to the enemy.",
+ "Never Attacks": "This unit cannot take Attack actions. If it somehow gains Wild Charge and must act in the Wild Charge phase, it makes a Shoot action at the target instead of an Attack.",
+ "Hard to Target": "This unit counts as Armour 2 against Shoot actions and may only be targeted by enemies within 12\".",
+ "Skirmish": "As an ordered activation on a 7+, this unit may both Move up to half its Maximum Movement and Shoot, in either order. Its Shoot Value counts as 6+ / 12\" while Skirmishing.",
+ "All-Terrain": "This vehicle does not halve its movement in rough terrain.",
+ "Anti-Tank": "When Shooting at enemy vehicles, including during a Firefight, count the target's Armour as half its usual value. It cannot be combined with Armour-Piercing.",
+ "Demolitions": "During Attacks, whether Attacking or Defending, count the Armour of enemy vehicles as half its usual value. It cannot be combined with High-Powered Blades.",
+ "High-Powered Blades": "During Attacks, whether Attacking or Defending, count the target's Armour as 1 point lower than usual. It cannot be combined with Demolitions.",
+ "Line-Breaker": "This unit is not slowed by linear obstacles such as barricades, wire, low walls, fences or trench parapets. Where an obstacle could plausibly be crushed, remove a matching stretch of it after the unit passes over.",
+ "Vehicle": "This unit is a vehicle and is subject to all the vehicle rules.",
+ "Transport (5)": "This vehicle can carry one infantry unit of up to 5 Strength Points."
 };
-
 export const COMMANDER_TABLES = {
   "aggressive": {
     "label": "Aggressive",
