@@ -775,7 +775,7 @@ function UnitRow({ u, i, selected, onSelect }) {
 
 function OptionRow({ active, disabled, name, cost, text, onToggle, children, showLore }) {
   const [open, setOpen] = useState(false);
-  const tip = text ? (typeof text === "string" ? text : [text.flavor, flatRule(text.rule)].filter(Boolean).join(" ")) : undefined;
+  const tip = text ? (typeof text === "string" ? text : [text.flavor, ruleBodyText(text)].filter(Boolean).join(" ")) : undefined;
   const lore = text && typeof text === "object" ? text.flavor : null;
   const expanded = open || active;
   return (
@@ -797,13 +797,34 @@ function OptionRow({ active, disabled, name, cost, text, onToggle, children, sho
 
 /* flatten a rule (string or array of bullets) into one string, for plain-text spots */
 const flatRule = (rule) => (Array.isArray(rule) ? rule.join(" ") : rule);
+/* the mechanical body of a rule as a plain string (handles string, bullets, or a d6 table) */
+const ruleBodyText = (text) => {
+  if (!text || typeof text === "string") return text || "";
+  if (text.table) return text.table.map((r) => `${r.roll} ${r.name}: ${r.text}`).join(" ");
+  return flatRule(text.rule);
+};
 
-/* renders a rule as an italic flavour line above the mechanical text. the rule may
-   be a plain string or an array of bullet strings (rendered as a list). */
+/* renders a rule as an italic flavour line above the mechanical text. the body may be
+   a plain string, an array of bullets (a list), or a d6 outcome table. */
 function RuleText({ data, className }) {
   if (!data) return null;
   if (typeof data === "string") return <p className={className}>{data}</p>;
-  const { flavor, rule } = data;
+  const { flavor, rule, table } = data;
+  if (table) {
+    return (
+      <div className={className}>
+        {flavor && <span className="xr-flavor">{flavor}</span>}
+        <div className="xr-d6">
+          {table.map((r) => (
+            <div className="xr-d6-row" key={r.roll}>
+              <span className="xr-d6-n">{r.roll}</span>
+              <span className="xr-d6-b"><b>{r.name}</b> {r.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (Array.isArray(rule)) {
     return (
       <div className={className}>
@@ -933,11 +954,11 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool })
       </div>
 
       <div className="xr-panel-cols">
-        <div className="xr-panel-left">
+        <div className="xr-panel-col xr-col-stats">
           <StatTable t={t} sp={sp} u={u} />
         </div>
-        <div className="xr-panel-right">
-          {stdRules.length > 0 && (
+        {stdRules.length > 0 && (
+          <div className="xr-panel-col xr-col-rules">
             <Section title="Special rules" count={stdRules.length} defaultOpen>
               <div className="xr-chips">
                 {stdRules.map((name) => (
@@ -945,8 +966,9 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool })
                 ))}
               </div>
             </Section>
-          )}
-
+          </div>
+        )}
+        <div className="xr-panel-col xr-col-abil">
           <div className="xr-abil">
             <div className="xr-abil-head">
               <h3 className="xr-abil-h">Abilities</h3>
@@ -1591,7 +1613,7 @@ function PrintView({ list }) {
                   {opts.upgrades && hasRules && (
                     <div className="xr-pc-rules">
                       {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
-                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : <>{x.text.flavor && <i>{x.text.flavor} </i>}{flatRule(x.text.rule)}</>}</p>)}
+                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : <>{x.text.flavor && <i>{x.text.flavor} </i>}{ruleBodyText(x.text)}</>}</p>)}
                       {powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
                       {cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                       {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
@@ -1610,7 +1632,7 @@ function PrintView({ list }) {
             {glossary.map((g) => (
               <p key={g.name}>
                 <b>{g.name}.</b>{" "}
-                {typeof g.text === "string" ? g.text : <>{g.text.flavor && <i>{g.text.flavor} </i>}{flatRule(g.text.rule)}</>}
+                {typeof g.text === "string" ? g.text : <>{g.text.flavor && <i>{g.text.flavor} </i>}{ruleBodyText(g.text)}</>}
               </p>
             ))}
           </div>
@@ -2126,11 +2148,12 @@ const CSS = `
 .xr-panel-pts i{font-style:normal;font-size:14px;color:var(--ink-2);margin-left:3px;}
 .xr-panel-tools{display:flex;gap:8px;flex-wrap:wrap;padding:10px 0;}
 /* two-column panel: stats left, rules + abilities on the right */
-.xr-panel-cols{display:grid;grid-template-columns:minmax(320px,380px) 1fr;gap:14px 30px;align-items:start;}
-.xr-panel-right{min-width:0;}
-.xr-panel-right .xr-abil{margin-top:0;}
-.xr-panel-right>.xr-sec:first-child .xr-sec-h{padding-top:4px;}
-@media(max-width:1100px){.xr-panel-cols{grid-template-columns:1fr;gap:0;}}
+.xr-panel-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(288px,1fr));gap:8px 28px;align-items:start;}
+.xr-panel-col{min-width:0;}
+.xr-col-stats{max-width:380px;}
+.xr-col-abil .xr-abil{margin-top:0;}
+.xr-panel-col>.xr-sec:first-child .xr-sec-h{padding-top:4px;}
+@media(max-width:900px){.xr-panel-cols{grid-template-columns:1fr;gap:0;}.xr-col-stats{max-width:none;}}
 .xr-group{margin-top:18px;}
 .xr-group-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:19px;color:var(--ink);padding-bottom:6px;border-bottom:2px solid var(--ink-30);margin-bottom:10px;}
 /* abilities summary in the unit panel */
@@ -2262,6 +2285,12 @@ const CSS = `
 .xr-row-info:hover{background:var(--ink);border-color:var(--ink);color:var(--cream);}
 .xr-row-text{font-family:var(--body);font-style:normal;font-size:16px;color:var(--ink);line-height:1.5;padding:2px 4px 8px 60px;}
 .xr-row-lore{font-family:var(--flavor);font-style:italic;font-size:15px;line-height:1.4;color:var(--ink-2);padding:0 4px 8px 60px;}
+/* compact d6 outcome table (mercenary, and any table-shaped rule) */
+.xr-d6{display:grid;gap:4px;margin-top:4px;}
+.xr-d6-row{display:grid;grid-template-columns:26px 1fr;gap:9px;align-items:start;}
+.xr-d6-n{font-family:var(--mono);font-weight:700;font-size:14px;text-align:center;color:var(--ink);background:var(--paper-3);border:1.5px solid var(--ink-30);border-radius:6px;line-height:24px;}
+.xr-d6-b{font-family:var(--body);font-size:15px;line-height:1.4;color:var(--ink);}
+.xr-d6-b b{font-family:var(--display);}
 .xr-subs{margin-left:44px;border-left:2px solid var(--ink-18);padding-left:8px;}
 .xr-tiers{display:flex;gap:7px;flex-wrap:wrap;padding:2px 4px 10px 60px;}
 .xr-tier{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:42px;transition:border-color .12s,background .12s;}
@@ -2382,7 +2411,7 @@ const CSS = `
 .xr-sheet-note .fmk{font-style:normal;}
 @media print{.xr-sheet-note .fmk{color:#000;}}
 /* print stat cards */
-.xr-sheet-cards{display:flex;flex-direction:column;gap:9px;margin-top:14px;}
+.xr-sheet-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-top:14px;align-items:start;}
 .xr-pc{border:1.5px solid #1a1a1a;border-radius:8px;padding:9px 13px 10px;break-inside:avoid;}
 .xr-pc-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:5px;margin-bottom:7px;}
 .xr-pc-name{font-family:var(--display);font-weight:700;font-size:16.5px;display:inline-flex;align-items:center;gap:5px;}
@@ -2502,7 +2531,8 @@ const CSS = `
   .xr-rail,.xr-print-chrome,.game-info-footer{display:none !important;}
   .xr-printview{background:#fff;padding-left:0;}
   .xr-sheet{box-shadow:none;margin:0;max-width:none;padding:0;}
+  .xr-sheet-cards{grid-template-columns:1fr 1fr;gap:8px;}
   .xr-pc{break-inside:avoid;}
-  @page{margin:13mm;}
+  @page{margin:12mm;}
 }
 `;

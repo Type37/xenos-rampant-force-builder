@@ -1489,14 +1489,37 @@ export const XENO_RULES = [
   "name": "Mercenary",
   "text": {
    "flavor": "It's cheaper to hire mercenaries than it is to maintain a standing army. Better yet, if they do anything unsavoury, you can deny issuing any such order. The downside is that they're often somewhat unreliable.",
-   "rule": [
-    "Before deployment, after Attacker and Defender are set, roll one die per Mercenary unit.",
-    "1, AWOL: cannot be used this battle, but does not count as a casualty for scenario purposes.",
-    "2, Late: roll a die for the earliest turn it may arrive, then it enters with a Move from your deployment edge.",
-    "3, Reluctant: -1 to all Attack and Shoot ordered activations.",
-    "4, Eager: +1 to all Attack and Shoot ordered activations.",
-    "5, Bloodthirsty: gains Wild Charge, or passes those tests automatically if it already has the rule.",
-    "6, Raiders: roll a die; the cheapest enemy unit loses that many Strength Points before the game, never below 1 and without a Courage test."
+   "table": [
+    {
+     "roll": 1,
+     "name": "AWOL",
+     "text": "Not where they should be. You cannot use the unit this battle, but it does not count as a casualty for scenario victory."
+    },
+    {
+     "roll": 2,
+     "name": "Late",
+     "text": "Roll a die: that is the earliest turn the unit can arrive, entering with a Move action from your deployment edge."
+    },
+    {
+     "roll": 3,
+     "name": "Reluctant",
+     "text": "Just not in the mood. The unit takes a -1 modifier on all Attack and Shoot ordered activations."
+    },
+    {
+     "roll": 4,
+     "name": "Eager",
+     "text": "Keen to earn their pay. The unit gains +1 on all Attack and Shoot ordered activations."
+    },
+    {
+     "roll": 5,
+     "name": "Bloodthirsty",
+     "text": "The unit gains Wild Charge; if it already has Wild Charge, it now passes those tests automatically."
+    },
+    {
+     "roll": 6,
+     "name": "Raiders",
+     "text": "Roll a die: the cheapest enemy unit loses that many Strength Points before the game (never below 1, no Courage test)."
+    }
    ]
   },
   "costText": "-1 point.",
