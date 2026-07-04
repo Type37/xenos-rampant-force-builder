@@ -56,6 +56,7 @@ import {
 } from "./data.js";
 import { SETTINGS } from "./premade.js";
 import { ALL_GENRES, randomName } from "./factions.js";
+import { RULES_REFERENCE, RULES_CATS } from "./rules.js";
 
 const FACTION_BASE = import.meta.env.BASE_URL;
 const factionIconUrl = (icon) => (icon ? `${FACTION_BASE}factions/${icon}` : null);
@@ -473,7 +474,52 @@ function RailNav({ view }) {
           </button>
         ))}
       </div>
+      <button className="xr-rail-btn xr-rail-rules" title="Quick rules reference"
+        onClick={() => window.dispatchEvent(new CustomEvent("xr-open-rules"))}>
+        <Book size={22} /><span>Rules</span>
+      </button>
     </nav>
+  );
+}
+
+/* at-the-table quick rules reference, grouped into tabs */
+function RulesModal({ onClose }) {
+  const [cat, setCat] = useState(RULES_CATS[0]);
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const sections = RULES_REFERENCE.filter((s) => s.cat === cat);
+  return (
+    <div className="xr-modal-backdrop" onClick={onClose}>
+      <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Rules reference" onClick={(e) => e.stopPropagation()}>
+        <div className="xr-modal-head">
+          <span className="xr-modal-title"><Book size={20} /> Rules reference</span>
+          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        </div>
+        <div className="xr-modal-tabs" role="tablist">
+          {RULES_CATS.map((c) => (
+            <button key={c} role="tab" aria-selected={cat === c} className={`xr-modal-tab ${cat === c ? "on" : ""}`} onClick={() => setCat(c)}>{c}</button>
+          ))}
+        </div>
+        <div className="xr-modal-body">
+          <div className="xr-rref-cols">
+            {sections.map((s) => (
+              <div className="xr-rref" key={s.title}>
+                <h4 className="xr-rref-h">{s.title}</h4>
+                {s.intro && <p className="xr-rref-intro">{s.intro}</p>}
+                <ul className="xr-rule-list">{s.items.map((it, i) => <li key={i}>{it}</li>)}</ul>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="xr-modal-foot">
+          <span className="xr-modal-count">Xenos Rampant, Osprey Games</span>
+          <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1820,11 +1866,14 @@ export default function App() {
   const [route, setRoute] = useState(parseHash());
   const [lists, setLists] = useState(loadLists);
   const [currentId, setCurrentId] = useState(() => localStorage.getItem(LS_CURRENT) || null);
+  const [rulesOpen, setRulesOpen] = useState(false);
 
   useEffect(() => {
     const onHash = () => setRoute(parseHash());
+    const onRules = () => setRulesOpen(true);
     window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    window.addEventListener("xr-open-rules", onRules);
+    return () => { window.removeEventListener("hashchange", onHash); window.removeEventListener("xr-open-rules", onRules); };
   }, []);
   useEffect(() => saveLists(lists), [lists]);
   useEffect(() => { if (currentId) localStorage.setItem(LS_CURRENT, currentId); }, [currentId]);
@@ -1963,6 +2012,7 @@ export default function App() {
       {route.view === "build" && <Builder list={current} selectedKey={route.unitKey} dispatch={dispatch} updateList={updateList} onDelete={() => delList(current.id)} />}
       {route.view === "print" && <PrintView list={current} />}
       {route.view === "play" && <PlayView list={current} />}
+      {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
     </div>
   );
 }
@@ -2088,6 +2138,14 @@ const CSS = `
 .xr-rail{position:fixed;left:0;top:0;bottom:0;width:76px;z-index:40;background:var(--ink);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:16px;}
 .xr-rail-logo{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#E8C860;}
 .xr-rail-nav{display:flex;flex-direction:column;gap:6px;width:100%;align-items:center;}
+.xr-rail-rules{margin-top:auto;}
+/* rules reference modal */
+.xr-rref-cols{columns:2;column-gap:30px;}
+.xr-rref{break-inside:avoid;margin-bottom:16px;}
+.xr-rref-h{font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:18px;color:var(--ink);padding-bottom:5px;border-bottom:2px solid var(--ink-30);margin-bottom:8px;}
+.xr-rref-intro{font-family:var(--body);font-size:15px;line-height:1.5;color:var(--ink);margin-bottom:7px;}
+.xr-rref .xr-rule-list{font-size:15px;color:var(--ink);}
+@media(max-width:720px){.xr-rref-cols{columns:1;}}
 .xr-rail .xr-rail-btn{width:62px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px;border-radius:11px;color:var(--paper-3);font-family:var(--display);font-weight:600;font-size:12.5px;letter-spacing:.02em;transition:.12s;}
 .xr-rail .xr-rail-btn:hover{background:rgba(246,239,221,.12);color:var(--cream);}
 .xr-rail .xr-rail-btn.on{background:var(--paper);color:var(--ink);}
