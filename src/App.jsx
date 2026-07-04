@@ -696,20 +696,29 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
         </div>
       </header>
       <main className="xr-home-body">
-        <div className="xr-home-bar">
-          <h2 className="xr-home-h">Detachments</h2>
-          <div className="xr-home-bar-btns">
-            <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={20} /> New detachment</button>
-            {SETTINGS.length > 0 && (
-              <button className="xr-btn" onClick={() => setLoading(true)} title="Start from a ready-made detachment out of the rulebook"><Book size={19} /> Load a preset</button>
-            )}
+        {arr.length > 0 && (
+          <div className="xr-home-bar">
+            <h2 className="xr-home-h">Detachments <em>{arr.length}</em></h2>
+            <div className="xr-home-bar-btns">
+              {SETTINGS.length > 0 && (
+                <button className="xr-btn" onClick={() => setLoading(true)} title="Start from a ready-made detachment out of the rulebook"><Book size={19} /> Load a preset</button>
+              )}
+              <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={20} /> New detachment</button>
+            </div>
           </div>
-        </div>
+        )}
         {arr.length === 0 ? (
-          <button className="xr-home-empty" onClick={() => setCreating(true)}>
-            <Alien size={44} />
-            <span>Muster your first detachment</span>
-          </button>
+          <div className="xr-home-welcome">
+            <span className="xr-home-welcome-badge"><Alien size={48} /></span>
+            <h2>Build your first detachment</h2>
+            <p>Start from scratch, or load a ready-made force from the rulebook.</p>
+            <div className="xr-home-welcome-btns">
+              <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={19} /> New detachment</button>
+              {SETTINGS.length > 0 && (
+                <button className="xr-btn" onClick={() => setLoading(true)}><Book size={18} /> Load a preset</button>
+              )}
+            </div>
+          </div>
         ) : (
           <div className="xr-home-grid">
             {arr.map((l) => {
@@ -1977,7 +1986,14 @@ const CSS = `
 .xr-home-mast{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:22px clamp(16px,4vw,44px) 16px;border-bottom:3px solid var(--ink);}
 .xr-home-body{flex:1;width:100%;max-width:1160px;margin-inline:auto;padding:26px clamp(16px,4vw,44px) 60px;}
 .xr-home-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
-.xr-home-h{font-family:var(--display);font-weight:700;font-size:26px;}
+.xr-home-h{font-family:var(--display);font-weight:700;font-size:26px;display:inline-flex;align-items:baseline;gap:9px;}
+.xr-home-h em{font-family:var(--mono);font-style:normal;font-weight:700;font-size:16px;color:var(--cream);background:var(--ink);border-radius:11px;min-width:24px;padding:1px 8px;text-align:center;}
+/* first-run welcome (the first thing a new visitor sees) */
+.xr-home-welcome{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;max-width:520px;margin:6vh auto 0;padding:40px 28px;border:2.5px solid var(--ink);border-radius:16px;background:var(--paper-2);}
+.xr-home-welcome-badge{display:flex;align-items:center;justify-content:center;width:88px;height:88px;border-radius:50%;background:var(--coral);color:var(--ink);border:3px solid var(--ink);}
+.xr-home-welcome h2{font-family:var(--display);font-weight:700;font-size:27px;color:var(--ink);}
+.xr-home-welcome p{font-family:var(--flavor);font-style:italic;font-size:17px;line-height:1.5;color:var(--ink-2);max-width:40ch;}
+.xr-home-welcome-btns{display:flex;gap:11px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
 .xr-home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
 .xr-list-card{position:relative;border:3px solid var(--ink);border-radius:var(--r);background:var(--paper-2);transition:transform .16s cubic-bezier(.2,.8,.2,1),box-shadow .16s;display:flex;flex-direction:column;}
 .xr-list-card:hover{box-shadow:0 6px 16px rgba(31,61,46,.16);transform:translateY(-3px);}
