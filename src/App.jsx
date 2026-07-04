@@ -10,6 +10,17 @@ import icHeart from "@iconify-icons/ph/heart-fill";
 import icInfantry from "@iconify-icons/ph/users-three-fill";
 import icAlien from "@iconify-icons/game-icons/alien-bug";
 import icTruck from "@iconify-icons/game-icons/apc";
+import icuElite from "@iconify-icons/game-icons/spartan-helmet";
+import icuHeavy from "@iconify-icons/game-icons/kevlar-vest";
+import icuLight from "@iconify-icons/game-icons/pistol-gun";
+import icuBerserk from "@iconify-icons/game-icons/battle-axe";
+import icuSupport from "@iconify-icons/game-icons/field-gun";
+import icuRecon from "@iconify-icons/game-icons/binoculars";
+import icuPrimitive from "@iconify-icons/game-icons/stone-spear";
+import icuMilitia from "@iconify-icons/game-icons/pitchfork";
+import icuGreater from "@iconify-icons/game-icons/tentacle-strike";
+import icuFighting from "@iconify-icons/game-icons/tank";
+import icuSoftskin from "@iconify-icons/game-icons/jeep";
 import icCrown from "@iconify-icons/ph/crown-simple-fill";
 import icDice from "@iconify-icons/ph/dice-six-fill";
 import icPrinter from "@iconify-icons/ph/printer-fill";
@@ -71,6 +82,15 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
   House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret),
   Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt);
+
+/* placeholder icon per generic unit type (game-icons); the user will refine by hand */
+const UNIT_ICONS = {
+  elite: mk(icuElite), heavy: mk(icuHeavy), light: mk(icuLight), berserk: mk(icuBerserk),
+  support: mk(icuSupport), recon: mk(icuRecon), primitive: mk(icuPrimitive), militia: mk(icuMilitia),
+  "greater-xeno": mk(icuGreater), "lesser-xeno": mk(icAlien),
+  "fighting-vehicle": mk(icuFighting), "transport-vehicle": mk(icTruck), "softskin-vehicle": mk(icuSoftskin),
+};
+const UnitIcon = ({ id, size, className }) => { const Ic = UNIT_ICONS[id]; return Ic ? <Ic size={size} className={className} /> : null; };
 
 const STAT_ROWS = [
   { key: "atk", label: "Attack", img: icoAttack, order: true, val: true, tip: "Attack Value: the result needed on one die to hit when Attacking. 2d6 to carry out the order." },
@@ -304,7 +324,7 @@ function Die({ k, free, children }) {
   return (
     <span className={`xr-die k-${k}${free ? " free" : ""}`}
       title={free ? "Free action: this activates on its own, no 2d6 roll needed" : "Roll 2d6: this or higher activates the action"}>
-      {children}{free && <span className="xr-die-free"><Bolt size={8} /><em>Free</em></span>}
+      {children}{free && <span className="xr-die-free">Free</span>}
     </span>
   );
 }
@@ -767,7 +787,9 @@ function UnitRow({ u, i, selected, onSelect }) {
   ];
   return (
     <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={onSelect} aria-expanded={selected}>
-      {u.image && <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />}
+      {u.image
+        ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />
+        : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={26} /></span>}
       <span className="xr-urow-body">
         <span className="xr-urow-top">
           {u.isCmd && <Crown className="xr-urow-crown" size={17} />}
@@ -1330,6 +1352,7 @@ function CatalogCard({ t, onAdd }) {
   return (
     <button className={`xr-cat-card cat-${catOf(t)}`} onClick={() => onAdd(t.id)}>
       <span className="xr-cat-top">
+        <span className="xr-cat-badge" aria-hidden="true"><UnitIcon id={t.id} size={26} /></span>
         <span className="xr-cat-name">{t.name}</span>
         <span className="xr-cat-stamp"><b>{t.base}</b><i>pts</i></span>
       </span>
@@ -1956,9 +1979,8 @@ const CSS = `
 .xr-die.k-mov{background:#5C7A5222;border-color:var(--sage);}
 .xr-die.k-sho{background:#6A4A8C22;border-color:var(--iris);}
 .xr-die.k-cou{background:#8A6A1F22;border-color:var(--brass);}
-.xr-die.free{border-style:solid;border-width:2px;border-color:var(--coral-ink);background:var(--coral);color:#3a1206;justify-content:flex-start;padding-left:9px;}
-.xr-die-free{position:absolute;top:0;right:2px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#3a1206;}
-.xr-die-free em{writing-mode:vertical-rl;text-orientation:upright;font-family:var(--ui);font-style:normal;font-weight:800;font-size:7.5px;letter-spacing:-.5px;line-height:1;text-transform:uppercase;}
+.xr-die.free{border-style:solid;border-width:2px;border-color:var(--coral-ink);background:var(--coral);color:#3a1206;justify-content:flex-start;padding-left:10px;}
+.xr-die-free{position:absolute;right:4px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;font-family:var(--ui);font-weight:800;font-size:8.5px;letter-spacing:.6px;line-height:1;text-transform:uppercase;color:#3a1206;}
 .xr-dash{color:var(--ink-2);opacity:.45;}
 .xr-rng{font-family:var(--body);font-style:italic;font-size:15px;color:var(--ink-2);margin-left:3px;white-space:nowrap;}
 
@@ -2115,7 +2137,12 @@ const CSS = `
 /* compact unit rows */
 .xr-urow{display:flex;flex-direction:row;align-items:center;gap:11px;text-align:left;border:2.5px solid var(--ink);border-left-width:7px;border-radius:10px;background:var(--paper-2);padding:11px 14px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;}
 .xr-urow-body{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
-.xr-urow-img{flex:none;width:46px;height:46px;border-radius:8px;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);}
+.xr-urow-img{flex:none;width:52px;height:52px;border-radius:8px;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);}
+.xr-urow-ic{flex:none;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);}
+.xr-urow.cat-inf .xr-urow-ic{color:var(--sage);}
+.xr-urow.cat-xeno .xr-urow-ic{color:var(--iris);}
+.xr-urow.cat-veh .xr-urow-ic{color:var(--rust);}
+.xr-urow.sel .xr-urow-ic{background:var(--paper);}
 .xr-urow:hover{background:var(--paper-3);transform:translateX(3px);box-shadow:0 3px 9px rgba(31,61,46,.12);}
 .xr-urow.sel{background:var(--ink);color:var(--cream);}
 .xr-urow.sel .xr-urow-sub,.xr-urow.sel .xr-urow-pts i{color:var(--paper-3);}
@@ -2137,7 +2164,7 @@ const CSS = `
 .xr-panel-back{display:none;}
 /* image upload widget */
 .xr-imgup{position:relative;flex:none;}
-.xr-imgup.square,.xr-imgup.square .xr-imgup-thumb,.xr-imgup.square .xr-imgup-add{width:52px;height:52px;border-radius:10px;}
+.xr-imgup.square,.xr-imgup.square .xr-imgup-thumb,.xr-imgup.square .xr-imgup-add{width:64px;height:64px;border-radius:11px;}
 .xr-imgup-add{display:flex;align-items:center;justify-content:center;border:2px dashed var(--ink-30);background:var(--paper-2);color:var(--ink-2);transition:.13s;}
 .xr-imgup-add:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
 .xr-imgup-thumb{display:block;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);cursor:pointer;padding:0;}
@@ -2369,7 +2396,13 @@ const CSS = `
 .xr-cat-card{display:flex;flex-direction:column;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:14px 15px 12px;border-radius:var(--r);transition:transform .14s cubic-bezier(.2,.8,.2,1),background .14s,box-shadow .14s;}
 .xr-cat-card:hover{background:var(--paper-3);box-shadow:0 6px 15px rgba(31,61,46,.16);transform:translateY(-3px);}
 .xr-cat-card:active{transform:scale(.98);}
-.xr-cat-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.xr-cat-top{display:flex;align-items:flex-start;gap:10px;}
+.xr-cat-badge{flex:none;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:9px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);}
+.xr-cat-card.cat-inf .xr-cat-badge{color:var(--sage);}
+.xr-cat-card.cat-xeno .xr-cat-badge{color:var(--iris);}
+.xr-cat-card.cat-veh .xr-cat-badge{color:var(--rust);}
+.xr-cat-name{flex:1;}
+.xr-cat-stamp{margin-left:auto;}
 .xr-cat-stamp{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--coral);color:var(--ink);border:2px solid var(--ink);}
 .xr-cat-stamp b{font-family:var(--mono);font-weight:700;font-size:18px;line-height:1;}
 .xr-cat-stamp i{font-style:normal;font-size:11px;font-weight:700;}
