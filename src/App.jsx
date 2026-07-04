@@ -942,7 +942,44 @@ function TraitPicker({ u, tbl, trait, dispatch }) {
   );
 }
 
-function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool }) {
+/* commander traits, in a focused modal: pick the table, then roll or pick a trait */
+function CommanderModal({ u, dispatch, onClose }) {
+  const tbl = u.traitTable || "aggressive";
+  const trait = typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div className="xr-modal-backdrop" onClick={onClose}>
+      <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Commander traits" onClick={(e) => e.stopPropagation()}>
+        <div className="xr-modal-head">
+          <span className="xr-modal-title"><Crown size={20} /> Commander traits</span>
+          <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
+        </div>
+        <div className="xr-modal-body">
+          <span className="xr-cmd-step">1. Trait table</span>
+          <div className="xr-cmd-tablecards">
+            {Object.entries(COMMANDER_TABLES).map(([key, ct]) => (
+              <button key={key} className={`xr-cmd-tablecard ${tbl === key ? "on" : ""}`} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
+                <b>{ct.label}</b><i>{ct.blurb}</i>
+                <span className="xr-cmd-tablecard-check" aria-hidden="true">{tbl === key && <Check size={16} />}</span>
+              </button>
+            ))}
+          </div>
+          <span className="xr-cmd-step">2. Trait</span>
+          <TraitPicker u={u} tbl={tbl} trait={trait} dispatch={dispatch} />
+        </div>
+        <div className="xr-modal-foot">
+          <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommander, factionPool }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const sp = unitSP(u);
@@ -980,6 +1017,12 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool })
           title={u.isCmd ? "This unit is your Commander" : "Make this unit your Commander (free)"}>
           <Crown size={17} /> {u.isCmd ? "Commander" : "Make Commander"}
         </button>
+        {u.isCmd && (
+          <button className="xr-btn small" onClick={onEditCommander} title="Choose the Commander's trait table and trait">
+            <Book size={16} /> Traits
+          </button>
+        )}
+        <span className="xr-panel-tools-sp" />
         <button className="xr-btn small icon" onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
         <button className="xr-btn small icon danger" onClick={() => { dispatch({ type: "del", key: u.key }); onClose(); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
       </div>
@@ -1027,17 +1070,15 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, factionPool })
           </div>
 
           {u.isCmd && (
-            <Section title="Command" defaultOpen>
-              <div className="xr-cmd-tables">
-                {Object.entries(COMMANDER_TABLES).map(([key, ct]) => (
-                  <button key={key} className={`xr-tier ${tbl === key ? "on" : ""}`} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
-                    {ct.label}
-                  </button>
-                ))}
+            <div className="xr-cmdcard">
+              <div className="xr-cmdcard-h">
+                <span className="xr-cmdcard-t"><Crown size={15} /> {COMMANDER_TABLES[tbl].label} traits</span>
+                <button className="xr-btn small" onClick={onEditCommander}><Gear size={14} /> Edit</button>
               </div>
-              <p className="xr-cmd-blurb">{COMMANDER_TABLES[tbl].blurb}</p>
-              <TraitPicker u={u} tbl={tbl} trait={trait} dispatch={dispatch} />
-            </Section>
+              {trait
+                ? <p className="xr-cmdcard-trait"><b>{trait.name}.</b> {trait.rule}</p>
+                : <p className="xr-cmdcard-none">No trait rolled or picked yet.</p>}
+            </div>
           )}
         </div>
       </div>
@@ -1412,6 +1453,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const [adding, setAdding] = useState(false);
   const [issuesOpen, setIssuesOpen] = useState(false);
   const [abilOpen, setAbilOpen] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [factionOpen, setFactionOpen] = useState(false);
   const detImg = list.image || factionIconUrl(list.faction && list.faction.icon);
@@ -1549,7 +1591,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
         </main>
         <div className="xr-detail">
           {sel ? (
-            <UnitPanel key={sel.key} u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} factionPool={list.faction && list.faction.pool} />
+            <UnitPanel key={sel.key} u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} onEditCommander={() => setCmdOpen(true)} factionPool={list.faction && list.faction.pool} />
           ) : (
             roster.length > 0 && <div className="xr-detail-hint"><Alien size={36} /><span>Select a unit</span></div>
           )}
@@ -1558,6 +1600,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
 
       {adding && <AddUnitModal onAdd={(id) => { dispatch({ type: "add", typeId: id }); setAdding(false); }} onClose={() => setAdding(false)} />}
       {abilOpen && sel && <AbilitiesModal u={sel} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
+      {cmdOpen && sel && sel.isCmd && <CommanderModal u={sel} dispatch={dispatch} onClose={() => setCmdOpen(false)} />}
       {factionOpen && <FactionModal onPick={(f) => { updateList({ faction: f }); setFactionOpen(false); }} onClose={() => setFactionOpen(false)} />}
       <SiteFooter />
     </div>
@@ -2363,6 +2406,23 @@ const CSS = `
 .xr-tier i{font-style:normal;font-family:var(--mono);}
 .xr-cmd-tables{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
 .xr-cmd-blurb{font-family:var(--flavor);font-size:16px;font-style:italic;color:var(--ink-2);margin-bottom:10px;}
+/* commander summary card in the abilities column */
+.xr-cmdcard{border:2px solid var(--brass);border-radius:12px;background:#8A6A1F0e;padding:11px 13px;margin-top:16px;}
+.xr-cmdcard-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;}
+.xr-cmdcard-t{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;font-size:16px;color:var(--brass);}
+.xr-cmdcard-trait{font-family:var(--body);font-size:15.5px;line-height:1.45;color:var(--ink);}
+.xr-cmdcard-trait b{font-family:var(--display);color:var(--ink);}
+.xr-cmdcard-none{font-family:var(--flavor);font-style:italic;color:var(--ink-2);}
+/* commander modal */
+.xr-cmd-step{display:block;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:15px;color:var(--ink-2);margin:2px 0 9px;}
+.xr-cmd-step:not(:first-child){margin-top:20px;border-top:1.5px solid var(--ink-18);padding-top:16px;}
+.xr-cmd-tablecards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;}
+.xr-cmd-tablecard{position:relative;display:flex;flex-direction:column;gap:3px;text-align:left;border:2px solid var(--ink-30);background:var(--paper-2);border-radius:11px;padding:11px 40px 11px 13px;transition:border-color .12s,background .12s;}
+.xr-cmd-tablecard:hover{border-color:var(--ink);}
+.xr-cmd-tablecard.on{border-color:var(--brass);background:#8A6A1F12;}
+.xr-cmd-tablecard b{font-family:var(--display);font-weight:700;font-size:17px;color:var(--ink);}
+.xr-cmd-tablecard i{font-family:var(--flavor);font-style:italic;font-size:14px;line-height:1.35;color:var(--ink-2);}
+.xr-cmd-tablecard-check{position:absolute;top:11px;right:13px;color:var(--brass);}
 .xr-traitpick-btns{display:flex;gap:8px;flex-wrap:wrap;}
 .xr-trait-choices{display:flex;flex-direction:column;gap:6px;margin-top:10px;animation:xr-rise .18s ease;}
 .xr-trait-choice{display:flex;flex-direction:column;gap:2px;text-align:left;border:2px solid var(--ink-30);border-radius:9px;padding:8px 12px;background:var(--paper-2);transition:border-color .12s,background .12s,transform .12s;}
