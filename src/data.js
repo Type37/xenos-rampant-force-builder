@@ -6,1211 +6,1210 @@ export const INFANTRY = "infantry";
 export const VEHICLE = "vehicle";
 
 export const UNIT_TYPES = [
-  {
-    "id": "elite",
-    "name": "Elite Infantry",
-    "cls": "infantry",
-    "base": 6,
-    "sp": 5,
-    "role": "The best soldiers in the galaxy. Heaviest armour, no fear, cut swathes through almost any foe.",
-    "act": {
-      "atk": "Free (5+)",
-      "mov": "5+",
-      "sho": "Free (5+)",
-      "cou": "3+"
-    },
-    "prof": {
-      "atk": "4+",
-      "def": "4+",
-      "sho": "4+ / 18\"",
-      "arm": "4",
-      "mov": "8\""
-    },
-    "special": [
-      "Back Into The Fray",
-      "Firefight",
-      "Ranger"
-    ],
-    "xenoPolicy": {
-      "type": "all"
-    },
-    "options": [
-      {
-        "id": "anti-tank",
-        "name": "Anti-Tank",
-        "cost": 2,
-        "conflicts": [
-          "armour-piercing"
-        ],
-        "text": "When Shooting at enemy vehicle units (including when using the Firefight rule), count the target’s Armour as being half its usual value. This cannot be combined with the effects of Armour-Piercing."
-      },
-      {
-        "id": "armour-piercing",
-        "name": "Armour-Piercing",
-        "cost": 1,
-        "conflicts": [
-          "anti-tank"
-        ],
-        "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "assault-doctrine",
-        "name": "Assault Doctrine",
-        "cost": 2,
-        "text": "Bayonets or more traditional melee weapons improve the unit’s Attack Value to 3+."
-      },
-      {
-        "id": "close-quarters",
-        "name": "Close Quarters Doctrine",
-        "cost": -1,
-        "text": "This unit is armed for short-range combat, reducing its Shoot Value to 4+ / 12\"."
-      },
-      {
-        "id": "demolitions",
-        "name": "Demolitions",
-        "cost": 2,
-        "conflicts": [
-          "high-powered-blades"
-        ],
-        "text": "During Attacks (whether Attacking or Defending), count the Armour of enemy vehicle units as being half its usual value. This cannot be combined with the effects of High-Powered Blades."
-      },
-      {
-        "id": "fire-support",
-        "name": "Fire Support",
-        "cost": 4,
-        "text": "This unit can call in Fire Support as an ordered activation."
-      },
-      {
-        "id": "heavy-weapon",
-        "name": "Heavy Weapon",
-        "cost": 2,
-        "text": "When Shooting (including when using the Firefight rule), any 6s count as two hits, rather than one."
-      },
-      {
-        "id": "high-powered-blades",
-        "name": "High-Powered Blades",
-        "cost": 1,
-        "conflicts": [
-          "demolitions"
-        ],
-        "text": "During Attacks (whether Attacking or Defending), count the target’s Armour as being one point lower than usual."
-      },
-      {
-        "id": "mobile",
-        "name": "Mobile",
-        "cost": 1,
-        "text": "The use of exo-skeletons, powered armour or mounts increases this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
-      },
-      {
-        "id": "super-heavy-armour",
-        "name": "Super Heavy Armour",
-        "cost": 2,
-        "text": "You don’t think they’re tough enough already? Some Elite Infantry boast carapaces more suited to an armoured vehicle. Increase this unit’s Armour to 5, but reduce its Maximum Movement by 2\". Super-heavily armoured infantry also become susceptible to the Anti-Tank and Demolitions rules, as if they were vehicles."
-      }
-    ]
+ {
+  "id": "elite",
+  "name": "Elite Infantry",
+  "cls": "infantry",
+  "base": 6,
+  "sp": 5,
+  "role": "The best soldiers in the galaxy: armed to the teeth, clad in the heaviest armour, and knowing no fear.",
+  "act": {
+   "atk": "Free (5+)",
+   "mov": "5+",
+   "sho": "Free (5+)",
+   "cou": "3+"
   },
-  {
-    "id": "heavy",
-    "name": "Heavy Infantry",
-    "cls": "infantry",
-    "base": 2,
-    "sp": 5,
-    "role": "Professional line troops. Best tying the enemy up in bloody firefights while others grab objectives.",
-    "act": {
-      "atk": "6+",
-      "mov": "5+",
-      "sho": "Free (6+)",
-      "cou": "4+"
-    },
-    "prof": {
-      "atk": "6+",
-      "def": "5+",
-      "sho": "6+ / 18\"",
-      "arm": "3",
-      "mov": "6\""
-    },
-    "special": [
-      "Firefight",
-      "Go To Ground"
-    ],
-    "xenoPolicy": {
-      "type": "all"
-    },
-    "options": [
-      {
-        "id": "armour-piercing",
-        "name": "Armour-Piercing",
-        "cost": 1,
-        "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "assault-doctrine",
-        "name": "Assault Doctrine",
-        "cost": 2,
-        "text": "Bayonets or more traditional melee weapons improve this unit’s Attack Value by 1 (e.g. 6 becomes 5+, or 5+ becomes 4+)."
-      },
-      {
-        "id": "close-quarters",
-        "name": "Close Quarters Doctrine",
-        "cost": -1,
-        "text": "This unit is armed for short-range combat, reducing its Shoot Value to 6 / 12\", or 5+ / 12\" with Increased Squad Size."
-      },
-      {
-        "id": "fire-support",
-        "name": "Fire Support",
-        "cost": 4,
-        "text": "This unit can call in Fire Support as an ordered activation."
-      },
-      {
-        "id": "heavy-weapon",
-        "name": "Heavy Weapon",
-        "cost": 2,
-        "text": "When Shooting (including when using the Firefight rule), any 6s count as two hits, rather than one."
-      },
-      {
-        "id": "increased-squad",
-        "name": "Increased Squad Size",
-        "cost": 2,
-        "sp": 10,
-        "text": "This unit begins the game with 10 Strength Points and increases its Attack Value to 5+, Defence Value to 4+ and Shoot Value to 5+ / 18\"."
-      },
-      {
-        "id": "mobile",
-        "name": "Mobile",
-        "cost": 1,
-        "text": "The use of exo-skeletons, powered armour or mounts increases this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
-      },
-      {
-        "id": "undisciplined",
-        "name": "Undisciplined",
-        "cost": -1,
-        "text": "The unit has Courage 5+."
-      }
-    ]
+  "prof": {
+   "atk": "4+",
+   "def": "4+",
+   "sho": "4+ / 18\"",
+   "arm": "4",
+   "mov": "8\""
   },
-  {
-    "id": "light",
-    "name": "Light Infantry",
-    "cls": "infantry",
-    "base": 1,
-    "sp": 5,
-    "role": "Manoeuvrable and lightly armoured. For capturing objectives or holding ground, not slugging it out.",
-    "act": {
-      "atk": "6+",
-      "mov": "Free (5+)",
-      "sho": "6+",
-      "cou": "4+"
-    },
-    "prof": {
-      "atk": "6+",
-      "def": "5+",
-      "sho": "6+ / 18\"",
-      "arm": "2",
-      "mov": "8\""
-    },
-    "special": [
-      "Firefight",
-      "Go To Ground"
-    ],
-    "xenoPolicy": {
-      "type": "all"
-    },
-    "options": [
-      {
-        "id": "armour-piercing",
-        "name": "Armour-Piercing",
-        "cost": 1,
-        "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "assault-doctrine",
-        "name": "Assault Doctrine",
-        "cost": 2,
-        "text": "Bayonets or more traditional melee weapons improve this unit’s Attack Value by 1 (e.g. 6 becomes 5+, or 5+ becomes 4+)."
-      },
-      {
-        "id": "close-quarters",
-        "name": "Close Quarters Doctrine",
-        "cost": -1,
-        "text": "This unit is armed for short-range combat, reducing its Shoot Value to 6+ / 12\", or 5+ / 12\" with Increased Squad Size."
-      },
-      {
-        "id": "fire-support",
-        "name": "Fire Support",
-        "cost": 4,
-        "text": "This unit can call in Fire Support as an ordered activation."
-      },
-      {
-        "id": "guerrillas",
-        "name": "Guerrillas",
-        "cost": 1,
-        "text": "When in soft cover, this unit increases its Armour value by an additional point."
-      },
-      {
-        "id": "heavy-weapon",
-        "name": "Heavy Weapon",
-        "cost": 2,
-        "text": "When Shooting (including when using the Firefight rule), any 6’s count as two hits, rather than one."
-      },
-      {
-        "id": "increased-squad",
-        "name": "Increased Squad Size",
-        "cost": 2,
-        "sp": 10,
-        "text": "This unit begins the game with 10 Strength Points and increases its Attack Value to 5+, Defence Value to 4+ and Shoot Value to 5+ / 18\"."
-      },
-      {
-        "id": "mobile",
-        "name": "Mobile",
-        "cost": 1,
-        "text": "The use of exo-skeletons, powered armour or mounts increases this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
-      },
-      {
-        "id": "undisciplined",
-        "name": "Undisciplined",
-        "cost": -1,
-        "text": "The unit has Courage 5+."
-      }
-    ]
+  "special": [
+   "Back Into The Fray",
+   "Firefight",
+   "Ranger"
+  ],
+  "xenoPolicy": {
+   "type": "all"
   },
-  {
-    "id": "berserk",
-    "name": "Berserk Infantry",
-    "cls": "infantry",
-    "base": 2,
-    "sp": 5,
-    "role": "Melee-hungry warriors who fire from the hip as they close. Subject to Wild Charges.",
-    "act": {
-      "atk": "5+",
-      "mov": "(Free) 6+",
-      "sho": "7+",
-      "cou": "4+"
-    },
-    "prof": {
-      "atk": "4+",
-      "def": "6+",
-      "sho": "6+ / 12\"",
-      "arm": "2",
-      "mov": "8\""
-    },
-    "special": [
-      "Counter-Charge",
-      "Firefight",
-      "Open Order",
-      "Ranger",
-      "Wild Charge"
+  "options": [
+   {
+    "id": "anti-tank",
+    "name": "Anti-Tank",
+    "cost": 2,
+    "conflicts": [
+     "armour-piercing"
     ],
-    "xenoPolicy": {
-      "type": "except",
-      "list": [
-        "psychic",
-        "crusader"
-      ]
-    },
-    "options": [
-      {
-        "id": "demolitions",
-        "name": "Demolitions",
-        "cost": 2,
-        "conflicts": [
-          "high-powered-blades"
-        ],
-        "text": "During Attacks (whether Attacking or Defending), count the Armour of enemy vehicle units as being half its usual value. This cannot be combined with the effects of High-Powered Blades."
-      },
-      {
-        "id": "enthusiastic",
-        "name": "Enthusiastic But Untrained",
-        "cost": -1,
-        "text": "This unit’s Attack Value is reduced by 1 (e.g. 4+ to 5+ for base units)."
-      },
-      {
-        "id": "heavy-armour",
-        "name": "Heavy Armour",
-        "cost": 2,
-        "conflicts": [
-          "even-heavier"
-        ],
-        "text": "This unit’s Armour becomes 3."
-      },
-      {
-        "id": "even-heavier",
-        "name": "Even Heavier Armour",
-        "cost": 4,
-        "conflicts": [
-          "heavy-armour",
-          "increased-squad"
-        ],
-        "text": "Change this unit’s Armour to 4 and Attack Value to 3+. May not be combined with Heavy Armour or Increased Squad Size."
-      },
-      {
-        "id": "high-powered-blades",
-        "name": "High-Powered Blades",
-        "cost": 1,
-        "conflicts": [
-          "demolitions"
-        ],
-        "text": "During Attacks (whether Attacking or Defending), count the target’s Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "increased-squad",
-        "name": "Increased Squad Size",
-        "cost": 1,
-        "sp": 10,
-        "conflicts": [
-          "even-heavier"
-        ],
-        "text": "This unit begins the game with 10 Strength Points, and also increases its Attack Value to 3+. This unit’s Defence Value and Shoot Value remain unchanged."
-      },
-      {
-        "id": "mobile",
-        "name": "Mobile",
-        "cost": 1,
-        "text": "The use of exo-skeletons, powered armour or mounts increases this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
-      },
-      {
-        "id": "veteran",
-        "name": "Veteran",
-        "cost": 2,
-        "text": "This unit’s Defence Value becomes 5+."
-      }
-    ]
-  },
-  {
-    "id": "support",
-    "name": "Support Infantry",
-    "cls": "infantry",
-    "base": 5,
-    "sp": 5,
-    "noAttack": true,
-    "role": "Heavy-weapon crews and artillery. Long reach, can never Attack, needs protecting.",
-    "act": {
-      "atk": "—",
-      "mov": "6+",
-      "sho": "(Free) 7+",
-      "cou": "4+"
-    },
-    "prof": {
-      "atk": "—",
-      "def": "5+",
-      "sho": "4+ / 24\"",
-      "arm": "2",
-      "mov": "6\""
-    },
-    "special": [
-      "Firefight",
-      "Spotters",
-      "Never Attacks"
+    "text": "When Shooting at enemy vehicle units (including when using the Firefight rule), count the target’s Armour as being half its usual value. This cannot be combined with the effects of Armour-Piercing."
+   },
+   {
+    "id": "armour-piercing",
+    "name": "Armour-Piercing",
+    "cost": 1,
+    "conflicts": [
+     "anti-tank"
     ],
-    "xenoPolicy": {
-      "type": "all"
-    },
-    "options": [
-      {
-        "id": "anti-tank",
-        "name": "Anti-Tank",
-        "cost": 2,
-        "conflicts": [
-          "armour-piercing"
-        ],
-        "text": "When Shooting at enemy vehicle units (including when using the Firefight rule), count the target’s Armour as being half its usual value. This cannot be combined with the effects of Armour-Piercing."
-      },
-      {
-        "id": "armour-piercing",
-        "name": "Armour-Piercing",
-        "cost": 1,
-        "conflicts": [
-          "anti-tank"
-        ],
-        "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "artillery",
-        "name": "Artillery",
-        "cost": 2,
-        "conflicts": [
-          "close-quarters"
-        ],
-        "text": "This unit’s Shoot Value becomes 4+ / 48\". Cannot be combined with Close Quarters Doctrine."
-      },
-      {
-        "id": "close-quarters",
-        "name": "Close Quarters Doctrine",
-        "cost": -2,
-        "conflicts": [
-          "artillery"
-        ],
-        "text": "Reduce this unit’s Shoot Value to 4+ / 12\"."
-      },
-      {
-        "id": "engulfing",
-        "name": "Engulfing",
-        "cost": 1,
-        "text": "This unit’s Shooting targets gain no Armour bonus from cover."
-      },
-      {
-        "id": "heavy-weapon",
-        "name": "Heavy Weapon",
-        "cost": 2,
-        "text": "When Shooting (including when using the Firefight rule), any 6s count as two hits, rather than one. This represents Support Infantry carrying even heavier guns than their basic profile implies, or a higher number of them compared to a similarly upgraded Heavy or Light Infantry squad."
-      },
-      {
-        "id": "indirect-fire",
-        "name": "Indirect Fire",
-        "cost": 1,
-        "text": "When using the Spotters rule, this unit may fire at targets that it cannot draw a line of sight to, as long as the unit acting as spotters can do so."
-      }
-    ]
-  },
-  {
-    "id": "recon",
-    "name": "Recon Infantry",
-    "cls": "infantry",
-    "base": 2,
-    "sp": 5,
-    "role": "Lighter than Light. Infiltrate, harry supply lines, snipe, then vanish. Hard to pin down.",
-    "act": {
-      "atk": "7+",
-      "mov": "Free (5+)",
-      "sho": "7+",
-      "cou": "5+"
-    },
-    "prof": {
-      "atk": "6+",
-      "def": "6+",
-      "sho": "5+ / 12\"",
-      "arm": "1",
-      "mov": "8\""
-    },
-    "special": [
-      "Firefight",
-      "Hard to Target",
-      "Open Order",
-      "Skirmish"
+    "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "assault-doctrine",
+    "name": "Assault Doctrine",
+    "cost": 2,
+    "text": "Bayonets or more traditional melee weapons improve the unit’s Attack Value to 3+."
+   },
+   {
+    "id": "close-quarters",
+    "name": "Close Quarters Doctrine",
+    "cost": -1,
+    "text": "This unit is armed for short-range combat, reducing its Shoot Value to 4+ / 12\"."
+   },
+   {
+    "id": "demolitions",
+    "name": "Demolitions",
+    "cost": 2,
+    "conflicts": [
+     "high-powered-blades"
     ],
-    "xenoPolicy": {
-      "type": "except",
-      "list": [
-        "cloaking-device",
-        "psychic",
-        "exploder",
-        "crusader"
-      ]
-    },
-    "options": [
-      {
-        "id": "counter-sniper",
-        "name": "Counter-Sniper Training",
-        "cost": 1,
-        "requires": "sniper-team",
-        "text": "A unit with the Sniper Team option can be trained as counter-snipers. This allows them to target enemy units with the Hard to Target Special rule (usually enemy Recon Infantry) at ranges beyond 12\"."
-      },
-      {
-        "id": "fire-support",
-        "name": "Fire Support",
-        "cost": 4,
-        "text": "This unit can call in Fire Support as an ordered activation."
-      },
-      {
-        "id": "green",
-        "name": "Green",
-        "cost": -1,
-        "conflicts": [
-          "sniper-team",
-          "veterans"
-        ],
-        "text": "This unit cannot use the Skirmish rule. This cannot be combined with Sniper Team or Veterans."
-      },
-      {
-        "id": "sniper-team",
-        "name": "Sniper Team",
-        "cost": 2,
-        "conflicts": [
-          "green",
-          "veterans"
-        ],
-        "text": "This unit’s Shoot Value becomes 5+ / 24\", but it cannot use the Skirmish rule. This cannot be combined with Green or Veterans."
-      },
-      {
-        "id": "veterans",
-        "name": "Veterans",
-        "cost": 2,
-        "conflicts": [
-          "green",
-          "sniper-team"
-        ],
-        "text": "This unit Skirmishes at its normal Shoot Value. This cannot be combined with Green or Sniper Team."
-      }
-    ]
-  },
-  {
-    "id": "primitive",
-    "name": "Primitive Infantry",
-    "cls": "infantry",
-    "base": 1,
-    "sp": 5,
-    "role": "Pre-firearms cultures, knights, ghouls, brain-parasite hosts. Better in rough terrain.",
-    "act": {
-      "atk": "5+",
-      "mov": "Free (6+)",
-      "sho": "—",
-      "cou": "4+"
-    },
-    "prof": {
-      "atk": "5+",
-      "def": "6+",
-      "sho": "—",
-      "arm": "1",
-      "mov": "8\""
-    },
-    "special": [
-      "Go To Ground",
-      "Open Order"
+    "text": "During Attacks (whether Attacking or Defending), count the Armour of enemy vehicle units as being half its usual value. This cannot be combined with the effects of High-Powered Blades."
+   },
+   {
+    "id": "fire-support",
+    "name": "Fire Support",
+    "cost": 4,
+    "text": "This unit can call in Fire Support as an ordered activation."
+   },
+   {
+    "id": "heavy-weapon",
+    "name": "Heavy Weapon",
+    "cost": 2,
+    "text": "When Shooting (including when using the Firefight rule), any 6s count as two hits, rather than one."
+   },
+   {
+    "id": "high-powered-blades",
+    "name": "High-Powered Blades",
+    "cost": 1,
+    "conflicts": [
+     "demolitions"
     ],
-    "xenoPolicy": {
-      "type": "all"
-    },
-    "options": [
-      {
-        "id": "armoured",
-        "name": "Armoured",
-        "cost": 1,
-        "text": "This unit is wearing primitive metal armour or has naturally resilient scales, plates or leathery skin. This unit counts as Armour 2 when Attacking or Defending, or against Shooting attacks from Primitive Infantry or Militia Rabble only; against all other sources of harm, they are their usual Armour 1."
-      },
-      {
-        "id": "increased-squad",
-        "name": "Increased Squad Size",
-        "cost": 1,
-        "sp": 10,
-        "conflicts": [
-          "mob"
-        ],
-        "text": "This unit begins the game with 10 Strength Points, and also increases its Attack Value to 4+ and its Defence Value to 5+. Its Shoot Value remains unchanged. This cannot be combined with Mob."
-      },
-      {
-        "id": "mob",
-        "name": "Mob",
-        "cost": 2,
-        "sp": 15,
-        "conflicts": [
-          "increased-squad"
-        ],
-        "text": "This unit begins the game with 15 Strength Points, and also increases its Attack Value to 3+ and its Defence Value to 5+. Its Shoot Value remains unchanged. This cannot be combined with Increased Squad Size."
-      },
-      {
-        "id": "mobile",
-        "name": "Mobile",
-        "cost": 1,
-        "text": "Increase this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
-      },
-      {
-        "id": "primitive-missiles",
-        "name": "Primitive Missiles",
-        "cost": 1,
-        "conflicts": [
-          "savages"
-        ],
-        "text": "This unit is armed with javelins, bows, slings, or perhaps muskets, granting it Shoot 6+ and Shoot Value 6 / 6\". However, against any opponents other than Greater or Lesser Xenomorphs, Primitive Infantry, or Militia Rabble, targets count as having one more point of Armour. Cannot be combined with Savages."
-      },
-      {
-        "id": "savages",
-        "name": "Savages",
-        "cost": -1,
-        "conflicts": [
-          "primitive-missiles"
-        ],
-        "text": "This unit becomes subject to the rules for Wild Charges. Cannot be combined with Primitive Missiles."
-      },
-      {
-        "id": "young-warriors",
-        "name": "Young Warriors",
-        "cost": -1,
-        "text": "Courage becomes 5+."
-      }
-    ]
+    "text": "During Attacks (whether Attacking or Defending), count the target’s Armour as being one point lower than usual."
+   },
+   {
+    "id": "mobile",
+    "name": "Mobile",
+    "cost": 1,
+    "text": "The use of exo-skeletons, powered armour or mounts increases this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
+   },
+   {
+    "id": "super-heavy-armour",
+    "name": "Super Heavy Armour",
+    "cost": 2,
+    "text": "You don’t think they’re tough enough already? Some Elite Infantry boast carapaces more suited to an armoured vehicle. Increase this unit’s Armour to 5, but reduce its Maximum Movement by 2\". Super-heavily armoured infantry also become susceptible to the Anti-Tank and Demolitions rules, as if they were vehicles."
+   }
+  ]
+ },
+ {
+  "id": "heavy",
+  "name": "Heavy Infantry",
+  "cls": "infantry",
+  "base": 2,
+  "sp": 5,
+  "role": "The line infantry of professional armies, best at tying the enemy up in bloody firefights while others take the objectives.",
+  "act": {
+   "atk": "6+",
+   "mov": "5+",
+   "sho": "Free (6+)",
+   "cou": "4+"
   },
-  {
-    "id": "militia",
-    "name": "Militia Rabble",
-    "cls": "infantry",
-    "base": 1,
+  "prof": {
+   "atk": "6+",
+   "def": "5+",
+   "sho": "6+ / 18\"",
+   "arm": "3",
+   "mov": "6\""
+  },
+  "special": [
+   "Firefight",
+   "Go To Ground"
+  ],
+  "xenoPolicy": {
+   "type": "all"
+  },
+  "options": [
+   {
+    "id": "armour-piercing",
+    "name": "Armour-Piercing",
+    "cost": 1,
+    "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "assault-doctrine",
+    "name": "Assault Doctrine",
+    "cost": 2,
+    "text": "Bayonets or more traditional melee weapons improve this unit’s Attack Value by 1 (e.g. 6 becomes 5+, or 5+ becomes 4+)."
+   },
+   {
+    "id": "close-quarters",
+    "name": "Close Quarters Doctrine",
+    "cost": -1,
+    "text": "This unit is armed for short-range combat, reducing its Shoot Value to 6 / 12\", or 5+ / 12\" with Increased Squad Size."
+   },
+   {
+    "id": "fire-support",
+    "name": "Fire Support",
+    "cost": 4,
+    "text": "This unit can call in Fire Support as an ordered activation."
+   },
+   {
+    "id": "heavy-weapon",
+    "name": "Heavy Weapon",
+    "cost": 2,
+    "text": "When Shooting (including when using the Firefight rule), any 6s count as two hits, rather than one."
+   },
+   {
+    "id": "increased-squad",
+    "name": "Increased Squad Size",
+    "cost": 2,
     "sp": 10,
-    "role": "Conscripts, zombies, frenzied cultists. Disposable bodies and bullet shields.",
-    "act": {
-      "atk": "8+",
-      "mov": "6+",
-      "sho": "7+",
-      "cou": "5+"
-    },
-    "prof": {
-      "atk": "6+",
-      "def": "6+",
-      "sho": "6+ / 6\"",
-      "arm": "1",
-      "mov": "6\""
-    },
-    "special": [],
-    "xenoPolicy": {
-      "type": "allowOnly",
-      "list": [
-        "undead",
-        "mechanoid",
-        "demonic",
-        "contagious",
-        "hatred",
-        "fearsome",
-        "special-insertion",
-        "stun-weapons"
-      ]
-    },
-    "options": [
-      {
-        "id": "mob",
-        "name": "Mob",
-        "cost": 1,
-        "sp": 15,
-        "text": "This unit begins the game with 15 Strength Points, and also increases Shoot Value to 6 / 12\". This unit’s Attack Value and Defence Value remain unchanged."
-      },
-      {
-        "id": "ravenous-horde",
-        "name": "Ravenous Horde",
-        "cost": 0,
-        "text": "Remove this unit’s Shoot and Shoot Value, but increase its Attack to a (still-pathetic) 7+."
-      }
-    ]
+    "text": "This unit begins the game with 10 Strength Points and increases its Attack Value to 5+, Defence Value to 4+ and Shoot Value to 5+ / 18\"."
+   },
+   {
+    "id": "mobile",
+    "name": "Mobile",
+    "cost": 1,
+    "text": "The use of exo-skeletons, powered armour or mounts increases this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
+   },
+   {
+    "id": "undisciplined",
+    "name": "Undisciplined",
+    "cost": -1,
+    "text": "The unit has Courage 5+."
+   }
+  ]
+ },
+ {
+  "id": "light",
+  "name": "Light Infantry",
+  "cls": "infantry",
+  "base": 1,
+  "sp": 5,
+  "role": "Lightly armoured and manoeuvrable; made for capturing objectives or guarding positions, not slugging it out.",
+  "act": {
+   "atk": "6+",
+   "mov": "Free (5+)",
+   "sho": "6+",
+   "cou": "4+"
   },
-  {
-    "id": "greater-xeno",
-    "name": "Greater Xenomorphs",
-    "cls": "infantry",
-    "base": 4,
-    "sp": 5,
-    "role": "Alien queens, clawed bio-constructs, monsters. Usually single or reduced model units.",
-    "act": {
-      "atk": "5+",
-      "mov": "Free (6+)",
-      "sho": "—",
-      "cou": "3+"
-    },
-    "prof": {
-      "atk": "3+",
-      "def": "6+",
-      "sho": "—",
-      "arm": "4",
-      "mov": "10\""
-    },
-    "special": [
-      "Open Order",
-      "Ranger",
-      "Wild Charge"
-    ],
-    "xenoPolicy": {
-      "type": "all"
-    },
-    "options": [
-      {
-        "id": "demolitions",
-        "name": "Demolitions",
-        "cost": 2,
-        "conflicts": [
-          "high-powered-blades"
-        ],
-        "text": "During Attacks (whether Attacking or Defending), count the Armour of enemy vehicle units as being half its usual value. This cannot be combined with the effects of High-Powered Blades."
-      },
-      {
-        "id": "cunning",
-        "name": "Cunning",
-        "cost": 2,
-        "text": "This unit’s Defence Value becomes 5+."
-      },
-      {
-        "id": "high-powered-blades",
-        "name": "High-Powered Blades",
-        "cost": 1,
-        "conflicts": [
-          "demolitions"
-        ],
-        "text": "During Attacks (whether Attacking or Defending), count the target’s Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "ponderous",
-        "name": "Ponderous",
-        "cost": 1,
-        "conflicts": [
-          "xeno-ranged"
-        ],
-        "text": "This unit loses the Wild Charge rule. This cannot be combined with Xenomorph Ranged Attack."
-      },
-      {
-        "id": "xeno-ranged",
-        "name": "Xenomorph Ranged Attack",
-        "cost": 2,
-        "conflicts": [
-          "ponderous"
-        ],
-        "text": "This unit either has a ranged weapon or can spit acid, flame, or poison gas. Remove the Wild Charge rule and replace it with Shoot 6+ and Shoot Value 5+ / 18\". This unit can be further customised with Area Effect (+1 point per unit, ignore cover when Shooting), Armour-Piercing (+1 point per unit, -1 to enemy Armour when Shooting), Close Quarters Doctrine (-1 point per unit, reduce Shooting range to 12”) or Anti-Tank (+2 points per unit, halve enemy vehicle Armour during Shooting). This cannot be combined with Ponderous."
-      },
-      {
-        "id": "xr-area",
-        "name": "Area Effect",
-        "cost": 1,
-        "requires": "xeno-ranged",
-        "text": "When using the Xenomorph Ranged Attack, this unit's Shooting targets gain no Armour bonus from cover."
-      },
-      {
-        "id": "xr-ap",
-        "name": "Armour-Piercing (ranged)",
-        "cost": 1,
-        "requires": "xeno-ranged",
-        "conflicts": [
-          "xr-at"
-        ],
-        "text": "When using the Xenomorph Ranged Attack, count the target's Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "xr-cqd",
-        "name": "Close Quarters Doctrine (ranged)",
-        "cost": -1,
-        "requires": "xeno-ranged",
-        "text": "Reduce the Xenomorph Ranged Attack's Shooting range to 12\"."
-      },
-      {
-        "id": "xr-at",
-        "name": "Anti-Tank (ranged)",
-        "cost": 2,
-        "requires": "xeno-ranged",
-        "conflicts": [
-          "xr-ap"
-        ],
-        "text": "When using the Xenomorph Ranged Attack against enemy vehicles, count the target's Armour as being half its usual value."
-      }
-    ]
+  "prof": {
+   "atk": "6+",
+   "def": "5+",
+   "sho": "6+ / 18\"",
+   "arm": "2",
+   "mov": "8\""
   },
-  {
-    "id": "lesser-xeno",
-    "name": "Lesser Xenomorphs",
-    "cls": "infantry",
-    "base": 2,
-    "sp": 5,
-    "role": "Fast, savage swarms. Insectoid, mammalian, mechanical, extra-dimensional, whatever bites.",
-    "act": {
-      "atk": "5+",
-      "mov": "Free (6+)",
-      "sho": "—",
-      "cou": "4+"
-    },
-    "prof": {
-      "atk": "4+",
-      "def": "6+",
-      "sho": "—",
-      "arm": "3",
-      "mov": "12\""
-    },
-    "special": [
-      "Open Order",
-      "Ranger",
-      "Wild Charge"
-    ],
-    "xenoPolicy": {
-      "type": "all"
-    },
-    "options": [
-      {
-        "id": "cunning",
-        "name": "Cunning",
-        "cost": 2,
-        "text": "This unit’s Defence Value becomes 5+."
-      },
-      {
-        "id": "high-powered-blades",
-        "name": "High-Powered Blades",
-        "cost": 1,
-        "text": "During Attacks (whether Attacking or Defending), count the target’s Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "swarm",
-        "name": "Swarm",
-        "cost": 2,
-        "sp": 10,
-        "text": "This unit begins the game with 10 Strength Points, and also increases its Attack Value to 3+. Its Defence Value and Shoot Value remain unchanged."
-      },
-      {
-        "id": "xeno-ranged",
-        "name": "Xenomorph Ranged Attack",
-        "cost": 2,
-        "text": "This unit either has a ranged weapon or can spit acid, flame or poison gas. Remove the Wild Charge rule and replace it with Shoot 6+ and Shoot Value 5+ / 18\". This unit can be further customised with Area Effect (+1 point per unit, ignore cover when Shooting), Armour-Piercing (+1 point per unit, -1 to enemy Armour when Shooting), Close Quarters Doctrine (-1 point per unit, reduce Shooting range to 12\") or Anti-Tank (+2 points per unit, halve enemy vehicle Armour during Shooting)."
-      },
-      {
-        "id": "xr-area",
-        "name": "Area Effect",
-        "cost": 1,
-        "requires": "xeno-ranged",
-        "text": "When using the Xenomorph Ranged Attack, this unit's Shooting targets gain no Armour bonus from cover."
-      },
-      {
-        "id": "xr-ap",
-        "name": "Armour-Piercing (ranged)",
-        "cost": 1,
-        "requires": "xeno-ranged",
-        "conflicts": [
-          "xr-at"
-        ],
-        "text": "When using the Xenomorph Ranged Attack, count the target's Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "xr-cqd",
-        "name": "Close Quarters Doctrine (ranged)",
-        "cost": -1,
-        "requires": "xeno-ranged",
-        "text": "Reduce the Xenomorph Ranged Attack's Shooting range to 12\"."
-      },
-      {
-        "id": "xr-at",
-        "name": "Anti-Tank (ranged)",
-        "cost": 2,
-        "requires": "xeno-ranged",
-        "conflicts": [
-          "xr-ap"
-        ],
-        "text": "When using the Xenomorph Ranged Attack against enemy vehicles, count the target's Armour as being half its usual value."
-      }
-    ]
+  "special": [
+   "Firefight",
+   "Go To Ground"
+  ],
+  "xenoPolicy": {
+   "type": "all"
   },
-  {
-    "id": "fighting-vehicle",
-    "name": "Fighting Vehicle",
-    "cls": "vehicle",
-    "base": 6,
-    "sp": 5,
-    "heavy": true,
-    "role": "Tanks, armoured walkers, self-propelled guns. Centrepiece support for an infantry force.",
-    "act": {
-      "atk": "6+",
-      "mov": "Free (6+)",
-      "sho": "6+",
-      "cou": "3+"
-    },
-    "prof": {
-      "atk": "6+",
-      "def": "5+",
-      "sho": "4+ / 18\"",
-      "arm": "6",
-      "mov": "8\""
-    },
-    "special": [
-      "All-Terrain",
-      "Anti-Tank",
-      "Demolitions",
-      "High-Powered Blades",
-      "Line-Breaker",
-      "Vehicle"
-    ],
-    "xenoPolicy": {
-      "type": "all"
-    },
-    "options": [
-      {
-        "id": "anti-personnel",
-        "name": "Anti-Personnel Specialism",
-        "cost": -1,
-        "text": "This unit is geared almost exclusively towards blowing up or mowing down infantry. Remove the Anti-Tank rule."
-      },
-      {
-        "id": "area-effect",
-        "name": "Area Effect",
-        "cost": 2,
-        "text": "This unit’s Shooting targets gain no Armour bonus from cover."
-      },
-      {
-        "id": "armour-piercing",
-        "name": "Armour-Piercing",
-        "cost": 1,
-        "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual. You may not apply this rule at the same time as Anti-Tank."
-      },
-      {
-        "id": "artillery",
-        "name": "Artillery",
-        "cost": 2,
-        "conflicts": [
-          "close-quarters"
-        ],
-        "text": "This unit’s Shoot Value becomes 4+ / 48\". If this vehicle targets an enemy that is within 12\" of a friendly unit that has not been activated this turn, the friendly unit may forgo its action this turn to act as spotters. Spotters improve the vehicle’s Shoot Value to 3+ / 48\" for this action only. Cannot be combined with Close Quarters Doctrine."
-      },
-      {
-        "id": "close-quarters",
-        "name": "Close Quarters Doctrine",
-        "cost": -1,
-        "conflicts": [
-          "artillery"
-        ],
-        "text": "Reduce this unit’s Shoot Value to 4+ / 12\". Cannot be combined with Artillery."
-      },
-      {
-        "id": "combat-engineering",
-        "name": "Combat Engineering Vehicle",
-        "cost": 1,
-        "text": "This vehicle is fitted out with heavy equipment for clearing mines or demolishing obstructions. If it Attacks a building, the building only hits on Defence rolls of 6."
-      },
-      {
-        "id": "indirect-fire",
-        "name": "Indirect Fire",
-        "cost": 1,
-        "requires": "artillery",
-        "text": "Artillery only. When using a friendly unit as spotters, this unit may Shoot at enemy that it cannot see, so long as the unit acting as spotters has line of sight to the target."
-      },
-      {
-        "id": "light-armoured",
-        "name": "Light Armoured Vehicle",
-        "cost": -2,
-        "text": "Reduce this unit’s Armour by 1 and remove the Demolitions and Line-Breaker rules."
-      },
-      {
-        "id": "green-crew",
-        "name": "Green Crew",
-        "cost": -1,
-        "conflicts": [
-          "veteran-crew"
-        ],
-        "text": "This unit’s Shoot Value becomes 5+ / 18\" (5+ / 12\" with Close Quarters Doctrine, 5+ / 48\" with Artillery). This cannot be combined with Veteran Crew."
-      },
-      {
-        "id": "veteran-crew",
-        "name": "Veteran Crew",
-        "cost": 2,
-        "conflicts": [
-          "green-crew"
-        ],
-        "text": "This unit can move and fire without the usual -1 penalty. This cannot be combined with Green Crew."
-      },
-      {
-        "id": "walker",
-        "name": "Walker",
-        "cost": 2,
-        "text": "This vehicle walks, by means bipedal, quadrupedal, or creepily crab-like. Its Maximum Movement is reduced by 2\", but its Attack Value becomes 4+. Walkers are able to Storm defences if they win an Attack action, while buildings they Attack do not get to Defend."
-      }
-    ]
+  "options": [
+   {
+    "id": "armour-piercing",
+    "name": "Armour-Piercing",
+    "cost": 1,
+    "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "assault-doctrine",
+    "name": "Assault Doctrine",
+    "cost": 2,
+    "text": "Bayonets or more traditional melee weapons improve this unit’s Attack Value by 1 (e.g. 6 becomes 5+, or 5+ becomes 4+)."
+   },
+   {
+    "id": "close-quarters",
+    "name": "Close Quarters Doctrine",
+    "cost": -1,
+    "text": "This unit is armed for short-range combat, reducing its Shoot Value to 6+ / 12\", or 5+ / 12\" with Increased Squad Size."
+   },
+   {
+    "id": "fire-support",
+    "name": "Fire Support",
+    "cost": 4,
+    "text": "This unit can call in Fire Support as an ordered activation."
+   },
+   {
+    "id": "guerrillas",
+    "name": "Guerrillas",
+    "cost": 1,
+    "text": "When in soft cover, this unit increases its Armour value by an additional point."
+   },
+   {
+    "id": "heavy-weapon",
+    "name": "Heavy Weapon",
+    "cost": 2,
+    "text": "When Shooting (including when using the Firefight rule), any 6’s count as two hits, rather than one."
+   },
+   {
+    "id": "increased-squad",
+    "name": "Increased Squad Size",
+    "cost": 2,
+    "sp": 10,
+    "text": "This unit begins the game with 10 Strength Points and increases its Attack Value to 5+, Defence Value to 4+ and Shoot Value to 5+ / 18\"."
+   },
+   {
+    "id": "mobile",
+    "name": "Mobile",
+    "cost": 1,
+    "text": "The use of exo-skeletons, powered armour or mounts increases this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
+   },
+   {
+    "id": "undisciplined",
+    "name": "Undisciplined",
+    "cost": -1,
+    "text": "The unit has Courage 5+."
+   }
+  ]
+ },
+ {
+  "id": "berserk",
+  "name": "Berserk Infantry",
+  "cls": "infantry",
+  "base": 2,
+  "sp": 5,
+  "role": "Melee-hungry warriors who rarely use their guns, except fired from the hip as they close in with bayonets fixed.",
+  "act": {
+   "atk": "5+",
+   "mov": "(Free) 6+",
+   "sho": "7+",
+   "cou": "4+"
   },
-  {
-    "id": "transport-vehicle",
-    "name": "Transport Vehicle",
-    "cls": "vehicle",
-    "base": 4,
-    "sp": 5,
-    "heavy": true,
-    "role": "Carries infantry to where they are needed. Armoured, but soft to anti-tank fire.",
-    "act": {
-      "atk": "6+",
-      "mov": "Free (6+)",
-      "sho": "6+",
-      "cou": "4+"
-    },
-    "prof": {
-      "atk": "6+",
-      "def": "6+",
-      "sho": "5+ / 12\"",
-      "arm": "5",
-      "mov": "10\""
-    },
-    "special": [
-      "High-Powered Blades",
-      "Transport (5)",
-      "Vehicle"
-    ],
-    "xenoPolicy": {
-      "type": "all"
-    },
-    "options": [
-      {
-        "id": "all-terrain",
-        "name": "All-Terrain",
-        "cost": 1,
-        "text": "This unit does not halve its movement in rough terrain."
-      },
-      {
-        "id": "armour-piercing",
-        "name": "Armour-Piercing",
-        "cost": 1,
-        "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "transport-10",
-        "name": "Transport (10)",
-        "cost": 1,
-        "text": "This vehicle can carry an infantry unit with up to 10 Strength Points. This replaces Transport (5)."
-      },
-      {
-        "id": "line-breaker",
-        "name": "Line-Breaker",
-        "cost": 1,
-        "text": "This vehicle can cross obstacles in the same way as a Fighting Vehicle."
-      },
-      {
-        "id": "green-crew",
-        "name": "Green Crew",
-        "cost": -1,
-        "text": "This vehicle’s Shoot Value becomes 6 / 12\"."
-      },
-      {
-        "id": "walker",
-        "name": "Walker",
-        "cost": 2,
-        "text": "This vehicle walks, by means bipedal, quadrupedal or creepily crab-like. Its Maximum Movement is reduced by 2\", but its Attack Value becomes 4+ and its Defence Value becomes 5+. Walkers are able to Storm defences if they win an Attack action, while buildings they Attack do not get to Defend. Walkers can be further customised with Demolitions (+2 points per unit, halve enemy vehicle Armour during Attacks, but cannot be combined with High-Powered Blades)."
-      }
-    ]
+  "prof": {
+   "atk": "4+",
+   "def": "6+",
+   "sho": "6+ / 12\"",
+   "arm": "2",
+   "mov": "8\""
   },
-  {
-    "id": "softskin-vehicle",
-    "name": "Soft-skin Vehicle",
-    "cls": "vehicle",
-    "base": 2,
-    "sp": 5,
-    "role": "Scout cars, civilian trucks, technicals. Fast and fragile until you bolt guns on.",
-    "act": {
-      "atk": "6+",
-      "mov": "Free (6+)",
-      "sho": "7+",
-      "cou": "4+"
-    },
-    "prof": {
-      "atk": "6+",
-      "def": "6+",
-      "sho": "6+ / 6\"",
-      "arm": "3",
-      "mov": "12\""
-    },
-    "special": [
-      "Vehicle"
+  "special": [
+   "Counter-Charge",
+   "Firefight",
+   "Open Order",
+   "Ranger",
+   "Wild Charge"
+  ],
+  "xenoPolicy": {
+   "type": "except",
+   "list": [
+    "psychic",
+    "crusader"
+   ]
+  },
+  "options": [
+   {
+    "id": "demolitions",
+    "name": "Demolitions",
+    "cost": 2,
+    "conflicts": [
+     "high-powered-blades"
     ],
-    "xenoPolicy": {
-      "type": "except",
-      "list": [
-        "psychic",
-        "crusader"
-      ]
-    },
-    "options": [
-      {
-        "id": "all-terrain",
-        "name": "All-Terrain",
-        "cost": 1,
-        "text": "This unit does not halve its movement in rough terrain."
-      },
-      {
-        "id": "civilian",
-        "name": "Civilian",
-        "cost": -1,
-        "conflicts": [
-          "improvised-armour"
-        ],
-        "text": "This unit is a civilian vehicle, lacking in any armour. Reduce its Armour to 2. Cannot be combined with Improvised Armour."
-      },
-      {
-        "id": "improvised-armour",
-        "name": "Improvised Armour",
-        "cost": 1,
-        "conflicts": [
-          "civilian"
-        ],
-        "text": "Heavy armour plating has been welded onto this vehicle, slowing its Maximum Movement by 2”, but increasing its Armour to 4."
-      },
-      {
-        "id": "large-vehicle",
-        "name": "Large Vehicle",
-        "cost": 2,
-        "sp": 10,
-        "text": "This vehicle is a bus, oil tanker, combine harvester, or similarly bulky vehicle. Reduce its Maximum Movement by 2\", but increase Strength Points to 10."
-      },
-      {
-        "id": "green-crew",
-        "name": "Green Crew",
-        "cost": -1,
-        "text": "This unit’s Courage becomes 5+."
-      },
-      {
-        "id": "scythes",
-        "name": "Scythes",
-        "cost": 1,
-        "text": "Scythed wheels, spiked dozer blades, or meat hooks trailing on chains increases this unit’s Attack Value to 5+."
-      },
-      {
-        "id": "technical",
-        "name": "Technical",
-        "cost": 2,
-        "text": "This vehicle has weapons, possibly hastily bolted onto the chassis. Improve its Shoot to 6+ and Shoot Value to 5+ / 18\". Technicals can further be customised with Anti-Tank (+1 point per unit, halve the Armour of enemy vehicles in Shoot actions, but cannot be combined with Armour-Piercing), Armour-Piercing (+1 point per unit, -1 to enemy Armour during Shooting, but cannot be combined with Anti-Tank), Close Quarters Doctrine (-1 point per unit, reduce Shoot Value to 5+ / 12\"), or Engulfing (+1 point per unit, targets gain no benefit from cover during Shooting)."
-      },
-      {
-        "id": "tech-at",
-        "name": "Anti-Tank (technical)",
-        "cost": 1,
-        "requires": "technical",
-        "conflicts": [
-          "tech-ap"
-        ],
-        "text": "When using the Technical's weapons against enemy vehicles, count the target's Armour as half its usual value."
-      },
-      {
-        "id": "tech-ap",
-        "name": "Armour-Piercing (technical)",
-        "cost": 1,
-        "requires": "technical",
-        "conflicts": [
-          "tech-at"
-        ],
-        "text": "When using the Technical's weapons, count the target's Armour as being 1 point lower than usual."
-      },
-      {
-        "id": "tech-cqd",
-        "name": "Close Quarters Doctrine (technical)",
-        "cost": -1,
-        "requires": "technical",
-        "text": "Reduce the Technical's Shoot Value to 5+ / 12\"."
-      },
-      {
-        "id": "tech-engulf",
-        "name": "Engulfing (technical)",
-        "cost": 1,
-        "requires": "technical",
-        "text": "The Technical's Shooting targets gain no benefit from cover."
-      },
-      {
-        "id": "transport-5",
-        "name": "Transport (5)",
-        "cost": 1,
-        "conflicts": [
-          "transport-10",
-          "transport-15"
-        ],
-        "text": "This vehicle can carry an infantry unit with up to 5 Strength Points. Cannot be combined with Transport (10) or Transport (15). Copplestone Castings Assault Troopers (Heavy Infantry) on patrol. Transport Vehicles help you to move your units around the table swiftly"
-      },
-      {
-        "id": "transport-10",
-        "name": "Transport (10)",
-        "cost": 2,
-        "conflicts": [
-          "transport-5",
-          "transport-15"
-        ],
-        "text": "This vehicle can carry an infantry unit with up to 10 Strength Points. Cannot be combined with Transport (5) or Transport (15)."
-      },
-      {
-        "id": "transport-15",
-        "name": "Transport (15)",
-        "cost": 2,
-        "conflicts": [
-          "transport-5",
-          "transport-10"
-        ],
-        "text": "This vehicle can carry an infantry unit with up to 15 Strength Points, but reduces its Maximum Movement by 2\". Cannot be combined with Transport (5) or Transport (10)."
-      },
-      {
-        "id": "walker",
-        "name": "Walker",
-        "cost": 2,
-        "text": "This vehicle walks, by means bipedal, quadrupedal or creepily crab-like. Its Maximum Movement is reduced by 2\", but its Attack Value becomes 4+ and its Defence Value becomes 5+. Walkers are able to Storm defences if they win an Attack action, while buildings they Attack do not get to Defend. Walkers can be further customised with Demolitions (+2 points per unit, halve enemy vehicle Armour during Attacks, but cannot be combined with High-Powered Blades) or High-Powered Blades (+1 point, -1 to enemy Armour during Attacks, but cannot be combined with Demolitions)."
-      }
-    ]
-  }
+    "text": "During Attacks (whether Attacking or Defending), count the Armour of enemy vehicle units as being half its usual value. This cannot be combined with the effects of High-Powered Blades."
+   },
+   {
+    "id": "enthusiastic",
+    "name": "Enthusiastic But Untrained",
+    "cost": -1,
+    "text": "This unit’s Attack Value is reduced by 1 (e.g. 4+ to 5+ for base units)."
+   },
+   {
+    "id": "heavy-armour",
+    "name": "Heavy Armour",
+    "cost": 2,
+    "conflicts": [
+     "even-heavier"
+    ],
+    "text": "This unit’s Armour becomes 3."
+   },
+   {
+    "id": "even-heavier",
+    "name": "Even Heavier Armour",
+    "cost": 4,
+    "conflicts": [
+     "heavy-armour",
+     "increased-squad"
+    ],
+    "text": "Change this unit’s Armour to 4 and Attack Value to 3+. May not be combined with Heavy Armour or Increased Squad Size."
+   },
+   {
+    "id": "high-powered-blades",
+    "name": "High-Powered Blades",
+    "cost": 1,
+    "conflicts": [
+     "demolitions"
+    ],
+    "text": "During Attacks (whether Attacking or Defending), count the target’s Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "increased-squad",
+    "name": "Increased Squad Size",
+    "cost": 1,
+    "sp": 10,
+    "conflicts": [
+     "even-heavier"
+    ],
+    "text": "This unit begins the game with 10 Strength Points, and also increases its Attack Value to 3+. This unit’s Defence Value and Shoot Value remain unchanged."
+   },
+   {
+    "id": "mobile",
+    "name": "Mobile",
+    "cost": 1,
+    "text": "The use of exo-skeletons, powered armour or mounts increases this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
+   },
+   {
+    "id": "veteran",
+    "name": "Veteran",
+    "cost": 2,
+    "text": "This unit’s Defence Value becomes 5+."
+   }
+  ]
+ },
+ {
+  "id": "support",
+  "name": "Support Infantry",
+  "cls": "infantry",
+  "base": 5,
+  "sp": 5,
+  "noAttack": true,
+  "role": "Crews for the heaviest weapons, concentrating fire on the enemy's armour and weak points, but poor in close combat.",
+  "act": {
+   "atk": "—",
+   "mov": "6+",
+   "sho": "(Free) 7+",
+   "cou": "4+"
+  },
+  "prof": {
+   "atk": "—",
+   "def": "5+",
+   "sho": "4+ / 24\"",
+   "arm": "2",
+   "mov": "6\""
+  },
+  "special": [
+   "Firefight",
+   "Spotters",
+   "Never Attacks"
+  ],
+  "xenoPolicy": {
+   "type": "all"
+  },
+  "options": [
+   {
+    "id": "anti-tank",
+    "name": "Anti-Tank",
+    "cost": 2,
+    "conflicts": [
+     "armour-piercing"
+    ],
+    "text": "When Shooting at enemy vehicle units (including when using the Firefight rule), count the target’s Armour as being half its usual value. This cannot be combined with the effects of Armour-Piercing."
+   },
+   {
+    "id": "armour-piercing",
+    "name": "Armour-Piercing",
+    "cost": 1,
+    "conflicts": [
+     "anti-tank"
+    ],
+    "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "artillery",
+    "name": "Artillery",
+    "cost": 2,
+    "conflicts": [
+     "close-quarters"
+    ],
+    "text": "This unit’s Shoot Value becomes 4+ / 48\". Cannot be combined with Close Quarters Doctrine."
+   },
+   {
+    "id": "close-quarters",
+    "name": "Close Quarters Doctrine",
+    "cost": -2,
+    "conflicts": [
+     "artillery"
+    ],
+    "text": "Reduce this unit’s Shoot Value to 4+ / 12\"."
+   },
+   {
+    "id": "engulfing",
+    "name": "Engulfing",
+    "cost": 1,
+    "text": "This unit’s Shooting targets gain no Armour bonus from cover."
+   },
+   {
+    "id": "heavy-weapon",
+    "name": "Heavy Weapon",
+    "cost": 2,
+    "text": "When Shooting (including when using the Firefight rule), any 6s count as two hits, rather than one. This represents Support Infantry carrying even heavier guns than their basic profile implies, or a higher number of them compared to a similarly upgraded Heavy or Light Infantry squad."
+   },
+   {
+    "id": "indirect-fire",
+    "name": "Indirect Fire",
+    "cost": 1,
+    "text": "When using the Spotters rule, this unit may fire at targets that it cannot draw a line of sight to, as long as the unit acting as spotters can do so."
+   }
+  ]
+ },
+ {
+  "id": "recon",
+  "name": "Recon Infantry",
+  "cls": "infantry",
+  "base": 2,
+  "sp": 5,
+  "role": "Lighter than Light Infantry; they infiltrate the lines, harry supply columns and snipe command units, then vanish.",
+  "act": {
+   "atk": "7+",
+   "mov": "Free (5+)",
+   "sho": "7+",
+   "cou": "5+"
+  },
+  "prof": {
+   "atk": "6+",
+   "def": "6+",
+   "sho": "5+ / 12\"",
+   "arm": "1",
+   "mov": "8\""
+  },
+  "special": [
+   "Firefight",
+   "Hard to Target",
+   "Open Order",
+   "Skirmish"
+  ],
+  "xenoPolicy": {
+   "type": "except",
+   "list": [
+    "cloaking-device",
+    "psychic",
+    "exploder",
+    "crusader"
+   ]
+  },
+  "options": [
+   {
+    "id": "counter-sniper",
+    "name": "Counter-Sniper Training",
+    "cost": 1,
+    "requires": "sniper-team",
+    "text": "A unit with the Sniper Team option can be trained as counter-snipers. This allows them to target enemy units with the Hard to Target Special rule (usually enemy Recon Infantry) at ranges beyond 12\"."
+   },
+   {
+    "id": "fire-support",
+    "name": "Fire Support",
+    "cost": 4,
+    "text": "This unit can call in Fire Support as an ordered activation."
+   },
+   {
+    "id": "green",
+    "name": "Green",
+    "cost": -1,
+    "conflicts": [
+     "sniper-team",
+     "veterans"
+    ],
+    "text": "This unit cannot use the Skirmish rule. This cannot be combined with Sniper Team or Veterans."
+   },
+   {
+    "id": "sniper-team",
+    "name": "Sniper Team",
+    "cost": 2,
+    "conflicts": [
+     "green",
+     "veterans"
+    ],
+    "text": "This unit’s Shoot Value becomes 5+ / 24\", but it cannot use the Skirmish rule. This cannot be combined with Green or Veterans."
+   },
+   {
+    "id": "veterans",
+    "name": "Veterans",
+    "cost": 2,
+    "conflicts": [
+     "green",
+     "sniper-team"
+    ],
+    "text": "This unit Skirmishes at its normal Shoot Value. This cannot be combined with Green or Sniper Team."
+   }
+  ]
+ },
+ {
+  "id": "primitive",
+  "name": "Primitive Infantry",
+  "cls": "infantry",
+  "base": 1,
+  "sp": 5,
+  "role": "Warriors from pre-firearms cultures, or motivated but poorly equipped fighters a cut above the Militia Rabble.",
+  "act": {
+   "atk": "5+",
+   "mov": "Free (6+)",
+   "sho": "—",
+   "cou": "4+"
+  },
+  "prof": {
+   "atk": "5+",
+   "def": "6+",
+   "sho": "—",
+   "arm": "1",
+   "mov": "8\""
+  },
+  "special": [
+   "Go To Ground",
+   "Open Order"
+  ],
+  "xenoPolicy": {
+   "type": "all"
+  },
+  "options": [
+   {
+    "id": "armoured",
+    "name": "Armoured",
+    "cost": 1,
+    "text": "This unit is wearing primitive metal armour or has naturally resilient scales, plates or leathery skin. This unit counts as Armour 2 when Attacking or Defending, or against Shooting attacks from Primitive Infantry or Militia Rabble only; against all other sources of harm, they are their usual Armour 1."
+   },
+   {
+    "id": "increased-squad",
+    "name": "Increased Squad Size",
+    "cost": 1,
+    "sp": 10,
+    "conflicts": [
+     "mob"
+    ],
+    "text": "This unit begins the game with 10 Strength Points, and also increases its Attack Value to 4+ and its Defence Value to 5+. Its Shoot Value remains unchanged. This cannot be combined with Mob."
+   },
+   {
+    "id": "mob",
+    "name": "Mob",
+    "cost": 2,
+    "sp": 15,
+    "conflicts": [
+     "increased-squad"
+    ],
+    "text": "This unit begins the game with 15 Strength Points, and also increases its Attack Value to 3+ and its Defence Value to 5+. Its Shoot Value remains unchanged. This cannot be combined with Increased Squad Size."
+   },
+   {
+    "id": "mobile",
+    "name": "Mobile",
+    "cost": 1,
+    "text": "Increase this unit’s Maximum Movement by 4\". This unit still counts, for all rules purposes, as infantry. This cannot be combined with the Slow xeno rule."
+   },
+   {
+    "id": "primitive-missiles",
+    "name": "Primitive Missiles",
+    "cost": 1,
+    "conflicts": [
+     "savages"
+    ],
+    "text": "This unit is armed with javelins, bows, slings, or perhaps muskets, granting it Shoot 6+ and Shoot Value 6 / 6\". However, against any opponents other than Greater or Lesser Xenomorphs, Primitive Infantry, or Militia Rabble, targets count as having one more point of Armour. Cannot be combined with Savages."
+   },
+   {
+    "id": "savages",
+    "name": "Savages",
+    "cost": -1,
+    "conflicts": [
+     "primitive-missiles"
+    ],
+    "text": "This unit becomes subject to the rules for Wild Charges. Cannot be combined with Primitive Missiles."
+   },
+   {
+    "id": "young-warriors",
+    "name": "Young Warriors",
+    "cost": -1,
+    "text": "Courage becomes 5+."
+   }
+  ]
+ },
+ {
+  "id": "militia",
+  "name": "Militia Rabble",
+  "cls": "infantry",
+  "base": 1,
+  "sp": 10,
+  "role": "Colonists and mechanics forced to pick up a gun; disposable troops, often fielded as bullet shields.",
+  "act": {
+   "atk": "8+",
+   "mov": "6+",
+   "sho": "7+",
+   "cou": "5+"
+  },
+  "prof": {
+   "atk": "6+",
+   "def": "6+",
+   "sho": "6+ / 6\"",
+   "arm": "1",
+   "mov": "6\""
+  },
+  "special": [],
+  "xenoPolicy": {
+   "type": "allowOnly",
+   "list": [
+    "undead",
+    "mechanoid",
+    "demonic",
+    "contagious",
+    "hatred",
+    "fearsome",
+    "special-insertion",
+    "stun-weapons"
+   ]
+  },
+  "options": [
+   {
+    "id": "mob",
+    "name": "Mob",
+    "cost": 1,
+    "sp": 15,
+    "text": "This unit begins the game with 15 Strength Points, and also increases Shoot Value to 6 / 12\". This unit’s Attack Value and Defence Value remain unchanged."
+   },
+   {
+    "id": "ravenous-horde",
+    "name": "Ravenous Horde",
+    "cost": 0,
+    "text": "Remove this unit’s Shoot and Shoot Value, but increase its Attack to a (still-pathetic) 7+."
+   }
+  ]
+ },
+ {
+  "id": "greater-xeno",
+  "name": "Greater Xenomorphs",
+  "cls": "infantry",
+  "base": 4,
+  "sp": 5,
+  "role": "Alien queens, massive clawed bio-constructs and other beasts, usually fielded as Single or Reduced Model Units.",
+  "act": {
+   "atk": "5+",
+   "mov": "Free (6+)",
+   "sho": "—",
+   "cou": "3+"
+  },
+  "prof": {
+   "atk": "3+",
+   "def": "6+",
+   "sho": "—",
+   "arm": "4",
+   "mov": "10\""
+  },
+  "special": [
+   "Open Order",
+   "Ranger",
+   "Wild Charge"
+  ],
+  "xenoPolicy": {
+   "type": "all"
+  },
+  "options": [
+   {
+    "id": "demolitions",
+    "name": "Demolitions",
+    "cost": 2,
+    "conflicts": [
+     "high-powered-blades"
+    ],
+    "text": "During Attacks (whether Attacking or Defending), count the Armour of enemy vehicle units as being half its usual value. This cannot be combined with the effects of High-Powered Blades."
+   },
+   {
+    "id": "cunning",
+    "name": "Cunning",
+    "cost": 2,
+    "text": "This unit’s Defence Value becomes 5+."
+   },
+   {
+    "id": "high-powered-blades",
+    "name": "High-Powered Blades",
+    "cost": 1,
+    "conflicts": [
+     "demolitions"
+    ],
+    "text": "During Attacks (whether Attacking or Defending), count the target’s Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "ponderous",
+    "name": "Ponderous",
+    "cost": 1,
+    "conflicts": [
+     "xeno-ranged"
+    ],
+    "text": "This unit loses the Wild Charge rule. This cannot be combined with Xenomorph Ranged Attack."
+   },
+   {
+    "id": "xeno-ranged",
+    "name": "Xenomorph Ranged Attack",
+    "cost": 2,
+    "conflicts": [
+     "ponderous"
+    ],
+    "text": "This unit either has a ranged weapon or can spit acid, flame, or poison gas. Remove the Wild Charge rule and replace it with Shoot 6+ and Shoot Value 5+ / 18\". This unit can be further customised with Area Effect (+1 point per unit, ignore cover when Shooting), Armour-Piercing (+1 point per unit, -1 to enemy Armour when Shooting), Close Quarters Doctrine (-1 point per unit, reduce Shooting range to 12”) or Anti-Tank (+2 points per unit, halve enemy vehicle Armour during Shooting). This cannot be combined with Ponderous."
+   },
+   {
+    "id": "xr-area",
+    "name": "Area Effect",
+    "cost": 1,
+    "requires": "xeno-ranged",
+    "text": "When using the Xenomorph Ranged Attack, this unit's Shooting targets gain no Armour bonus from cover."
+   },
+   {
+    "id": "xr-ap",
+    "name": "Armour-Piercing (ranged)",
+    "cost": 1,
+    "requires": "xeno-ranged",
+    "conflicts": [
+     "xr-at"
+    ],
+    "text": "When using the Xenomorph Ranged Attack, count the target's Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "xr-cqd",
+    "name": "Close Quarters Doctrine (ranged)",
+    "cost": -1,
+    "requires": "xeno-ranged",
+    "text": "Reduce the Xenomorph Ranged Attack's Shooting range to 12\"."
+   },
+   {
+    "id": "xr-at",
+    "name": "Anti-Tank (ranged)",
+    "cost": 2,
+    "requires": "xeno-ranged",
+    "conflicts": [
+     "xr-ap"
+    ],
+    "text": "When using the Xenomorph Ranged Attack against enemy vehicles, count the target's Armour as being half its usual value."
+   }
+  ]
+ },
+ {
+  "id": "lesser-xeno",
+  "name": "Lesser Xenomorphs",
+  "cls": "infantry",
+  "base": 2,
+  "sp": 5,
+  "role": "Packs of fast, savage non-humanoid creatures with a kill-and-or-eat-it approach to other species.",
+  "act": {
+   "atk": "5+",
+   "mov": "Free (6+)",
+   "sho": "—",
+   "cou": "4+"
+  },
+  "prof": {
+   "atk": "4+",
+   "def": "6+",
+   "sho": "—",
+   "arm": "3",
+   "mov": "12\""
+  },
+  "special": [
+   "Open Order",
+   "Ranger",
+   "Wild Charge"
+  ],
+  "xenoPolicy": {
+   "type": "all"
+  },
+  "options": [
+   {
+    "id": "cunning",
+    "name": "Cunning",
+    "cost": 2,
+    "text": "This unit’s Defence Value becomes 5+."
+   },
+   {
+    "id": "high-powered-blades",
+    "name": "High-Powered Blades",
+    "cost": 1,
+    "text": "During Attacks (whether Attacking or Defending), count the target’s Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "swarm",
+    "name": "Swarm",
+    "cost": 2,
+    "sp": 10,
+    "text": "This unit begins the game with 10 Strength Points, and also increases its Attack Value to 3+. Its Defence Value and Shoot Value remain unchanged."
+   },
+   {
+    "id": "xeno-ranged",
+    "name": "Xenomorph Ranged Attack",
+    "cost": 2,
+    "text": "This unit either has a ranged weapon or can spit acid, flame or poison gas. Remove the Wild Charge rule and replace it with Shoot 6+ and Shoot Value 5+ / 18\". This unit can be further customised with Area Effect (+1 point per unit, ignore cover when Shooting), Armour-Piercing (+1 point per unit, -1 to enemy Armour when Shooting), Close Quarters Doctrine (-1 point per unit, reduce Shooting range to 12\") or Anti-Tank (+2 points per unit, halve enemy vehicle Armour during Shooting)."
+   },
+   {
+    "id": "xr-area",
+    "name": "Area Effect",
+    "cost": 1,
+    "requires": "xeno-ranged",
+    "text": "When using the Xenomorph Ranged Attack, this unit's Shooting targets gain no Armour bonus from cover."
+   },
+   {
+    "id": "xr-ap",
+    "name": "Armour-Piercing (ranged)",
+    "cost": 1,
+    "requires": "xeno-ranged",
+    "conflicts": [
+     "xr-at"
+    ],
+    "text": "When using the Xenomorph Ranged Attack, count the target's Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "xr-cqd",
+    "name": "Close Quarters Doctrine (ranged)",
+    "cost": -1,
+    "requires": "xeno-ranged",
+    "text": "Reduce the Xenomorph Ranged Attack's Shooting range to 12\"."
+   },
+   {
+    "id": "xr-at",
+    "name": "Anti-Tank (ranged)",
+    "cost": 2,
+    "requires": "xeno-ranged",
+    "conflicts": [
+     "xr-ap"
+    ],
+    "text": "When using the Xenomorph Ranged Attack against enemy vehicles, count the target's Armour as being half its usual value."
+   }
+  ]
+ },
+ {
+  "id": "fighting-vehicle",
+  "name": "Fighting Vehicle",
+  "cls": "vehicle",
+  "base": 6,
+  "sp": 5,
+  "heavy": true,
+  "role": "Tanks, walkers and self-propelled guns that support the infantry; always a Single Model Unit.",
+  "act": {
+   "atk": "6+",
+   "mov": "Free (6+)",
+   "sho": "6+",
+   "cou": "3+"
+  },
+  "prof": {
+   "atk": "6+",
+   "def": "5+",
+   "sho": "4+ / 18\"",
+   "arm": "6",
+   "mov": "8\""
+  },
+  "special": [
+   "All-Terrain",
+   "Anti-Tank",
+   "Demolitions",
+   "High-Powered Blades",
+   "Line-Breaker",
+   "Vehicle"
+  ],
+  "xenoPolicy": {
+   "type": "all"
+  },
+  "options": [
+   {
+    "id": "anti-personnel",
+    "name": "Anti-Personnel Specialism",
+    "cost": -1,
+    "text": "This unit is geared almost exclusively towards blowing up or mowing down infantry. Remove the Anti-Tank rule."
+   },
+   {
+    "id": "area-effect",
+    "name": "Area Effect",
+    "cost": 2,
+    "text": "This unit’s Shooting targets gain no Armour bonus from cover."
+   },
+   {
+    "id": "armour-piercing",
+    "name": "Armour-Piercing",
+    "cost": 1,
+    "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual. You may not apply this rule at the same time as Anti-Tank."
+   },
+   {
+    "id": "artillery",
+    "name": "Artillery",
+    "cost": 2,
+    "conflicts": [
+     "close-quarters"
+    ],
+    "text": "This unit’s Shoot Value becomes 4+ / 48\". If this vehicle targets an enemy that is within 12\" of a friendly unit that has not been activated this turn, the friendly unit may forgo its action this turn to act as spotters. Spotters improve the vehicle’s Shoot Value to 3+ / 48\" for this action only. Cannot be combined with Close Quarters Doctrine."
+   },
+   {
+    "id": "close-quarters",
+    "name": "Close Quarters Doctrine",
+    "cost": -1,
+    "conflicts": [
+     "artillery"
+    ],
+    "text": "Reduce this unit’s Shoot Value to 4+ / 12\". Cannot be combined with Artillery."
+   },
+   {
+    "id": "combat-engineering",
+    "name": "Combat Engineering Vehicle",
+    "cost": 1,
+    "text": "This vehicle is fitted out with heavy equipment for clearing mines or demolishing obstructions. If it Attacks a building, the building only hits on Defence rolls of 6."
+   },
+   {
+    "id": "indirect-fire",
+    "name": "Indirect Fire",
+    "cost": 1,
+    "requires": "artillery",
+    "text": "Artillery only. When using a friendly unit as spotters, this unit may Shoot at enemy that it cannot see, so long as the unit acting as spotters has line of sight to the target."
+   },
+   {
+    "id": "light-armoured",
+    "name": "Light Armoured Vehicle",
+    "cost": -2,
+    "text": "Reduce this unit’s Armour by 1 and remove the Demolitions and Line-Breaker rules."
+   },
+   {
+    "id": "green-crew",
+    "name": "Green Crew",
+    "cost": -1,
+    "conflicts": [
+     "veteran-crew"
+    ],
+    "text": "This unit’s Shoot Value becomes 5+ / 18\" (5+ / 12\" with Close Quarters Doctrine, 5+ / 48\" with Artillery). This cannot be combined with Veteran Crew."
+   },
+   {
+    "id": "veteran-crew",
+    "name": "Veteran Crew",
+    "cost": 2,
+    "conflicts": [
+     "green-crew"
+    ],
+    "text": "This unit can move and fire without the usual -1 penalty. This cannot be combined with Green Crew."
+   },
+   {
+    "id": "walker",
+    "name": "Walker",
+    "cost": 2,
+    "text": "This vehicle walks, by means bipedal, quadrupedal, or creepily crab-like. Its Maximum Movement is reduced by 2\", but its Attack Value becomes 4+. Walkers are able to Storm defences if they win an Attack action, while buildings they Attack do not get to Defend."
+   }
+  ]
+ },
+ {
+  "id": "transport-vehicle",
+  "name": "Transport Vehicle",
+  "cls": "vehicle",
+  "base": 4,
+  "sp": 5,
+  "heavy": true,
+  "role": "Carries infantry in relative safety to where they are needed; well armoured, but very vulnerable to anti-tank fire.",
+  "act": {
+   "atk": "6+",
+   "mov": "Free (6+)",
+   "sho": "6+",
+   "cou": "4+"
+  },
+  "prof": {
+   "atk": "6+",
+   "def": "6+",
+   "sho": "5+ / 12\"",
+   "arm": "5",
+   "mov": "10\""
+  },
+  "special": [
+   "High-Powered Blades",
+   "Transport (5)",
+   "Vehicle"
+  ],
+  "xenoPolicy": {
+   "type": "all"
+  },
+  "options": [
+   {
+    "id": "all-terrain",
+    "name": "All-Terrain",
+    "cost": 1,
+    "text": "This unit does not halve its movement in rough terrain."
+   },
+   {
+    "id": "armour-piercing",
+    "name": "Armour-Piercing",
+    "cost": 1,
+    "text": "When Shooting (including when using the Firefight rule), count the target’s Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "transport-10",
+    "name": "Transport (10)",
+    "cost": 1,
+    "text": "This vehicle can carry an infantry unit with up to 10 Strength Points. This replaces Transport (5)."
+   },
+   {
+    "id": "line-breaker",
+    "name": "Line-Breaker",
+    "cost": 1,
+    "text": "This vehicle can cross obstacles in the same way as a Fighting Vehicle."
+   },
+   {
+    "id": "green-crew",
+    "name": "Green Crew",
+    "cost": -1,
+    "text": "This vehicle’s Shoot Value becomes 6 / 12\"."
+   },
+   {
+    "id": "walker",
+    "name": "Walker",
+    "cost": 2,
+    "text": "This vehicle walks, by means bipedal, quadrupedal or creepily crab-like. Its Maximum Movement is reduced by 2\", but its Attack Value becomes 4+ and its Defence Value becomes 5+. Walkers are able to Storm defences if they win an Attack action, while buildings they Attack do not get to Defend. Walkers can be further customised with Demolitions (+2 points per unit, halve enemy vehicle Armour during Attacks, but cannot be combined with High-Powered Blades)."
+   }
+  ]
+ },
+ {
+  "id": "softskin-vehicle",
+  "name": "Soft-skin Vehicle",
+  "cls": "vehicle",
+  "base": 2,
+  "sp": 5,
+  "role": "Scout vehicles and civilian cars and trucks: fast but thin-skinned, though deadly once fitted with guns.",
+  "act": {
+   "atk": "6+",
+   "mov": "Free (6+)",
+   "sho": "7+",
+   "cou": "4+"
+  },
+  "prof": {
+   "atk": "6+",
+   "def": "6+",
+   "sho": "6+ / 6\"",
+   "arm": "3",
+   "mov": "12\""
+  },
+  "special": [
+   "Vehicle"
+  ],
+  "xenoPolicy": {
+   "type": "except",
+   "list": [
+    "psychic",
+    "crusader"
+   ]
+  },
+  "options": [
+   {
+    "id": "all-terrain",
+    "name": "All-Terrain",
+    "cost": 1,
+    "text": "This unit does not halve its movement in rough terrain."
+   },
+   {
+    "id": "civilian",
+    "name": "Civilian",
+    "cost": -1,
+    "conflicts": [
+     "improvised-armour"
+    ],
+    "text": "This unit is a civilian vehicle, lacking in any armour. Reduce its Armour to 2. Cannot be combined with Improvised Armour."
+   },
+   {
+    "id": "improvised-armour",
+    "name": "Improvised Armour",
+    "cost": 1,
+    "conflicts": [
+     "civilian"
+    ],
+    "text": "Heavy armour plating has been welded onto this vehicle, slowing its Maximum Movement by 2”, but increasing its Armour to 4."
+   },
+   {
+    "id": "large-vehicle",
+    "name": "Large Vehicle",
+    "cost": 2,
+    "sp": 10,
+    "text": "This vehicle is a bus, oil tanker, combine harvester, or similarly bulky vehicle. Reduce its Maximum Movement by 2\", but increase Strength Points to 10."
+   },
+   {
+    "id": "green-crew",
+    "name": "Green Crew",
+    "cost": -1,
+    "text": "This unit’s Courage becomes 5+."
+   },
+   {
+    "id": "scythes",
+    "name": "Scythes",
+    "cost": 1,
+    "text": "Scythed wheels, spiked dozer blades, or meat hooks trailing on chains increases this unit’s Attack Value to 5+."
+   },
+   {
+    "id": "technical",
+    "name": "Technical",
+    "cost": 2,
+    "text": "This vehicle has weapons, possibly hastily bolted onto the chassis. Improve its Shoot to 6+ and Shoot Value to 5+ / 18\". Technicals can further be customised with Anti-Tank (+1 point per unit, halve the Armour of enemy vehicles in Shoot actions, but cannot be combined with Armour-Piercing), Armour-Piercing (+1 point per unit, -1 to enemy Armour during Shooting, but cannot be combined with Anti-Tank), Close Quarters Doctrine (-1 point per unit, reduce Shoot Value to 5+ / 12\"), or Engulfing (+1 point per unit, targets gain no benefit from cover during Shooting)."
+   },
+   {
+    "id": "tech-at",
+    "name": "Anti-Tank (technical)",
+    "cost": 1,
+    "requires": "technical",
+    "conflicts": [
+     "tech-ap"
+    ],
+    "text": "When using the Technical's weapons against enemy vehicles, count the target's Armour as half its usual value."
+   },
+   {
+    "id": "tech-ap",
+    "name": "Armour-Piercing (technical)",
+    "cost": 1,
+    "requires": "technical",
+    "conflicts": [
+     "tech-at"
+    ],
+    "text": "When using the Technical's weapons, count the target's Armour as being 1 point lower than usual."
+   },
+   {
+    "id": "tech-cqd",
+    "name": "Close Quarters Doctrine (technical)",
+    "cost": -1,
+    "requires": "technical",
+    "text": "Reduce the Technical's Shoot Value to 5+ / 12\"."
+   },
+   {
+    "id": "tech-engulf",
+    "name": "Engulfing (technical)",
+    "cost": 1,
+    "requires": "technical",
+    "text": "The Technical's Shooting targets gain no benefit from cover."
+   },
+   {
+    "id": "transport-5",
+    "name": "Transport (5)",
+    "cost": 1,
+    "conflicts": [
+     "transport-10",
+     "transport-15"
+    ],
+    "text": "This vehicle can carry an infantry unit with up to 5 Strength Points. Cannot be combined with Transport (10) or Transport (15). Copplestone Castings Assault Troopers (Heavy Infantry) on patrol. Transport Vehicles help you to move your units around the table swiftly"
+   },
+   {
+    "id": "transport-10",
+    "name": "Transport (10)",
+    "cost": 2,
+    "conflicts": [
+     "transport-5",
+     "transport-15"
+    ],
+    "text": "This vehicle can carry an infantry unit with up to 10 Strength Points. Cannot be combined with Transport (5) or Transport (15)."
+   },
+   {
+    "id": "transport-15",
+    "name": "Transport (15)",
+    "cost": 2,
+    "conflicts": [
+     "transport-5",
+     "transport-10"
+    ],
+    "text": "This vehicle can carry an infantry unit with up to 15 Strength Points, but reduces its Maximum Movement by 2\". Cannot be combined with Transport (5) or Transport (10)."
+   },
+   {
+    "id": "walker",
+    "name": "Walker",
+    "cost": 2,
+    "text": "This vehicle walks, by means bipedal, quadrupedal or creepily crab-like. Its Maximum Movement is reduced by 2\", but its Attack Value becomes 4+ and its Defence Value becomes 5+. Walkers are able to Storm defences if they win an Attack action, while buildings they Attack do not get to Defend. Walkers can be further customised with Demolitions (+2 points per unit, halve enemy vehicle Armour during Attacks, but cannot be combined with High-Powered Blades) or High-Powered Blades (+1 point, -1 to enemy Armour during Attacks, but cannot be combined with Demolitions)."
+   }
+  ]
+ }
 ];
-
 export const XENO_RULES = [
  {
   "id": "boarding-shields",

@@ -81,14 +81,14 @@ export const RULES_REFERENCE = [
     "Final score 0 or negative: the unit is routed. Remove it immediately.",
     "A Suppressed unit that is Suppressed again loses an extra Strength Point on top of Retreating.",
   ] },
-  { cat: "Aftermath", title: "Retreating", items: [
+  { cat: "Retreat", title: "Retreating", items: [
     "Infantry move half their Maximum Movement; vehicles move their full Maximum Movement, turning or reversing as best fits.",
     "If already in cover, it need not move unless it just fought an Attack.",
     "If it can reach cover within the move, it may move into that cover and halt.",
     "Otherwise it flees directly away from the unit that caused the Retreat, or toward its own deployment zone if none did.",
     "A Retreating unit may never move within 1\" of any other unit during the Retreat.",
   ] },
-  { cat: "Aftermath", title: "Suppressed units", items: [
+  { cat: "Retreat", title: "Suppressed units", items: [
     "Must attempt a Rally test to remove the Suppressed marker at the start of its next activation phase.",
     "May not be activated other than to Rally.",
     "Only hits on a 6 if it is Attacked.",
@@ -96,4 +96,4 @@ export const RULES_REFERENCE = [
   ] },
 ];
 
-export const RULES_CATS = ["Activation", "Movement", "Shooting", "Attacks", "Courage", "Aftermath"];
+export const RULES_CATS = ["Activation", "Movement", "Shooting", "Attacks", "Courage", "Retreat"];

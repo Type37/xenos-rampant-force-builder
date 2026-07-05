@@ -17,10 +17,10 @@ import icuBerserk from "@iconify-icons/game-icons/battle-axe";
 import icuSupport from "@iconify-icons/game-icons/field-gun";
 import icuRecon from "@iconify-icons/game-icons/binoculars";
 import icuPrimitive from "@iconify-icons/game-icons/stone-spear";
-import icuMilitia from "@iconify-icons/game-icons/pitchfork";
+import icuMilitia from "@iconify-icons/game-icons/person";
 import icuGreater from "@iconify-icons/game-icons/tentacle-strike";
 import icuFighting from "@iconify-icons/game-icons/tank";
-import icuSoftskin from "@iconify-icons/game-icons/jeep";
+import icuSoftskin from "@iconify-icons/game-icons/city-car";
 import icCrown from "@iconify-icons/ph/crown-simple-fill";
 import icDice from "@iconify-icons/ph/dice-six-fill";
 import icPrinter from "@iconify-icons/ph/printer-fill";
@@ -690,7 +690,7 @@ function NewArmyModal({ onCreate, onClose }) {
           <label className="xr-field">
             <span className="xr-field-l">Description <em>optional</em></span>
             <textarea className="xr-field-in xr-field-area" value={desc} onChange={(e) => setDesc(e.target.value)}
-              placeholder="Backstory, how to play, a note to your future self..." rows={3} />
+              placeholder="Backstory, tactics, or notes." rows={3} />
           </label>
         </div>
         <div className="xr-modal-foot">
@@ -755,6 +755,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
   const arr = Object.values(lists).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   return (
     <div className="xr-home">
+      <RailNav view="home" />
       <header className="xr-home-mast">
         <div className="xr-titlestack">
           <h1 className="xr-word">Xenos Rampant</h1>
@@ -1548,7 +1549,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                     <label className="xr-set-field">
                       <span className="xr-set-field-l">Description <em>optional</em></span>
                       <textarea className="xr-field-in xr-field-area" value={list.description || ""} onChange={(e) => updateList({ description: e.target.value })}
-                        placeholder="Backstory, how to play, a note to your future self..." rows={3} />
+                        placeholder="Backstory, tactics, or notes." rows={3} />
                     </label>
                     <div className="xr-set-field">
                       <span className="xr-set-field-l">Faction</span>
@@ -1620,7 +1621,6 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
               <span className="xr-firstunit-badge"><Plus size={30} /></span>
               <span className="xr-firstunit-txt">
                 <b>Add your first unit</b>
-                <i>Infantry, xenomorphs and vehicles from the rulebook.</i>
               </span>
             </button>
           ) : (
@@ -2097,7 +2097,7 @@ const CSS = `
 .xr-sub{display:block;font-family:var(--flavor);font-style:italic;font-size:clamp(15px,1.6vw,20px);color:var(--coral-ink);line-height:1;margin-top:3px;}
 
 /* ---------- dashboard ---------- */
-.xr-home{display:flex;flex-direction:column;min-height:100vh;}
+.xr-home{display:flex;flex-direction:column;min-height:100vh;padding-left:76px;}
 .xr-home-mast{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:22px clamp(16px,4vw,44px) 16px;border-bottom:3px solid var(--ink);}
 .xr-home-body{flex:1;width:100%;max-width:1160px;margin-inline:auto;padding:26px clamp(16px,4vw,44px) 60px;}
 .xr-home-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
@@ -2695,7 +2695,7 @@ const CSS = `
   .xr-rail-logo{display:none;}
   .xr-rail-nav{flex-direction:row;justify-content:space-around;height:100%;align-items:stretch;}
   .xr-rail-btn{flex:1;max-width:96px;justify-content:center;border-radius:0;gap:2px;}
-  .xr-build,.xr-printview,.xr-play{padding-left:0;padding-bottom:64px;}
+  .xr-home,.xr-build,.xr-printview,.xr-play{padding-left:0;padding-bottom:64px;}
 }
 
 /* ---------- @media print ---------- */
