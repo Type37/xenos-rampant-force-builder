@@ -825,7 +825,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
 /* ================================================================== *
  * BUILDER: compact rows + detail panel
  * ================================================================== */
-function UnitRow({ u, i, selected, onSelect }) {
+const UnitRow = React.memo(function UnitRow({ u, i, selected }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const taken = [
@@ -833,7 +833,7 @@ function UnitRow({ u, i, selected, onSelect }) {
     ...XENO_RULES.filter((x) => x.id in u.xenos).map((x) => x.name),
   ];
   return (
-    <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={onSelect} aria-expanded={selected}>
+    <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={() => nav(selected ? "#/build" : `#/build/${u.key}`)} aria-expanded={selected}>
       {u.image
         ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />
         : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={26} /></span>}
@@ -849,7 +849,7 @@ function UnitRow({ u, i, selected, onSelect }) {
       </span>
     </button>
   );
-}
+});
 
 function OptionRow({ active, disabled, name, cost, text, onToggle, children, showLore }) {
   const [open, setOpen] = useState(false);
@@ -940,7 +940,7 @@ function RuleChip({ name, text }) {
 }
 
 /* a bought ability: name and cost, expands to its rule text so you can read it */
-function AbilityItem({ name, cost, badge, text, tone }) {
+const AbilityItem = React.memo(function AbilityItem({ name, cost, badge, text, tone }) {
   const [open, setOpen] = useState(false);
   return (
     <div className={`xr-abil-item ${tone || ""} ${open ? "open" : ""}`}>
@@ -953,7 +953,7 @@ function AbilityItem({ name, cost, badge, text, tone }) {
       {open && text && <RuleText data={text} className="xr-abil-item-text" />}
     </div>
   );
-}
+});
 
 /* commander trait: roll one at random, or open the table and pick */
 function TraitPicker({ u, tbl, trait, dispatch }) {
@@ -1441,7 +1441,8 @@ const CATALOG_STATS = [
   { img: icoMove, label: "Move", get: (t) => t.prof.mov },
   { img: icoStrength, label: "Strength", get: (t) => t.sp },
 ];
-function CatalogCard({ t, onAdd }) {
+const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
+  const stdRules = t.special.filter((s) => s !== "None");
   return (
     <button className={`xr-cat-card cat-${catOf(t)}`} onClick={() => onAdd(t.id)}>
       <span className="xr-cat-top">
@@ -1462,10 +1463,17 @@ function CatalogCard({ t, onAdd }) {
           );
         })}
       </span>
+      {stdRules.length > 0 && (
+        <span className="xr-cat-rules" aria-label="Standard rules">
+          {stdRules.map((name) => (
+            <span className="xr-cat-rule" key={name} title={typeof SPECIAL_RULES[name] === "string" ? SPECIAL_RULES[name] : name}>{name}</span>
+          ))}
+        </span>
+      )}
       <span className="xr-cat-add"><Plus size={16} /> Add unit</span>
     </button>
   );
-}
+});
 
 function AddUnitModal({ onAdd, onClose }) {
   const [cat, setCat] = useState("inf");
@@ -1632,8 +1640,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             <>
               <div className="xr-ulist-rows">
                 {roster.map((u, i) => (
-                  <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey}
-                    onSelect={() => nav(u.key === selectedKey ? "#/build" : `#/build/${u.key}`)} />
+                  <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey} />
                 ))}
               </div>
               <button className="xr-add-sticky" onClick={() => setAdding(true)}><Plus size={20} /> Add unit</button>
@@ -2517,7 +2524,7 @@ const CSS = `
 .xr-trait-rule{font-family:var(--body);font-style:normal;font-size:16px;line-height:1.5;color:var(--ink);}
 
 /* add-unit modal */
-.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.30);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade var(--dur-fast) var(--curve-decel);}
+.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.38);backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade var(--dur-fast) var(--curve-decel);}
 .xr-modal{width:min(880px,100%);max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:var(--shadow64);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop var(--dur-slow) var(--curve-decel);}
 /* fixed height so switching tabs does not resize/move the window */
 .xr-modal.xr-modal-tall{height:min(680px,86vh);}
@@ -2549,8 +2556,11 @@ const CSS = `
 .xr-cat-stamp b{font-family:var(--mono);font-weight:700;font-size:18px;line-height:1;}
 .xr-cat-stamp i{font-style:normal;font-size:11px;font-weight:700;}
 .xr-cat-name{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.15;padding-top:2px;}
-.xr-cat-role{display:block;font-family:var(--flavor);font-style:italic;font-size:15.5px;line-height:1.4;color:var(--ink-2);margin:5px 0 12px;}
-.xr-cat-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px 6px;margin-bottom:12px;}
+.xr-cat-role{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-family:var(--flavor);font-style:italic;font-size:15px;line-height:1.38;color:var(--ink-2);margin:4px 0 9px;}
+.xr-cat-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 6px;margin-bottom:9px;}
+.xr-cat-rules{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px;}
+.xr-cat-rule{font-family:var(--ui);font-weight:600;font-size:12px;color:var(--ink-2);background:var(--cream);border:1px solid var(--ink-18);border-radius:6px;padding:2px 7px;cursor:help;}
+.xr-cat-rule:hover{border-color:var(--ink-30);color:var(--ink);}
 .xr-cat-stat{display:flex;align-items:center;gap:7px;}
 .xr-cat-stat img{flex:none;opacity:.9;}
 .xr-cat-stat b{font-family:var(--mono);font-weight:700;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;}
