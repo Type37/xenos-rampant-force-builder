@@ -371,6 +371,13 @@ const STAT_MODS = {
   "unarmed": { act: { sho: "n/a" }, prof: { sho: "n/a" } },
   "boarding-shields": { defImprove: 1 },
 };
+/* to-hit targets improve as the number falls (3+ beats 5+); distances, Armour
+   and Strength improve as the number rises. */
+const LOWER_IS_BETTER = new Set(["act:cou", "prof:atk", "prof:def", "prof:sho"]);
+const statNum = (block, key, obj) => {
+  if (key === "sho") return parseInt(splitRange(obj.sho).main, 10);
+  return parseInt(String(obj[key]), 10);
+};
 function deriveStats(u, t) {
   const act = { ...t.act };
   const prof = { ...t.prof };
@@ -389,7 +396,15 @@ function deriveStats(u, t) {
     if (m.atkWorsen) { prof.atk = worsenTgt(prof.atk, m.atkWorsen); changed.add("prof:atk"); }
     if (m.defImprove) { prof.def = improveTgt(prof.def, m.defImprove); changed.add("prof:def"); }
   });
-  return { act, prof, changed };
+  const dirs = {};
+  changed.forEach((k) => {
+    const [block, key] = k.split(":");
+    const base = statNum(block, key, block === "act" ? t.act : t.prof);
+    const now = statNum(block, key, block === "act" ? act : prof);
+    if (Number.isNaN(base) || Number.isNaN(now) || base === now) return;
+    dirs[k] = (LOWER_IS_BETTER.has(k) ? now < base : now > base) ? "up" : "down";
+  });
+  return { act, prof, changed, dirs };
 }
 function StatTable({ t, sp, u }) {
   const d = u ? deriveStats(u, t) : { act: t.act, prof: t.prof, changed: new Set() };
@@ -402,18 +417,21 @@ function StatTable({ t, sp, u }) {
       {STAT_ROWS.map((row) => {
         const o = row.order ? orderFrom(d.act, row.key, t.noAttack) : null;
         const v = row.val ? profFrom(d.prof, sp, row.key) : null;
+        const dirO = d.dirs && d.dirs[`act:${row.key}`];
+        const dirV = (d.dirs && d.dirs[`prof:${row.key}`]) || (row.key === "sp" && spMod ? (sp > t.sp ? "up" : "down") : undefined);
         const modO = d.changed.has(`act:${row.key}`);
         const modV = d.changed.has(`prof:${row.key}`) || (row.key === "sp" && spMod);
+        const tip = (dir) => (dir === "up" ? "Improved by an ability" : dir === "down" ? "Lowered by an ability" : "Changed by an ability");
         return (
           <div className="xr-stt-row" key={row.key} title={row.tip}>
             <span className="xr-stt-stat"><img className="xr-stt-ic" src={row.img} alt="" width="28" height="28" />{row.label}</span>
-            <span className={`xr-stt-cell ${modO ? "mod" : ""}`} title={modO ? "Changed by an ability" : undefined}>
+            <span className={`xr-stt-cell ${modO ? "mod " + (dirO || "") : ""}`} title={modO ? tip(dirO) : undefined}>
               {o ? <Die k={row.key} free={o.free}>{o.val}</Die> : <span className="xr-dash">-</span>}
-              {modO && <span className="xr-mod-dot" aria-hidden="true" />}
+              {modO && <span className={`xr-mod-dir ${dirO || "neutral"}`} aria-hidden="true">{dirO === "up" ? "▲" : dirO === "down" ? "▼" : "●"}</span>}
             </span>
-            <span className={`xr-stt-cell ${modV ? "mod" : ""}`} title={modV ? "Changed by an ability" : undefined}>
+            <span className={`xr-stt-cell ${modV ? "mod " + (dirV || "") : ""}`} title={modV ? tip(dirV) : undefined}>
               {v ? <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range} range</i>}</> : <span className="xr-dash">-</span>}
-              {modV && <span className="xr-mod-dot" aria-hidden="true" />}
+              {modV && <span className={`xr-mod-dir ${dirV || "neutral"}`} aria-hidden="true">{dirV === "up" ? "▲" : dirV === "down" ? "▼" : "●"}</span>}
             </span>
           </div>
         );
@@ -2099,9 +2117,17 @@ const CSS = `
 .xr-stt-ic{width:28px;height:28px;object-fit:contain;flex:none;}
 .xr-stt-cell{position:relative;display:flex;align-items:baseline;white-space:nowrap;min-width:0;}
 .xr-stt-cell b{font-family:var(--mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;flex:none;}
-.xr-stt-cell.mod b{color:var(--coral-ink);}
-.xr-stt-cell.mod .xr-die{border-color:var(--coral-ink);box-shadow:inset 0 0 0 1px var(--coral-ink);}
-.xr-mod-dot{position:absolute;top:-1px;left:-9px;width:6px;height:6px;border-radius:50%;background:var(--coral);}
+/* modified stats: blue = improved, amber = worsened; the arrow shape carries it for colourblind readers */
+.xr-app{--stat-up:#0a6e8c;--stat-down:#a55a12;}
+.xr-stt-cell.mod.up b,.xr-stt-cell.mod.up .xr-die{color:var(--stat-up);}
+.xr-stt-cell.mod.up .xr-die{border-color:var(--stat-up);box-shadow:inset 0 0 0 1px var(--stat-up);}
+.xr-stt-cell.mod.down b,.xr-stt-cell.mod.down .xr-die{color:var(--stat-down);}
+.xr-stt-cell.mod.down .xr-die{border-color:var(--stat-down);box-shadow:inset 0 0 0 1px var(--stat-down);}
+.xr-mod-dir{position:absolute;top:50%;left:-11px;transform:translateY(-50%);font-size:9px;line-height:1;}
+.xr-mod-dir.up{color:var(--stat-up);}
+.xr-mod-dir.down{color:var(--stat-down);}
+.xr-mod-dir.neutral{color:var(--ink-2);font-size:6px;}
+.xr-stt-cell.mod:not(.up):not(.down) b{color:var(--ink-2);}
 
 /* masthead + wordmark */
 .xr-titlestack{display:inline-flex;flex-direction:column;align-items:stretch;}
