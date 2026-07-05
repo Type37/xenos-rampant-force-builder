@@ -962,13 +962,14 @@ function RuleChip({ name, text }) {
 }
 
 /* a bought ability: name and cost, expands to its rule text so you can read it */
-const AbilityItem = React.memo(function AbilityItem({ name, cost, badge, text, tone }) {
+const AbilityItem = React.memo(function AbilityItem({ name, cost, badge, text, tone, kind }) {
   const [open, setOpen] = useState(false);
   return (
     <div className={`xr-abil-item ${tone || ""} ${open ? "open" : ""}`}>
       <button className="xr-abil-item-h" onClick={() => setOpen((o) => !o)} aria-expanded={open} title={open ? "Hide rule text" : "Show rule text"}>
         <Caret className="xr-abil-item-caret" size={14} />
         <span className="xr-abil-item-name">{name}</span>
+        {kind && <span className="xr-abil-item-kind">{kind}</span>}
         {badge != null && <span className="xr-abil-item-badge">{badge}</span>}
         {cost != null && <span className="xr-abil-item-cost">{costLabel(cost)}</span>}
       </button>
@@ -996,7 +997,7 @@ function TraitPicker({ u, tbl, trait, dispatch }) {
           {traits.map((tr, i) => (
             <button key={i} className={`xr-trait-choice ${u.traitIndex === i ? "on" : ""}`}
               onClick={() => { dispatch({ type: "trait", key: u.key, i }); setPicking(false); }}>
-              <b>{tr.name}</b><span>{tr.rule}</span>
+              <b>{tr.name}</b><span>{tr.flavor && <i className="xr-trait-flavor">{tr.flavor} </i>}{tr.rule}</span>
             </button>
           ))}
         </div>
@@ -1004,12 +1005,20 @@ function TraitPicker({ u, tbl, trait, dispatch }) {
       {trait && (
         <div className="xr-trait">
           <div className="xr-trait-name">{trait.name}</div>
-          <p className="xr-trait-rule">{trait.rule}</p>
+          <p className="xr-trait-rule">{trait.flavor && <i className="xr-trait-flavor">{trait.flavor} </i>}{trait.rule}</p>
         </div>
       )}
     </div>
   );
 }
+
+const COMMANDER_RULES = [
+  "Commanders are part of a unit and cannot leave it.",
+  "They move and fight as an ordinary model, and are always the last model in their unit to die.",
+  "They give +1 to Courage tests and ordered activations for units within 12\" (including their own unit).",
+  "Commander Traits may change this.",
+  "Commander rules only apply while the Commander is on the table and their unit is not Suppressed.",
+].join("\n");
 
 /* commander traits, in a focused modal: pick the table, then roll or pick a trait */
 function CommanderModal({ u, dispatch, onClose }) {
@@ -1092,7 +1101,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
       <div className="xr-typebanner">
         <span className="xr-typebanner-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={18} /></span>
         <span className="xr-typebanner-t">{t.name}</span>
-        {u.isCmd && <span className="xr-typebanner-cmd"><Crown size={13} /> Commander</span>}
+        {u.isCmd && <span className="xr-typebanner-cmd" title={COMMANDER_RULES}><Crown size={13} /> Commander</span>}
       </div>
       <div className="xr-panel-head">
         <button className="xr-iconbtn xr-panel-back" onClick={onClose} aria-label="Close unit"><Back size={20} /></button>
@@ -1109,15 +1118,9 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
       </div>
 
       <div className="xr-panel-tools">
-        <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })}
-          title={u.isCmd ? "This unit is your Commander" : "Make this unit your Commander (free)"}>
+        <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })} title={COMMANDER_RULES}>
           <Crown size={17} /> {u.isCmd ? "Commander" : "Make Commander"}
         </button>
-        {u.isCmd && (
-          <button className="xr-btn small" onClick={onEditCommander} title="Choose the Commander's trait table and trait">
-            <Book size={16} /> Traits
-          </button>
-        )}
         <span className="xr-panel-tools-sp" />
         <button className="xr-btn small icon" onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
         <button className="xr-btn small icon danger" onClick={() => { dispatch({ type: "del", key: u.key }); onClose(); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
@@ -1147,17 +1150,17 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
             {boughtOpts.length + boughtXenos.length + custom.length > 0 ? (
               <div className="xr-abil-list">
                 {boughtOpts.map((o) => (
-                  <AbilityItem key={o.id} name={o.name} cost={optCost(o)} text={o.text} />
+                  <AbilityItem key={o.id} name={o.name} cost={optCost(o)} text={o.text} kind="Option" />
                 ))}
                 {boughtXenos.map((x) => (
-                  <AbilityItem key={x.id} name={`${x.name}${x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""}`} cost={xenoCost(x, u.xenos[x.id])} text={x.text} />
+                  <AbilityItem key={x.id} name={`${x.name}${x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""}`} cost={xenoCost(x, u.xenos[x.id])} text={x.text} tone="xeno" kind="Xeno rule" />
                 ))}
                 {(u.psychic || []).map((name) => {
                   const pw = PSYCHIC_POWERS.find((p) => p.name === name);
-                  return pw ? <AbilityItem key={`pw-${name}`} name={pw.name} badge={pw.difficulty} tone="psy" text={`${pw.target} ${pw.duration} ${pw.effect}`} /> : null;
+                  return pw ? <AbilityItem key={`pw-${name}`} name={pw.name} badge={pw.difficulty} tone="psy" kind="Psychic" text={`${pw.target} ${pw.duration} ${pw.effect}`} /> : null;
                 })}
                 {custom.map((c) => (
-                  <AbilityItem key={c.id} name={c.name} cost={c.cost} text={c.text} tone="custom" />
+                  <AbilityItem key={c.id} name={c.name} cost={c.cost} text={c.text} tone="custom" kind="Custom" />
                 ))}
               </div>
             ) : (
@@ -1172,7 +1175,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
                 <button className="xr-btn small" onClick={onEditCommander}><Gear size={14} /> Edit</button>
               </div>
               {trait
-                ? <p className="xr-cmdcard-trait"><b>{trait.name}.</b> {trait.rule}</p>
+                ? <p className="xr-cmdcard-trait"><b>{trait.name}.</b> {trait.flavor && <i className="xr-trait-flavor">{trait.flavor} </i>}{trait.rule}</p>
                 : <p className="xr-cmdcard-none">No trait rolled or picked yet.</p>}
             </div>
           )}
@@ -1347,7 +1350,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
   const eligPsy = elig.filter(isPsychicRule);
   const custom = u.custom || [];
   const tabs = [];
-  if (topOpts.length) tabs.push({ id: "load", label: "Loadout", n: topOpts.filter((o) => u.options[o.id]).length });
+  if (topOpts.length) tabs.push({ id: "load", label: "Options", n: topOpts.filter((o) => u.options[o.id]).length });
   if (eligXeno.length) tabs.push({ id: "xeno", label: "Xeno rules", n: eligXeno.filter((x) => x.id in u.xenos).length });
   if (eligPsy.length) tabs.push({ id: "psychic", label: "Psychic", n: eligPsy.filter((x) => x.id in u.xenos).length });
   tabs.push({ id: "custom", label: "Custom", n: custom.length });
@@ -2374,6 +2377,7 @@ const CSS = `
 .xr-panel-pts b{font-size:26px;}
 .xr-panel-pts i{font-style:normal;font-size:14px;color:var(--ink-2);margin-left:3px;}
 .xr-panel-tools{display:flex;gap:8px;flex-wrap:wrap;padding:10px 0;}
+.xr-cmd-btn{min-width:172px;justify-content:center;}
 /* two-column panel: stats left, rules + abilities on the right */
 .xr-panel-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(288px,1fr));gap:8px 28px;align-items:start;}
 .xr-panel-col{min-width:0;}
@@ -2394,6 +2398,10 @@ const CSS = `
 .xr-abil-item.custom{border-color:var(--iris);}
 .xr-abil-item.psy{border-color:var(--iris);}
 .xr-abil-item-badge{flex:none;font-family:var(--mono);font-weight:700;font-size:13.5px;color:var(--iris);background:#6A4A8C14;border-radius:6px;padding:1px 7px;}
+.xr-abil-item-kind{flex:none;font-family:var(--ui);font-weight:600;font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);border:1px solid var(--ink-18);border-radius:5px;padding:1px 6px;}
+.xr-abil-item.xeno .xr-abil-item-kind{color:var(--iris);border-color:#6A4A8C40;}
+.xr-abil-item.psy .xr-abil-item-kind{color:var(--iris);border-color:#6A4A8C40;}
+.xr-abil-item.custom .xr-abil-item-kind{color:var(--rust);border-color:#B06A2C40;}
 .xr-abil-item-h{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:10px 12px;min-height:46px;transition:background .12s;}
 .xr-abil-item-h:hover{background:var(--paper-3);}
 .xr-abil-item-caret{flex:none;color:var(--ink-2);transition:transform .16s;}
@@ -2554,6 +2562,7 @@ const CSS = `
 .xr-cmdcard-t{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;font-size:16px;color:var(--brass);}
 .xr-cmdcard-trait{font-family:var(--body);font-size:15.5px;line-height:1.45;color:var(--ink);}
 .xr-cmdcard-trait b{font-family:var(--display);color:var(--ink);}
+.xr-trait-flavor{font-family:var(--flavor);font-style:italic;color:var(--ink-2);}
 .xr-cmdcard-none{font-family:var(--flavor);font-style:italic;color:var(--ink-2);}
 /* commander modal */
 .xr-cmd-step{display:block;font-family:var(--display);font-weight:700;font-variant:small-caps;letter-spacing:.03em;font-size:15px;color:var(--ink-2);margin:2px 0 9px;}

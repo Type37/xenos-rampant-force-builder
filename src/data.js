@@ -1831,128 +1831,130 @@ export const SPECIAL_RULES = {
  }
 };
 export const COMMANDER_TABLES = {
-  "aggressive": {
-    "label": "Aggressive",
-    "blurb": "For Detachments geared towards engaging the enemy in Attacks.",
-    "traits": [
-      {
-        "name": "Timid",
-        "rule": "The Commander prefers to let others do the fighting. The Commander's unit may not be given an Attack order, but will still make Wild Charges if applicable."
-      },
-      {
-        "name": "Insipid",
-        "rule": "The Commander inspires no one to heroism and does not offer a Courage bonus to units within 12\"."
-      },
-      {
-        "name": "Attack, Attack, Attack!",
-        "rule": "The Commander's unit gains the Wild Charge rule; if it already has Wild Charge, it automatically passes any tests for it."
-      },
-      {
-        "name": "Extreme Disciplinarian",
-        "rule": "The Commander executes underperformers. The unit gains the Brutal Leader xeno rule, for free, with a range of 12\"."
-      },
-      {
-        "name": "Brave",
-        "rule": "The Commander's unit ignores the effects of Fearsome opponents."
-      },
-      {
-        "name": "Fix Bayonets!",
-        "rule": "Each turn, one unit within 12\" of the Commander model may treat Attack as a free action."
-      }
-    ]
-  },
-  "tactical": {
-    "label": "Tactical",
-    "blurb": "For troops that act a little more intelligently, when and where you want.",
-    "traits": [
-      {
-        "name": "Indecisive",
-        "rule": "Friendly units do not receive the +1 modifier to ordered activations when within 12\" of the Commander."
-      },
-      {
-        "name": "Reactive",
-        "rule": "You must subtract one from your roll to determine Attacker and Defender."
-      },
-      {
-        "name": "Commanding",
-        "rule": "You may reroll a failed Move, Attack or Shoot order within 12\" of the Commander model, once per turn."
-      },
-      {
-        "name": "Manoeuvres",
-        "rule": "Each turn, one unit within 12\" of the Commander model may treat Move as a free action."
-      },
-      {
-        "name": "Shooting Drill",
-        "rule": "Each turn, one unit within 12\" of the Commander model may treat Shoot as a free action."
-      },
-      {
-        "name": "Hold The Line!",
-        "rule": "Each turn, one unit within 12\" may ignore a compulsory Wild Charge and instead take an ordered action in your ordered activation phase."
-      }
-    ]
-  },
-  "strategic": {
-    "label": "Strategic",
-    "blurb": "For Commanders who would rather point at arrows on maps.",
-    "traits": [
-      {
-        "name": "Incompetent Paper Pusher",
-        "rule": "A box-ticking logistician. Your Detachment is 2 points smaller than it should be (e.g. 22 points for a 24-point game)."
-      },
-      {
-        "name": "Half-Wit",
-        "rule": "After deployment, roll one die for each of your non-Commander units. On a 1, that unit never received its orders and is removed from play (not a casualty). Only one unit fails to arrive per game."
-      },
-      {
-        "name": "Wise",
-        "rule": "Add or subtract 1 from your final total (whichever you prefer) when rolling to decide Attacker and Defender."
-      },
-      {
-        "name": "Father To His Men",
-        "rule": "You may reroll a Courage test within 12\" of your Commander, once per turn."
-      },
-      {
-        "name": "Unpredictable",
-        "rule": "In games where you deploy before the other player, you may swap the positions of up to three units after they have deployed."
-      },
-      {
-        "name": "Logistician",
-        "rule": "Your Commander's grasp of logistics gives you 2 extra points to spend on your Detachment."
-      }
-    ]
-  },
-  "warlord": {
-    "label": "Warlord",
-    "blurb": "For Commanders who like holding (and using) a massive gun.",
-    "traits": [
-      {
-        "name": "Runt",
-        "rule": "Your Commander's unit rolls one fewer die for all Attack and Shoot actions."
-      },
-      {
-        "name": "Craven",
-        "rule": "Your Commander's unit takes -1 to all Courage tests."
-      },
-      {
-        "name": "Elite",
-        "rule": "The Commander's unit may take one of Move, Shoot or Attack as an additional free action."
-      },
-      {
-        "name": "Strong-Willed",
-        "rule": "Your Commander's unit may not be targeted by enemy psychic powers."
-      },
-      {
-        "name": "Crack Shot",
-        "rule": "When Shooting (or using the Firefight rule), your Commander's unit may reroll up to two failed hit dice, once each."
-      },
-      {
-        "name": "Champion",
-        "rule": "During Attacks (whether attacking or defending), your Commander's unit may reroll up to two failed hit dice, once each."
-      }
-    ]
-  }
+ "aggressive": {
+  "label": "Aggressive",
+  "blurb": "For Detachments geared towards engaging the enemy in Attacks.",
+  "traits": [
+   {
+    "name": "Timid",
+    "rule": "The Commander's unit may not be given an Attack order, but will still make Wild Charges if applicable.",
+    "flavor": "The Commander prefers to let others do the fighting."
+   },
+   {
+    "name": "Insipid",
+    "rule": "The Commander inspires no one to heroism and does not offer a Courage bonus to units within 12\"."
+   },
+   {
+    "name": "Attack, Attack, Attack!",
+    "rule": "The Commander's unit gains the Wild Charge rule; if it already has Wild Charge, it automatically passes any tests for it."
+   },
+   {
+    "name": "Extreme Disciplinarian",
+    "rule": "The unit gains the Brutal Leader xeno rule, for free, with a range of 12\".",
+    "flavor": "The Commander executes underperformers."
+   },
+   {
+    "name": "Brave",
+    "rule": "The Commander's unit ignores the effects of Fearsome opponents."
+   },
+   {
+    "name": "Fix Bayonets!",
+    "rule": "Each turn, one unit within 12\" of the Commander model may treat Attack as a free action."
+   }
+  ]
+ },
+ "tactical": {
+  "label": "Tactical",
+  "blurb": "For troops that act a little more intelligently, when and where you want.",
+  "traits": [
+   {
+    "name": "Indecisive",
+    "rule": "Friendly units do not receive the +1 modifier to ordered activations when within 12\" of the Commander."
+   },
+   {
+    "name": "Reactive",
+    "rule": "You must subtract one from your roll to determine Attacker and Defender."
+   },
+   {
+    "name": "Commanding",
+    "rule": "You may reroll a failed Move, Attack or Shoot order within 12\" of the Commander model, once per turn."
+   },
+   {
+    "name": "Manoeuvres",
+    "rule": "Each turn, one unit within 12\" of the Commander model may treat Move as a free action."
+   },
+   {
+    "name": "Shooting Drill",
+    "rule": "Each turn, one unit within 12\" of the Commander model may treat Shoot as a free action."
+   },
+   {
+    "name": "Hold The Line!",
+    "rule": "Each turn, one unit within 12\" may ignore a compulsory Wild Charge and instead take an ordered action in your ordered activation phase."
+   }
+  ]
+ },
+ "strategic": {
+  "label": "Strategic",
+  "blurb": "For Commanders who would rather point at arrows on maps.",
+  "traits": [
+   {
+    "name": "Incompetent Paper Pusher",
+    "rule": "Your Detachment is 2 points smaller than it should be (e.g. 22 points for a 24-point game).",
+    "flavor": "A box-ticking logistician."
+   },
+   {
+    "name": "Half-Wit",
+    "rule": "After deployment, roll one die for each of your non-Commander units. On a 1, that unit never received its orders and is removed from play (not a casualty). Only one unit fails to arrive per game."
+   },
+   {
+    "name": "Wise",
+    "rule": "Add or subtract 1 from your final total (whichever you prefer) when rolling to decide Attacker and Defender."
+   },
+   {
+    "name": "Father To His Men",
+    "rule": "You may reroll a Courage test within 12\" of your Commander, once per turn."
+   },
+   {
+    "name": "Unpredictable",
+    "rule": "In games where you deploy before the other player, you may swap the positions of up to three units after they have deployed."
+   },
+   {
+    "name": "Logistician",
+    "rule": "Your Commander's grasp of logistics gives you 2 extra points to spend on your Detachment."
+   }
+  ]
+ },
+ "warlord": {
+  "label": "Warlord",
+  "blurb": "For Commanders who like holding (and using) a massive gun.",
+  "traits": [
+   {
+    "name": "Runt",
+    "rule": "Your Commander's unit rolls one fewer die for all Attack and Shoot actions."
+   },
+   {
+    "name": "Craven",
+    "rule": "Your Commander's unit takes -1 to all Courage tests."
+   },
+   {
+    "name": "Elite",
+    "rule": "The Commander's unit may take one of Move, Shoot or Attack as an additional free action."
+   },
+   {
+    "name": "Strong-Willed",
+    "rule": "Your Commander's unit may not be targeted by enemy psychic powers."
+   },
+   {
+    "name": "Crack Shot",
+    "rule": "When Shooting (or using the Firefight rule), your Commander's unit may reroll up to two failed hit dice, once each."
+   },
+   {
+    "name": "Champion",
+    "rule": "During Attacks (whether attacking or defending), your Commander's unit may reroll up to two failed hit dice, once each."
+   }
+  ]
+ }
 };
-
 export const BUDGET_PRESETS = [12, 18, 24, 30, 36];
 
 export const UNIT_BY_ID = Object.fromEntries(UNIT_TYPES.map((u) => [u.id, u]));
