@@ -565,22 +565,12 @@ function Section({ title, count, defaultOpen, children }) {
 
 /* budget picker: presets (24 marked recommended) plus a click-to-open Custom field */
 function BudgetPicker({ budget, onChange }) {
-  const step = (d) => onChange(Math.max(6, Math.min(240, budget + d)));
   return (
     <div className="xr-budget" role="group" aria-label="Game size">
-      <div className="xr-budget-step">
-        <button className="xr-budget-pm" onClick={() => step(-6)} disabled={budget <= 6} aria-label="Six points fewer" title="Six points fewer">−</button>
-        <span className="xr-budget-val"><b>{budget}</b><i>pts</i>{budget === 24 && <em className="xr-budget-tag">standard</em>}</span>
-        <button className="xr-budget-pm" onClick={() => step(6)} aria-label="Six points more" title="Six points more">+</button>
-      </div>
-      <div className="xr-budget-presets">
-        {BUDGET_PRESETS.map((b) => (
-          <button key={b} className={`xr-budget-chip ${budget === b ? "on" : ""} ${b === 24 ? "rec" : ""}`}
-            title={b === 24 ? "Standard game size" : `${b}-point game`} onClick={() => onChange(b)}>
-            {b}{b === 24 && <span className="xr-budget-star" aria-hidden="true">★</span>}
-          </button>
-        ))}
-      </div>
+      {BUDGET_PRESETS.map((b) => (
+        <button key={b} className={`xr-budget-chip ${budget === b ? "on" : ""} ${b === 24 ? "std" : ""}`}
+          title={b === 24 ? "Standard game size" : `${b}-point game`} onClick={() => onChange(b)}>{b}</button>
+      ))}
     </div>
   );
 }
@@ -1849,7 +1839,7 @@ function PlayView({ list }) {
               </div>
               <div className="xr-pcard-prof">
                 {STAT_ROWS.filter((d) => d.val && d.key !== "sp").map((d) => {
-                  const v = profCellVal(t, sp, d.key);
+                  const v = profFrom(t.prof, sp, d.key);
                   if (!v) return null;
                   return (
                     <span key={d.key} title={d.tip}>
@@ -2224,28 +2214,19 @@ const CSS = `
 .xr-detname:focus{outline:none;border-bottom-color:var(--coral);}
 .xr-actions{display:flex;gap:8px;flex-wrap:wrap;}
 .xr-mast-row2{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;}
-.xr-budget{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;}
+.xr-budget{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .xr-budget-l{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);margin-right:2px;}
 .xr-budgetrow{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;}
-.xr-budget-step{display:inline-flex;align-items:center;gap:4px;border:2px solid var(--ink);border-radius:11px;background:var(--paper-2);padding:3px;}
-.xr-budget-pm{width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-family:var(--ui);font-weight:700;font-size:22px;color:var(--ink);border-radius:8px;transition:background var(--dur-fast) var(--curve-ease);}
-.xr-budget-pm:hover:not(:disabled){background:var(--paper-3);}
-.xr-budget-pm:disabled{opacity:.35;cursor:not-allowed;}
-.xr-budget-val{position:relative;display:inline-flex;align-items:baseline;gap:3px;min-width:64px;justify-content:center;font-family:var(--mono);}
-.xr-budget-val b{font-weight:700;font-size:22px;color:var(--ink);}
-.xr-budget-val i{font-style:normal;font-size:13px;color:var(--ink-2);}
-.xr-budget-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-family:var(--ui);font-weight:700;font-variant:normal;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--brass);}
-.xr-budget-presets{display:flex;gap:5px;flex-wrap:wrap;}
-.xr-budget-chip{position:relative;font-family:var(--mono);font-weight:600;font-size:14.5px;min-width:40px;min-height:38px;border:1.5px solid var(--ink-30);border-radius:9px;color:var(--ink-2);transition:.12s;}
+.xr-budget-chip{font-family:var(--mono);font-weight:600;font-size:15px;min-width:44px;min-height:40px;border:2px solid var(--ink-30);border-radius:9px;color:var(--ink-2);transition:.12s;}
 .xr-budget-chip:hover{border-color:var(--ink);color:var(--ink);}
+/* 24 is the standard game: a solid, "whole" fill even when unselected */
+.xr-budget-chip.std{border-color:var(--ink);background:var(--paper-3);color:var(--ink);}
 .xr-budget-chip.on{background:var(--ink);border-color:var(--ink);color:var(--cream);}
-.xr-budget-star{position:absolute;top:-6px;right:-4px;font-size:10px;line-height:1;color:var(--brass);}
-.xr-budget-chip.on .xr-budget-star{color:#E8C860;}
 .xr-muster{display:flex;align-items:center;gap:12px;flex:1;min-width:200px;}
 .xr-muster-read{font-family:var(--mono);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;}
 .xr-muster-read b{font-size:24px;}
 .xr-muster-read span{font-size:16px;color:var(--ink-2);}
-.xr-muster-track{position:relative;flex:1;height:14px;border:2px solid var(--ink);background:var(--paper-2);border-radius:6px;overflow:hidden;}
+.xr-muster-track{position:relative;flex:1;height:6px;border:1px solid var(--ink-30);background:var(--paper-2);border-radius:4px;overflow:hidden;}
 .xr-muster-fill{display:block;height:100%;background:var(--brand-grad);transition:width var(--dur-slow) var(--curve-ease);}
 .xr-muster.near .xr-muster-fill{background:var(--brass);}
 .xr-muster.over .xr-muster-fill{background:var(--coral);}
