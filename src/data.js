@@ -1800,7 +1800,35 @@ export const SPECIAL_RULES = {
  "High-Powered Blades": "During Attacks, whether Attacking or Defending, count the target's Armour as 1 point lower than usual. It cannot be combined with Demolitions.",
  "Line-Breaker": "This unit is not slowed by linear obstacles such as barricades, wire, low walls, fences or trench parapets. Where an obstacle could plausibly be crushed, remove a matching stretch of it after the unit passes over.",
  "Vehicle": "This unit is a vehicle and is subject to all the vehicle rules.",
- "Transport (5)": "This vehicle can carry one infantry unit of up to 5 Strength Points."
+ "Transport (5)": "This vehicle can carry one infantry unit of up to 5 Strength Points.",
+ "Vehicle Movement": {
+  "rule": [
+   "Moves only straight forwards or backwards, based on where the model points.",
+   "May make any number of turns while moving; each turn of up to 90 degrees costs 2\" of movement.",
+   "Reverses at half speed: 1\" backwards costs 2\" of forward movement.",
+   "Cannot cross obstacles, unless it has Line-Breaker.",
+   "May fire during a Move action.",
+   "When it Retreats it moves its full Maximum Movement, turning or reversing whichever is most efficient."
+  ]
+ },
+ "Vehicle Shooting": {
+  "rule": [
+   "Fires only at targets it can bring its guns to bear on: turrets fire in any direction, fixed guns cover the forward 180 degrees.",
+   "May Move and Shoot in one ordered Move activation. Move is its Free Action, but shooting on the move needs an ordered activation test; on a pass it Moves and, before or after, Shoots at -1 to each die (on top of any range penalty)."
+  ]
+ },
+ "Vehicle Melee": {
+  "rule": [
+   "Attacks only by moving straight forwards and cannot turn during the charge, so pre-position it. Walkers are exempt.",
+   "In a vehicle-versus-infantry Attack the infantry always Retreats, whatever the result.",
+   "If it Attacks a building, the building Defends, hitting on 4+; ramming solid structures is unwise without a Combat Engineering Vehicle."
+  ]
+ },
+ "Severe Damage": {
+  "rule": [
+   "At half its starting Strength Points or below, it halves its Maximum Movement and takes -1 to all activation rolls."
+  ]
+ }
 };
 export const COMMANDER_TABLES = {
   "aggressive": {

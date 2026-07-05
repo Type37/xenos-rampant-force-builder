@@ -1069,7 +1069,17 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
   const sp = unitSP(u);
   const elig = useMemo(() => eligibleXenos(t), [t]);
   const topOpts = t.options.filter((o) => !o.requires);
-  const stdRules = t.special.filter((s) => s !== "None");
+  const stdRules = useMemo(() => {
+    let rules = t.special.filter((s) => s !== "None");
+    if (t.cls === VEHICLE) {
+      rules = rules.filter((s) => s !== "Vehicle");
+      const veh = [];
+      if (!u.options.walker) veh.push("Vehicle Movement");
+      veh.push("Vehicle Shooting", "Vehicle Melee", "Severe Damage");
+      rules = [...veh, ...rules];
+    }
+    return rules;
+  }, [t, u.options]);
   const tbl = u.traitTable || "aggressive";
   const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
   const boughtOpts = t.options.filter((o) => u.options[o.id]);
