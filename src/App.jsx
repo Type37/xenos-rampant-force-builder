@@ -193,8 +193,7 @@ function validate(roster, budget, freeplay) {
   const used = roster.reduce((s, u) => s + unitPoints(u), 0);
   const count = roster.length;
   if (freeplay) return { issues, used, count };
-  const minU = Math.max(3, Math.round((3 * budget) / 24));
-  const maxU = Math.round((10 * budget) / 24);
+  const is24 = budget === 24;
   const cmds = roster.filter((u) => u.isCmd).length;
   const heavyVeh = roster.filter((u) => UNIT_BY_ID[u.typeId].heavy).length;
   const heavyCap = Math.floor(budget / 18);
@@ -203,10 +202,28 @@ function validate(roster, budget, freeplay) {
   if (count > 0) {
     if (cmds === 0) issues.push({ lvl: "err", msg: "No Commander. Crown one unit." });
     if (cmds > 1) issues.push({ lvl: "err", msg: `${cmds} Commanders. Only one is allowed.` });
-    if (count < minU) issues.push({ lvl: "err", msg: `Too few units. A detachment needs ${minU} to ${maxU} units at ${budget} points. Turn on Free play to ignore this.` });
-    if (count > maxU) issues.push({ lvl: "err", msg: `Above maximum size (${minU} to ${maxU} units at ${budget} points).` });
-    if (heavyVeh > heavyCap) issues.push({ lvl: "err", msg: `${heavyVeh} fighting/transport vehicles. The limit is ${heavyCap} (one per full 18 points).` });
-    if (vehPts > budget / 2) issues.push({ lvl: "err", msg: `Vehicles are ${vehPts} points; no more than half (${Math.floor(budget / 2)}) may be vehicles.` });
+    // unit count: only enforced at the standard 24 points
+    if (is24 && count < 3) issues.push({ lvl: "err", msg: "Too few units. A 24-point detachment needs 3 to 10 units." });
+    if (is24 && count > 10) issues.push({ lvl: "err", msg: "Too many units. A 24-point detachment allows 3 to 10 units." });
+    // per-unit cost, always
+    roster.forEach((u, i) => {
+      const p = unitPoints(u);
+      if (p > 12) issues.push({ lvl: "err", msg: `${unitDisplayName(u, i)} costs ${p} points; no unit may cost more than 12.` });
+      if (p < 1) issues.push({ lvl: "err", msg: `${unitDisplayName(u, i)} costs ${p} points; every unit must cost at least 1.` });
+    });
+    // psychic (and other levelled) powers still to choose
+    roster.forEach((u, i) => {
+      if ("psychic" in u.xenos) {
+        const ti = typeof u.xenos.psychic === "number" ? u.xenos.psychic : 0;
+        const lim = XENO_BY_ID.psychic.tiers[ti].powers;
+        const left = lim - (u.psychic || []).length;
+        if (left > 0) issues.push({ lvl: "err", msg: `${unitDisplayName(u, i)} has ${left} psychic power${left === 1 ? "" : "s"} left to choose.` });
+      }
+    });
+    // one Fighting or Transport Vehicle per full 18 points, always
+    if (heavyVeh > heavyCap) issues.push({ lvl: "err", msg: `${heavyVeh} fighting or transport vehicles; the limit is ${heavyCap} (one per full 18 points).` });
+    // vehicles no more than half the points: only at the standard 24 points
+    if (is24 && vehPts > budget / 2) issues.push({ lvl: "err", msg: `Vehicles are ${vehPts} points; no more than half (${Math.floor(budget / 2)}) may be vehicles.` });
   }
   return { issues, used, count };
 }
@@ -548,26 +565,22 @@ function Section({ title, count, defaultOpen, children }) {
 
 /* budget picker: presets (24 marked recommended) plus a click-to-open Custom field */
 function BudgetPicker({ budget, onChange }) {
-  const isCustom = !BUDGET_PRESETS.includes(budget);
-  const [editing, setEditing] = useState(isCustom);
+  const step = (d) => onChange(Math.max(6, Math.min(240, budget + d)));
   return (
     <div className="xr-budget" role="group" aria-label="Game size">
-      {BUDGET_PRESETS.map((b) => (
-        <button key={b} className={`xr-budget-b ${b === 24 ? "rec" : ""} ${budget === b ? "on" : ""}`}
-          title={b === 24 ? "Standard game size, recommended" : `${b}-point game`}
-          onClick={() => { onChange(b); setEditing(false); }}>
-          {b}{b === 24 && <span className="xr-budget-rec" aria-hidden="true">★</span>}
-        </button>
-      ))}
-      {editing || isCustom ? (
-        <label className={`xr-budget-cust ${isCustom ? "on" : ""}`}>
-          <span className="xr-budget-cust-l">Custom</span>
-          <input type="number" min="1" max="999" value={budget} autoFocus aria-label="Custom points value"
-            onChange={(e) => { const v = parseInt(e.target.value, 10); onChange(v > 0 ? Math.min(999, v) : 1); }} />
-        </label>
-      ) : (
-        <button className="xr-budget-b xr-budget-cbtn" onClick={() => setEditing(true)} title="Set any points value">Custom</button>
-      )}
+      <div className="xr-budget-step">
+        <button className="xr-budget-pm" onClick={() => step(-6)} disabled={budget <= 6} aria-label="Six points fewer" title="Six points fewer">−</button>
+        <span className="xr-budget-val"><b>{budget}</b><i>pts</i>{budget === 24 && <em className="xr-budget-tag">standard</em>}</span>
+        <button className="xr-budget-pm" onClick={() => step(6)} aria-label="Six points more" title="Six points more">+</button>
+      </div>
+      <div className="xr-budget-presets">
+        {BUDGET_PRESETS.map((b) => (
+          <button key={b} className={`xr-budget-chip ${budget === b ? "on" : ""} ${b === 24 ? "rec" : ""}`}
+            title={b === 24 ? "Standard game size" : `${b}-point game`} onClick={() => onChange(b)}>
+            {b}{b === 24 && <span className="xr-budget-star" aria-hidden="true">★</span>}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -2211,21 +2224,23 @@ const CSS = `
 .xr-detname:focus{outline:none;border-bottom-color:var(--coral);}
 .xr-actions{display:flex;gap:8px;flex-wrap:wrap;}
 .xr-mast-row2{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;}
-.xr-budget{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.xr-budget{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;}
 .xr-budget-l{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);margin-right:2px;}
-.xr-budget-b{font-family:var(--mono);font-weight:600;font-size:16px;border:2px solid var(--ink);min-width:46px;min-height:44px;padding:6px 8px;border-radius:9px;transition:.12s;}
-.xr-budget-b:hover{background:var(--paper-2);}
-.xr-budget-b.on{background:var(--ink);color:var(--cream);}
-.xr-budgetrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.xr-budget-b.rec{position:relative;}
-.xr-budget-rec{position:absolute;top:-6px;right:-5px;font-size:11px;line-height:1;color:var(--brass);}
-.xr-budget-b.rec.on .xr-budget-rec{color:#E8C860;}
-.xr-budget-cbtn{font-family:var(--display);font-size:15px;font-weight:600;border-style:dashed;border-color:var(--ink-30);color:var(--ink-2);}
-.xr-budget-cbtn:hover{border-color:var(--ink);color:var(--ink);}
-.xr-budget-cust{position:relative;display:inline-flex;flex-direction:column;justify-content:center;gap:1px;min-width:70px;min-height:44px;border:2px solid var(--coral);border-radius:9px;padding:3px 8px;background:var(--paper);}
-.xr-budget-cust-l{font-family:var(--display);font-weight:600;letter-spacing:.04em;font-size:11px;line-height:1;color:var(--coral-ink);}
-.xr-budget-cust input{width:58px;font-family:var(--mono);font-weight:700;font-size:16px;color:var(--ink);background:transparent;border:none;padding:0;}
-.xr-budget-cust input:focus{outline:none;}
+.xr-budgetrow{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;}
+.xr-budget-step{display:inline-flex;align-items:center;gap:4px;border:2px solid var(--ink);border-radius:11px;background:var(--paper-2);padding:3px;}
+.xr-budget-pm{width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-family:var(--ui);font-weight:700;font-size:22px;color:var(--ink);border-radius:8px;transition:background var(--dur-fast) var(--curve-ease);}
+.xr-budget-pm:hover:not(:disabled){background:var(--paper-3);}
+.xr-budget-pm:disabled{opacity:.35;cursor:not-allowed;}
+.xr-budget-val{position:relative;display:inline-flex;align-items:baseline;gap:3px;min-width:64px;justify-content:center;font-family:var(--mono);}
+.xr-budget-val b{font-weight:700;font-size:22px;color:var(--ink);}
+.xr-budget-val i{font-style:normal;font-size:13px;color:var(--ink-2);}
+.xr-budget-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-family:var(--ui);font-weight:700;font-variant:normal;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--brass);}
+.xr-budget-presets{display:flex;gap:5px;flex-wrap:wrap;}
+.xr-budget-chip{position:relative;font-family:var(--mono);font-weight:600;font-size:14.5px;min-width:40px;min-height:38px;border:1.5px solid var(--ink-30);border-radius:9px;color:var(--ink-2);transition:.12s;}
+.xr-budget-chip:hover{border-color:var(--ink);color:var(--ink);}
+.xr-budget-chip.on{background:var(--ink);border-color:var(--ink);color:var(--cream);}
+.xr-budget-star{position:absolute;top:-6px;right:-4px;font-size:10px;line-height:1;color:var(--brass);}
+.xr-budget-chip.on .xr-budget-star{color:#E8C860;}
 .xr-muster{display:flex;align-items:center;gap:12px;flex:1;min-width:200px;}
 .xr-muster-read{font-family:var(--mono);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;}
 .xr-muster-read b{font-size:24px;}
