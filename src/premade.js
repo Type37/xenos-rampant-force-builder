@@ -667,7 +667,9 @@ export const SETTINGS = [
           }
         ]
       }
-    ]
+    ],
+    "quote": "You ask, what is our aim? I can answer in one word: Victory. Victory at all costs, victory in spite of all terror, however long and hard the road may be; for without victory there is no survival.",
+    "quoteBy": "Winston Churchill"
   },
   {
     "id": "urban-fantasy",
@@ -1140,7 +1142,9 @@ export const SETTINGS = [
           }
         ]
       }
-    ]
+    ],
+    "quote": "The truth is out there, but so are lies.",
+    "quoteBy": "Dana Scully, The X-Files"
   },
   {
     "id": "war-on-terra",
@@ -1610,6 +1614,12 @@ export const SETTINGS = [
           }
         ]
       }
+    ],
+    "quote": "Yet across the gulf of space, minds that are to our minds as ours are to those of beasts that perish, intellects vast and cool and unsympathetic, regarded this earth with envious eyes, and slowly and surely drew their plans against us.",
+    "quoteBy": "H. G. Wells, The War of the Worlds",
+    "optionalRules": [
+      "Civilians (p139)",
+      "Police Response (p140)"
     ]
   },
   {
@@ -2076,7 +2086,9 @@ export const SETTINGS = [
           }
         ]
       }
-    ]
+    ],
+    "quote": "As the world fell, each of us in our own way was broken. It was hard to know who was more crazy; me, or everyone else.",
+    "quoteBy": "Max Rockatansky, Mad Max: Fury Road"
   },
   {
     "id": "space-opera",
@@ -2653,6 +2665,259 @@ export const SETTINGS = [
             ],
             "xenos": {
               "infiltrators": true
+            }
+          }
+        ]
+      }
+    ],
+    "quote": "That is why we light our beacon this day. To assemble our people. To lock arms against those whose fatal greeting is: 'We come in peace.'",
+    "quoteBy": "T'Kuvma, Star Trek: Discovery"
+  },
+  {
+    "id": "anvil",
+    "name": "Anvil Industries Army Lists",
+    "blurb": "Fan detachments by Anvil Industries, mapped to this app.",
+    "url": "https://anvilindustry.co.uk/xenos-rampant-army-lists",
+    "detachments": [
+      {
+        "n": 1,
+        "name": "Mutant Horrors of the Void-Hulk Ahab",
+        "subtitle": "Father's raiders overrun everything with sheer weight of numbers.",
+        "lore": "This raiding force, led by a mutant known only as Father, is essentially a horde army, overrunning local militias with sheer weight of numbers. The gargants can tear or shoot holes in almost any target, including vehicles. Father is no great fighter, but his psychic abilities and Commander rule greatly enhance the units around him.",
+        "image": "anvil/ahab.jpg",
+        "units": [
+          {
+            "typeId": "light",
+            "count": 1,
+            "isCmd": true,
+            "label": "Father (SMU)",
+            "points": 2,
+            "options": [],
+            "xenos": {
+              "psychic": 2,
+              "psychic-hazards": true,
+              "unarmed": true
+            }
+          },
+          {
+            "typeId": "greater-xeno",
+            "count": 1,
+            "label": "Gargants with machine guns (RMU)",
+            "points": 6,
+            "options": [
+              "xeno-ranged",
+              "xr-ap"
+            ],
+            "xenos": {
+              "slow": true
+            }
+          },
+          {
+            "typeId": "greater-xeno",
+            "count": 1,
+            "label": "Gargants with melee weapons (RMU)",
+            "points": 4,
+            "options": [
+              "high-powered-blades"
+            ],
+            "xenos": {
+              "slow": true
+            }
+          },
+          {
+            "typeId": "lesser-xeno",
+            "count": 1,
+            "label": "Centaurs",
+            "points": 2,
+            "options": [],
+            "xenos": {}
+          },
+          {
+            "typeId": "primitive",
+            "count": 2,
+            "label": "Feral Mutants",
+            "points": 2,
+            "options": [
+              "savages",
+              "mob"
+            ],
+            "xenos": {}
+          },
+          {
+            "typeId": "light",
+            "count": 2,
+            "label": "Mutants",
+            "points": 3,
+            "options": [
+              "increased-squad",
+              "guerrillas",
+              "undisciplined"
+            ],
+            "xenos": {}
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "name": "The Chamber of Mercy",
+        "subtitle": "Armoured fanatics led by a vessel for the spirit of death itself.",
+        "lore": "A compact, unsubtle force of armoured fanatics, led by a volunteer acting as a vessel for the spirit of death. Death lacks ranged capability but slices vehicles and infantry apart with ease. The Daughters may consider her holy, so you might rename her Demonic rule 'Celestial'. The army shares a Hatred target that compels them to charge that enemy type.",
+        "image": "anvil/chamber-of-mercy.jpg",
+        "units": [
+          {
+            "typeId": "elite",
+            "count": 1,
+            "isCmd": true,
+            "label": "Death (SMU)",
+            "points": 9,
+            "options": [
+              "high-powered-blades",
+              "demolitions"
+            ],
+            "xenos": {
+              "demonic": true,
+              "unarmed": true,
+              "hatred": true
+            }
+          },
+          {
+            "typeId": "heavy",
+            "count": 2,
+            "label": "Burning Rose Daughters",
+            "points": 5,
+            "options": [
+              "heavy-weapon"
+            ],
+            "xenos": {
+              "hatred": true
+            }
+          },
+          {
+            "typeId": "berserk",
+            "count": 1,
+            "label": "Burning Rose assault squad",
+            "points": 5,
+            "options": [
+              "heavy-armour"
+            ],
+            "xenos": {
+              "hatred": true
+            }
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "name": "Squad Austerin",
+        "subtitle": "Five genetically enhanced super-soldiers, as effective as an army.",
+        "lore": "This five-model squad of genetically enhanced super-soldiers is as effective as an entire army. Sergeant Austerin cleaves through whole squads in melee, while Troopers Beguin, Holtz and Gormel engage at range. Trooper Tighe's mech-suit is an all-rounder, though its short-ranged weaponry limits its firepower.",
+        "image": "anvil/squad-austerin.jpg",
+        "units": [
+          {
+            "typeId": "elite",
+            "count": 1,
+            "isCmd": true,
+            "label": "Sergeant Austerin (SMU)",
+            "points": 8,
+            "options": [
+              "close-quarters",
+              "assault-doctrine",
+              "high-powered-blades"
+            ],
+            "xenos": {}
+          },
+          {
+            "typeId": "fighting-vehicle",
+            "count": 1,
+            "label": "Trooper Tighe (SMU)",
+            "points": 8,
+            "options": [
+              "walker",
+              "close-quarters",
+              "high-powered-blades"
+            ],
+            "xenos": {}
+          },
+          {
+            "typeId": "elite",
+            "count": 1,
+            "label": "Troopers Beguin, Holtz and Gormel (RMU)",
+            "points": 8,
+            "options": [
+              "armour-piercing"
+            ],
+            "xenos": {
+              "infiltrators": true
+            }
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "name": "Scrapbots",
+        "subtitle": "Abandoned war automata kept alive by self-repair and scavenging.",
+        "lore": "Military automata abandoned on the battlefield, kept from breakdown by self-repair protocols and stolen parts. The Deus Ex Machina is an AI-infected war suit turned mentor to the smaller rustbuckets. Overseers and Soldiers are tough all-rounders; Scrappers are terrifying up close. Their Unstable rule risks damage, but self-repair regenerates lost Strength.",
+        "image": "anvil/scrapbots.jpg",
+        "units": [
+          {
+            "typeId": "fighting-vehicle",
+            "count": 1,
+            "isCmd": true,
+            "label": "Deus Ex Machina (SMU)",
+            "points": 7,
+            "options": [
+              "walker"
+            ],
+            "xenos": {
+              "mechanoid": true,
+              "regeneration": true,
+              "unstable": true
+            }
+          },
+          {
+            "typeId": "elite",
+            "count": 1,
+            "label": "Overseers",
+            "points": 5,
+            "options": [
+              "armour-piercing"
+            ],
+            "xenos": {
+              "mechanoid": true,
+              "regeneration": true,
+              "unstable": true
+            }
+          },
+          {
+            "typeId": "heavy",
+            "count": 2,
+            "label": "Soldiers",
+            "points": 3,
+            "options": [
+              "increased-squad"
+            ],
+            "xenos": {
+              "mechanoid": true,
+              "regeneration": true,
+              "unstable": true
+            }
+          },
+          {
+            "typeId": "berserk",
+            "count": 1,
+            "label": "Scrappers",
+            "points": 5,
+            "options": [
+              "increased-squad",
+              "heavy-armour",
+              "high-powered-blades",
+              "mobile"
+            ],
+            "xenos": {
+              "mechanoid": true,
+              "regeneration": true,
+              "unarmed": true,
+              "unstable": true
             }
           }
         ]

@@ -240,12 +240,12 @@ function rosterFromDetachment(det) {
       (e.options || []).forEach((id) => { options[id] = true; });
       roster.push(sanitize({
         key: uid(), typeId: e.typeId, name: e.label || "",
-        isCmd: false, traitTable: "aggressive", traitIndex: undefined,
+        isCmd: !!e.isCmd, traitTable: "aggressive", traitIndex: undefined,
         options, xenos: { ...(e.xenos || {}) }, custom: [],
       }));
     }
   });
-  if (roster.length) roster[0].isCmd = true;
+  if (roster.length && !roster.some((u) => u.isCmd)) roster[0].isCmd = true;
   return roster;
 }
 const detachmentPoints = (det) => det.units.reduce((n, e) => n + (e.points || 0) * (e.count || 1), 0);
@@ -738,10 +738,24 @@ function LoadPresetModal({ onLoad, onClose }) {
           ))}
         </div>
         <div className="xr-modal-body">
-          <p className="xr-preset-blurb"><b>{setting.name}.</b> {setting.blurb}</p>
+          {setting.quote ? (
+            <blockquote className="xr-preset-epi">
+              <p className="xr-preset-quote">{setting.quote}</p>
+              <footer className="xr-preset-by">{setting.quoteBy}</footer>
+            </blockquote>
+          ) : (
+            <p className="xr-preset-blurb"><b>{setting.name}.</b> {setting.blurb}</p>
+          )}
+          {(setting.optionalRules || setting.url) && (
+            <p className="xr-preset-notes">
+              {setting.optionalRules && <span>Optional rules: {setting.optionalRules.join(", ")}.</span>}
+              {setting.url && <a href={setting.url} target="_blank" rel="noopener"> {setting.url}</a>}
+            </p>
+          )}
           <div className="xr-preset-grid">
             {setting.detachments.map((d) => (
               <button className="xr-preset-card" key={d.n} onClick={() => onLoad(d, setting)}>
+                {d.image && <span className="xr-preset-img" style={{ backgroundImage: `url(${FACTION_BASE}${d.image})` }} aria-hidden="true" />}
                 <span className="xr-preset-name">{d.name}</span>
                 {d.subtitle && <span className="xr-preset-sub">{d.subtitle}</span>}
                 <span className="xr-preset-foot">
@@ -2000,7 +2014,7 @@ export default function App() {
     const roster = rosterFromDetachment(det);
     const bookPts = detachmentPoints(det);
     const budget = BUDGET_PRESETS.find((b) => b >= bookPts) || BUDGET_PRESETS[BUDGET_PRESETS.length - 1] || 24;
-    setLists((ls) => ({ ...ls, [id]: { id, name: det.name, budget, description: det.subtitle || "", roster, setting: setting.id, nationalTrait: undefined, updated: Date.now() } }));
+    setLists((ls) => ({ ...ls, [id]: { id, name: det.name, budget, description: det.lore || det.subtitle || "", roster, setting: setting.id, image: det.image ? `${FACTION_BASE}${det.image}` : undefined, nationalTrait: undefined, updated: Date.now() } }));
     setCurrentId(id);
     nav("#/build");
   };
@@ -2581,6 +2595,12 @@ const CSS = `
 /* load-a-preset modal */
 .xr-preset-blurb{font-size:16px;line-height:1.45;color:var(--ink-2);margin-bottom:14px;}
 .xr-preset-blurb b{font-family:var(--display);color:var(--ink);}
+.xr-preset-epi{border-left:3px solid var(--brand-deep-blue);padding:3px 0 3px 16px;margin-bottom:8px;max-width:62ch;}
+.xr-preset-quote{font-family:var(--flavor);font-style:italic;font-size:17px;line-height:1.5;color:var(--ink);}
+.xr-preset-by{font-family:var(--ui);font-weight:600;font-size:13.5px;letter-spacing:.02em;color:var(--brand-deep-blue);margin-top:6px;}
+.xr-preset-notes{font-family:var(--ui);font-size:13px;color:var(--ink-2);margin-bottom:14px;display:flex;flex-wrap:wrap;gap:4px 10px;}
+.xr-preset-notes a{color:var(--brand-deep-blue);text-decoration:none;font-weight:600;word-break:break-all;}
+.xr-preset-img{display:block;width:100%;height:118px;border-radius:8px;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);margin-bottom:9px;}
 .xr-preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px;}
 .xr-preset-card{display:flex;flex-direction:column;gap:3px;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:13px 15px 11px;border-radius:var(--r);transition:.13s;}
 .xr-preset-card:hover{background:var(--paper-3);box-shadow:0 3px 10px rgba(31,61,46,.14);}
