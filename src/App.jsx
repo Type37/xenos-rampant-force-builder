@@ -10,17 +10,6 @@ import icHeart from "@iconify-icons/ph/heart-fill";
 import icInfantry from "@iconify-icons/ph/users-three-fill";
 import icAlien from "@iconify-icons/game-icons/alien-bug";
 import icTruck from "@iconify-icons/game-icons/apc";
-import icuElite from "@iconify-icons/game-icons/spartan-helmet";
-import icuHeavy from "@iconify-icons/game-icons/kevlar-vest";
-import icuLight from "@iconify-icons/game-icons/pistol-gun";
-import icuBerserk from "@iconify-icons/game-icons/battle-axe";
-import icuSupport from "@iconify-icons/game-icons/field-gun";
-import icuRecon from "@iconify-icons/game-icons/binoculars";
-import icuPrimitive from "@iconify-icons/game-icons/stone-spear";
-import icuMilitia from "@iconify-icons/game-icons/person";
-import icuGreater from "@iconify-icons/game-icons/tentacle-strike";
-import icuFighting from "@iconify-icons/game-icons/tank";
-import icuSoftskin from "@iconify-icons/game-icons/city-car";
 import icCrown from "@iconify-icons/ph/crown-simple-fill";
 import icDice from "@iconify-icons/ph/dice-six-fill";
 import icPrinter from "@iconify-icons/ph/printer-fill";
@@ -84,14 +73,15 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret),
   Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt);
 
-/* placeholder icon per generic unit type (game-icons); the user will refine by hand */
-const UNIT_ICONS = {
-  elite: mk(icuElite), heavy: mk(icuHeavy), light: mk(icuLight), berserk: mk(icuBerserk),
-  support: mk(icuSupport), recon: mk(icuRecon), primitive: mk(icuPrimitive), militia: mk(icuMilitia),
-  "greater-xeno": mk(icuGreater), "lesser-xeno": mk(icAlien),
-  "fighting-vehicle": mk(icuFighting), "transport-vehicle": mk(icTruck), "softskin-vehicle": mk(icuSoftskin),
+/* two-letter placeholder per generic unit type; the user will refine by hand */
+const UNIT_ABBR = {
+  elite: "EI", heavy: "HI", light: "LI", berserk: "BI", support: "SI", recon: "RI",
+  primitive: "PI", militia: "MR", "greater-xeno": "GX", "lesser-xeno": "LX",
+  "fighting-vehicle": "FV", "transport-vehicle": "TV", "softskin-vehicle": "SV",
 };
-const UnitIcon = ({ id, size, className }) => { const Ic = UNIT_ICONS[id]; return Ic ? <Ic size={size} className={className} /> : null; };
+const UnitIcon = ({ id, size, className }) => (
+  <span className={`xr-abbr ${className || ""}`} style={size ? { fontSize: Math.round(size * 0.52) } : undefined}>{UNIT_ABBR[id] || "??"}</span>
+);
 
 const STAT_ROWS = [
   { key: "atk", label: "Attack", img: icoAttack, order: true, val: true, tip: "Attack Value: the result needed on one die to hit when Attacking. 2d6 to carry out the order." },
@@ -852,10 +842,8 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected }) {
 });
 
 function OptionRow({ active, disabled, name, cost, text, onToggle, children, showLore }) {
-  const [open, setOpen] = useState(false);
   const tip = text ? (typeof text === "string" ? text : [text.flavor, ruleBodyText(text)].filter(Boolean).join(" ")) : undefined;
   const lore = text && typeof text === "object" ? text.flavor : null;
-  const expanded = open || active;
   return (
     <div className={`xr-row ${active ? "on" : ""} ${disabled ? "off" : ""}`}>
       <div className="xr-row-line">
@@ -864,10 +852,9 @@ function OptionRow({ active, disabled, name, cost, text, onToggle, children, sho
           <span className="xr-check" aria-hidden="true">{active ? <Check size={16} /> : null}</span>
           <span className="xr-row-name">{name}</span>
         </button>
-        <button className="xr-row-info" onClick={() => setOpen((o) => !o)} aria-label={open ? "Hide rule" : "Show rule"} aria-expanded={open}>?</button>
       </div>
-      {showLore && lore && !expanded && <p className="xr-row-lore">{lore}</p>}
-      {expanded && <RuleText data={text} className="xr-row-text" />}
+      {showLore && lore && !active && <p className="xr-row-lore">{lore}</p>}
+      {active && <RuleText data={text} className="xr-row-text" />}
       {children}
     </div>
   );
@@ -2136,7 +2123,6 @@ const CSS = `
 .xr-home-welcome-btns{display:flex;gap:11px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
 .xr-home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
 .xr-list-card{position:relative;border:3px solid var(--ink);border-radius:var(--r);background:var(--paper-2);box-shadow:var(--shadow4);transition:transform var(--dur-normal) var(--curve-ease),box-shadow var(--dur-normal) var(--curve-ease);display:flex;flex-direction:column;overflow:hidden;}
-.xr-list-card::before{content:"";display:block;height:5px;flex:none;background:var(--brand-grad);}
 .xr-list-card:hover{box-shadow:var(--shadow16);transform:translateY(-3px);}
 .xr-list-open{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:16px 16px 12px;}
 .xr-list-name{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.15;}
@@ -2524,7 +2510,7 @@ const CSS = `
 .xr-trait-rule{font-family:var(--body);font-style:normal;font-size:16px;line-height:1.5;color:var(--ink);}
 
 /* add-unit modal */
-.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.38);backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade var(--dur-fast) var(--curve-decel);}
+.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade var(--dur-fast) var(--curve-decel);}
 .xr-modal{width:min(880px,100%);max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:var(--shadow64);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop var(--dur-slow) var(--curve-decel);}
 /* fixed height so switching tabs does not resize/move the window */
 .xr-modal.xr-modal-tall{height:min(680px,86vh);}
@@ -2547,6 +2533,7 @@ const CSS = `
 .xr-cat-card:active{transform:scale(.98);}
 .xr-cat-top{display:flex;align-items:flex-start;gap:10px;}
 .xr-cat-badge{flex:none;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:9px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);}
+.xr-abbr{font-family:var(--ui);font-weight:800;letter-spacing:.02em;line-height:1;color:inherit;}
 .xr-cat-card.cat-inf .xr-cat-badge{color:var(--sage);}
 .xr-cat-card.cat-xeno .xr-cat-badge{color:var(--iris);}
 .xr-cat-card.cat-veh .xr-cat-badge{color:var(--rust);}
