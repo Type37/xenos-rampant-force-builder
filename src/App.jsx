@@ -2171,7 +2171,7 @@ const CSS = `
 
 /* ---------- collapsible section (progressive disclosure) ---------- */
 .xr-sec{border-top:2px solid var(--ink-30);}
-.xr-sec-h{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:11px 2px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:19px;color:var(--ink);min-height:46px;}
+.xr-sec-h{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:11px 2px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);min-height:46px;}
 .xr-sec-title{flex:1;}
 .xr-sec-count{font-family:var(--mono);font-style:normal;font-weight:700;font-size:14px;min-width:26px;height:26px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--cream);border-radius:13px;}
 .xr-sec-caret{color:var(--ink-2);transition:transform .15s;flex:none;}
@@ -2323,12 +2323,12 @@ const CSS = `
 .xr-panel-col>.xr-sec:first-child .xr-sec-h{padding-top:4px;}
 @media(max-width:900px){.xr-panel-cols{grid-template-columns:1fr;gap:0;}.xr-col-stats{max-width:none;}}
 .xr-group{margin-top:18px;}
-.xr-group-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:19px;color:var(--ink);padding-bottom:6px;border-bottom:2px solid var(--ink-30);margin-bottom:10px;}
+.xr-group-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);padding-bottom:6px;border-bottom:2px solid var(--ink-30);margin-bottom:10px;}
 /* abilities summary in the unit panel */
 .xr-abil{margin-top:18px;border-top:2px solid var(--ink-30);padding-top:14px;}
 .xr-abil-bar{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
 .xr-abil-head{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
-.xr-abil-h{font-family:var(--display);font-weight:700;font-size:19px;color:var(--ink);}
+.xr-abil-h{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.4;color:var(--ink);}
 .xr-abil-list{display:flex;flex-direction:column;gap:7px;}
 .xr-abil-item{border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);overflow:hidden;transition:border-color .12s;}
 .xr-abil-item.open{border-color:var(--ink);}
@@ -2522,7 +2522,7 @@ const CSS = `
 /* fixed height so switching tabs does not resize/move the window */
 .xr-modal.xr-modal-tall{height:min(680px,86vh);}
 .xr-modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:3px solid var(--ink);}
-.xr-modal-title{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:24px;}
+.xr-modal-title{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.33;}
 .xr-modal-tabs{display:flex;gap:8px;padding:12px 20px;border-bottom:2px solid var(--ink-18);flex-wrap:wrap;}
 .xr-modal-tab{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:16.5px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:8px 15px;border-radius:9px;min-height:44px;transition:.12s;}
 .xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
