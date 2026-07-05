@@ -1048,6 +1048,21 @@ function CommanderModal({ u, dispatch, onClose }) {
   );
 }
 
+/* floating label: the field shows the unit type by default; once you focus or type,
+   that label lifts above and you edit your own name. */
+function FloatingName({ value, fallback, onChange }) {
+  const [focused, setFocused] = useState(false);
+  const floated = focused || (value && value.length > 0);
+  return (
+    <div className={`xr-flname ${floated ? "up" : ""}`}>
+      <span className="xr-flname-l" aria-hidden="true">{fallback}</span>
+      <input className="xr-flname-in" value={value} aria-label="Unit name" spellCheck={false}
+        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+        onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
 function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommander, factionPool }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
@@ -1073,11 +1088,8 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
         <button className="xr-iconbtn xr-panel-back" onClick={onClose} aria-label="Close unit"><Back size={20} /></button>
         <ImageUpload image={u.image} onChange={(img) => dispatch({ type: "image", key: u.key, image: img })} title="Add a picture to ID this unit" />
         <div className="xr-panel-id">
-          <label className="xr-namefield">
-            <span className="xr-namefield-l">Unit name</span>
-            <input className="xr-panel-name" value={u.name} placeholder={`${t.name} ${index + 1}`}
-              onChange={(e) => dispatch({ type: "name", key: u.key, name: e.target.value })} spellCheck={false} />
-          </label>
+          <FloatingName value={u.name} fallback={`${t.name} ${index + 1}`}
+            onChange={(name) => dispatch({ type: "name", key: u.key, name })} />
         </div>
         {factionPool && factionPool.length > 0 && (
           <button className="xr-iconbtn xr-name-roll" onClick={() => dispatch({ type: "name", key: u.key, name: randomName(factionPool, u.name) })}
@@ -2337,6 +2349,14 @@ const CSS = `
 .xr-namefield:focus-within .xr-namefield-l{color:var(--coral-ink);}
 .xr-panel-name{width:100%;font-family:var(--display);font-weight:700;font-size:clamp(19px,2vw,24px);color:var(--ink);background:transparent;border:none;padding:0;line-height:1.1;}
 .xr-panel-name:focus{outline:none;}
+/* floating-label unit name: default label sits over the field, lifts on edit */
+.xr-flname{position:relative;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);padding:16px 12px 6px;cursor:text;transition:border-color var(--dur-fast) var(--curve-ease),background var(--dur-fast) var(--curve-ease);}
+.xr-flname:hover{border-color:var(--ink);}
+.xr-flname:focus-within{border-color:var(--brand-deep-blue);background:var(--paper);}
+.xr-flname-l{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-family:var(--display);font-weight:700;font-size:clamp(19px,2vw,23px);line-height:1.1;color:var(--ink-2);pointer-events:none;transition:top var(--dur-fast) var(--curve-ease),font-size var(--dur-fast) var(--curve-ease),color var(--dur-fast) var(--curve-ease);white-space:nowrap;overflow:hidden;max-width:calc(100% - 24px);text-overflow:ellipsis;}
+.xr-flname.up .xr-flname-l{top:7px;transform:none;font-family:var(--ui);font-weight:600;font-size:12px;letter-spacing:.03em;color:var(--brand-deep-blue);}
+.xr-flname-in{position:relative;width:100%;font-family:var(--display);font-weight:700;font-size:clamp(19px,2vw,23px);color:var(--ink);background:transparent;border:none;padding:0;line-height:1.1;}
+.xr-flname-in:focus{outline:none;}
 .xr-panel-name::placeholder{color:var(--ink-2);opacity:.7;}
 .xr-panel-type{font-family:var(--ui);font-size:14.5px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;}
 .xr-tag-cmd{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:13.5px;color:var(--cream);background:var(--brass);padding:2px 8px;border-radius:6px;}
