@@ -914,7 +914,7 @@ function RuleText({ data, className }) {
           {table.map((r) => (
             <div className="xr-d6-row" key={r.roll}>
               <span className="xr-d6-n">{r.roll}</span>
-              <span className="xr-d6-b"><b>{r.name}</b> {r.text}</span>
+              <span className="xr-d6-b"><b>{r.name}.</b> {r.flavor && <i className="xr-d6-flavor">{r.flavor} </i>}{r.text}</span>
             </div>
           ))}
         </div>
@@ -1158,7 +1158,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
 }
 
 /* which xeno rules open a config step when selected */
-const isConfigurable = (x) => !!x.tiers || x.id === "mercenary";
+const isConfigurable = (x) => !!x.tiers;
 const MERC_TABLE = XENO_BY_ID["mercenary"].table || [];
 
 /* a one-line summary of a configurable rule's current setting, shown on its row */
@@ -2493,6 +2493,7 @@ const CSS = `
 .xr-d6-n{font-family:var(--mono);font-weight:700;font-size:14px;text-align:center;color:var(--ink);background:var(--paper-3);border:1.5px solid var(--ink-30);border-radius:6px;line-height:24px;}
 .xr-d6-b{font-family:var(--body);font-size:15px;line-height:1.4;color:var(--ink);}
 .xr-d6-b b{font-family:var(--display);}
+.xr-d6-flavor{font-family:var(--flavor);font-style:italic;color:var(--ink-2);}
 .xr-subs{margin-left:44px;border-left:2px solid var(--ink-18);padding-left:8px;}
 .xr-tiers{display:flex;gap:7px;flex-wrap:wrap;padding:2px 4px 10px 60px;}
 .xr-tier{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:42px;transition:border-color .12s,background .12s;}
