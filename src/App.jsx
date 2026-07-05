@@ -1042,12 +1042,17 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
 
   return (
     <section className="xr-panel" aria-label="Unit editor">
+      <div className="xr-typebanner">
+        <span className="xr-typebanner-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={18} /></span>
+        <span className="xr-typebanner-t">{t.name}</span>
+        {u.isCmd && <span className="xr-typebanner-cmd"><Crown size={13} /> Commander</span>}
+      </div>
       <div className="xr-panel-head">
         <button className="xr-iconbtn xr-panel-back" onClick={onClose} aria-label="Close unit"><Back size={20} /></button>
         <ImageUpload image={u.image} onChange={(img) => dispatch({ type: "image", key: u.key, image: img })} title="Add a picture to ID this unit" />
         <div className="xr-panel-id">
           <label className="xr-namefield">
-            <span className="xr-namefield-l">{t.name}{u.isCmd && <b className="xr-tag-cmd"><Crown size={12} /> Commander</b>}</span>
+            <span className="xr-namefield-l">Unit name</span>
             <input className="xr-panel-name" value={u.name} placeholder={`${t.name} ${index + 1}`}
               onChange={(e) => dispatch({ type: "name", key: u.key, name: e.target.value })} spellCheck={false} />
           </label>
@@ -2040,13 +2045,25 @@ const CSS = `
   --mono:'Sligoil Micro',ui-monospace,Consolas,monospace;
   --ui:'Lexend',ui-sans-serif,system-ui,sans-serif;
   --r:12px;
+  /* Fluent 2 motion */
+  --dur-ultrafast:50ms; --dur-faster:100ms; --dur-fast:150ms; --dur-normal:200ms; --dur-gentle:250ms; --dur-slow:300ms; --dur-slower:400ms;
+  --curve-decel:cubic-bezier(0,0,0,1); --curve-decel-min:cubic-bezier(.33,0,.1,1);
+  --curve-accel:cubic-bezier(1,0,1,1); --curve-ease:cubic-bezier(.33,0,.67,1); --curve-ease-max:cubic-bezier(.8,0,.2,1);
+  /* Fluent 2 elevation, tinted to ink */
+  --shadow4:0 0 2px rgba(31,61,46,.12),0 2px 4px rgba(31,61,46,.16);
+  --shadow8:0 0 2px rgba(31,61,46,.12),0 4px 8px rgba(31,61,46,.16);
+  --shadow16:0 0 2px rgba(31,61,46,.12),0 8px 16px rgba(31,61,46,.16);
+  --shadow28:0 0 8px rgba(31,61,46,.14),0 14px 28px rgba(31,61,46,.18);
+  --shadow64:0 0 8px rgba(31,61,46,.14),0 32px 64px rgba(31,61,46,.20);
+  /* brand: green to blue */
+  --brand-green:#31C46B; --brand-blue:#1FA8C4; --brand-grad:linear-gradient(100deg,var(--brand-green),var(--brand-blue));
   background:var(--paper);color:var(--ink);font-family:var(--body);
   font-size:17px;line-height:1.55;min-height:100vh;
 }
 .xr-app *{box-sizing:border-box;margin:0;}
 .xr-app button{font-family:var(--ui);font-size:inherit;cursor:pointer;color:inherit;background:none;border:none;}
-.xr-app :focus-visible{outline:3px solid var(--iris);outline-offset:2px;border-radius:4px;}
-@media (prefers-reduced-motion: reduce){.xr-app *{animation:none !important;transition:none !important;}}
+.xr-app :focus-visible{outline:none;box-shadow:0 0 0 2px var(--cream),0 0 0 4px var(--ink);border-radius:5px;}
+@media (prefers-reduced-motion: reduce){.xr-app *{animation-duration:.01ms !important;transition-duration:.01ms !important;}}
 
 /* shared controls */
 .xr-btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:16px;color:var(--ink);border:2px solid var(--ink);background:var(--paper-2);padding:10px 16px;border-radius:10px;min-height:46px;transition:.13s;}
@@ -2110,8 +2127,8 @@ const CSS = `
 .xr-home-welcome p{font-family:var(--flavor);font-style:italic;font-size:17px;line-height:1.5;color:var(--ink-2);max-width:40ch;}
 .xr-home-welcome-btns{display:flex;gap:11px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
 .xr-home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
-.xr-list-card{position:relative;border:3px solid var(--ink);border-radius:var(--r);background:var(--paper-2);transition:transform .16s cubic-bezier(.2,.8,.2,1),box-shadow .16s;display:flex;flex-direction:column;}
-.xr-list-card:hover{box-shadow:0 6px 16px rgba(31,61,46,.16);transform:translateY(-3px);}
+.xr-list-card{position:relative;border:3px solid var(--ink);border-radius:var(--r);background:var(--paper-2);box-shadow:var(--shadow4);transition:transform var(--dur-normal) var(--curve-ease),box-shadow var(--dur-normal) var(--curve-ease);display:flex;flex-direction:column;}
+.xr-list-card:hover{box-shadow:var(--shadow16);transform:translateY(-3px);}
 .xr-list-open{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:16px 16px 12px;}
 .xr-list-name{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.15;}
 .xr-list-meta{font-family:var(--ui);font-weight:500;font-size:15px;color:var(--ink-2);}
@@ -2193,7 +2210,7 @@ const CSS = `
 .xr-muster-read b{font-size:24px;}
 .xr-muster-read span{font-size:16px;color:var(--ink-2);}
 .xr-muster-track{position:relative;flex:1;height:14px;border:2px solid var(--ink);background:var(--paper-2);border-radius:6px;overflow:hidden;}
-.xr-muster-fill{display:block;height:100%;background:var(--sage);transition:width .3s;}
+.xr-muster-fill{display:block;height:100%;background:var(--brand-grad);transition:width var(--dur-slow) var(--curve-ease);}
 .xr-muster.near .xr-muster-fill{background:var(--brass);}
 .xr-muster.over .xr-muster-fill{background:var(--coral);}
 .xr-natl-sel{font-family:var(--body);font-size:15px;font-weight:600;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:8px 9px;min-height:44px;width:100%;cursor:pointer;}
@@ -2260,7 +2277,12 @@ const CSS = `
 .xr-urow-sub em{font-style:italic;}
 
 /* unit panel */
-.xr-panel{padding:16px clamp(14px,2vw,24px) 40px;animation:xr-rise .24s cubic-bezier(.2,.8,.2,1);}
+.xr-panel{padding:16px clamp(14px,2vw,24px) 40px;animation:xr-rise var(--dur-gentle) var(--curve-decel-min);}
+/* brand unit-type banner (green to blue) */
+.xr-typebanner{display:flex;align-items:center;gap:9px;background:var(--brand-grad);color:#fff;border-radius:10px;padding:9px 14px;margin-bottom:14px;box-shadow:var(--shadow4);}
+.xr-typebanner-ic{display:flex;color:#fff;opacity:.92;}
+.xr-typebanner-t{font-family:var(--ui);font-weight:700;font-size:15px;letter-spacing:.09em;text-transform:uppercase;}
+.xr-typebanner-cmd{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-family:var(--ui);font-weight:700;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;background:rgba(255,255,255,.22);padding:3px 9px;border-radius:20px;}
 .xr-panel-head{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:2px solid var(--ink-30);}
 .xr-panel-back{display:none;}
 /* image upload widget */
@@ -2493,8 +2515,8 @@ const CSS = `
 .xr-trait-rule{font-family:var(--body);font-style:normal;font-size:16px;line-height:1.5;color:var(--ink);}
 
 /* add-unit modal */
-.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.42);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade .18s ease;}
-.xr-modal{width:min(880px,100%);max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:0 12px 40px rgba(31,61,46,.28);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop .26s cubic-bezier(.2,.8,.2,1);}
+.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.30);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade var(--dur-fast) var(--curve-decel);}
+.xr-modal{width:min(880px,100%);max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:var(--shadow64);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop var(--dur-slow) var(--curve-decel);}
 /* fixed height so switching tabs does not resize/move the window */
 .xr-modal.xr-modal-tall{height:min(680px,86vh);}
 .xr-modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:3px solid var(--ink);}
@@ -2669,7 +2691,7 @@ const CSS = `
 
 /* ---------- animations ---------- */
 @keyframes xr-fade{from{opacity:0;}to{opacity:1;}}
-@keyframes xr-pop{from{opacity:0;transform:scale(1.04) translateY(6px);}to{opacity:1;transform:none;}}
+@keyframes xr-pop{from{opacity:0;transform:scale(.97) translateY(8px);}to{opacity:1;transform:none;}}
 @keyframes xr-rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 @keyframes xr-slidein{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:none;}}
 @keyframes xr-dotpulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.5);opacity:.6;}}
