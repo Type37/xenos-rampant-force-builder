@@ -70,8 +70,8 @@ import {
   PSYCHIC_POWERS,
 } from "./data.js";
 import { SETTINGS } from "./premade.js";
-/* settings flagged hidden are wired up but kept out of the preset picker */
-const PRESET_SETTINGS = SETTINGS.filter((s) => !s.hidden);
+/* settings flagged hidden or comingSoon are wired up but kept out of the preset picker */
+const PRESET_SETTINGS = SETTINGS.filter((s) => !s.hidden && !s.comingSoon);
 import { ALL_GENRES, randomName } from "./factions.js";
 import { RULES_REFERENCE, RULES_CATS } from "./rules.js";
 
@@ -2076,7 +2076,7 @@ function PlayView({ list }) {
   const patch = (key, p) => setSt((s) => ({ ...s, units: { ...s.units, [key]: { ...unitSt(key), ...p } } }));
   const newTurn = () => setSt((s) => ({
     turn: s.turn + 1,
-    units: Object.fromEntries(Object.entries(s.units).map(([k, v]) => [k, { ...v, act: false }])),
+    units: Object.fromEntries(Object.entries(s.units).map(([k, v]) => [k, { ...v, act: false, sup: false }])),
   }));
   const resetGame = () => { if (window.confirm("Reset the game? Damage and turn count clear.")) setSt({ turn: 1, units: {} }); };
 
@@ -2097,6 +2097,7 @@ function PlayView({ list }) {
           const t = UNIT_BY_ID[u.typeId];
           const sp = unitSP(u);
           const s = unitSt(u.key);
+          const ds = deriveStats(u, t);
           const dead = s.dmg >= sp;
           return (
             <div className={`xr-pcard cat-${catOf(t)} ${dead ? "dead" : ""} ${s.act ? "acted" : ""} ${s.sup ? "sup" : ""}`} key={u.key}>
@@ -2107,7 +2108,7 @@ function PlayView({ list }) {
               </div>
               <div className="xr-pcard-dice">
                 {ACT_KEYS.map(({ key, label }) => {
-                  const c = orderCell(t, key);
+                  const c = orderFrom(ds.act, key, t.noAttack);
                   return (
                     <span className="xr-pcard-die" key={key}>
                       <Die k={key} free={c && c.free}>{c ? c.val : "-"}</Die>
@@ -2118,7 +2119,7 @@ function PlayView({ list }) {
               </div>
               <div className="xr-pcard-prof">
                 {STAT_ROWS.filter((d) => d.val && d.key !== "sp").map((d) => {
-                  const v = profFrom(t.prof, sp, d.key);
+                  const v = profFrom(ds.prof, sp, d.key);
                   if (!v) return null;
                   return (
                     <span key={d.key} title={d.tip}>
