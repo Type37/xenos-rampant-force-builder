@@ -2667,7 +2667,7 @@ const CSS = `
 .xr-typebanner-ic{display:flex;color:#fff;opacity:.92;}
 .xr-typebanner-t{font-family:var(--ui);font-weight:700;font-size:15px;letter-spacing:.09em;text-transform:uppercase;}
 .xr-typebanner-cmd{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-family:var(--ui);font-weight:700;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;background:rgba(255,255,255,.22);padding:3px 9px;border-radius:20px;}
-.xr-panel-head{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:2px solid var(--ink-30);}
+.xr-panel-head{display:flex;align-items:center;gap:12px;padding-bottom:12px;}
 .xr-panel-back{display:none;}
 /* image upload widget */
 .xr-imgup{position:relative;flex:none;}
