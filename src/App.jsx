@@ -1904,7 +1904,6 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const [abilOpen, setAbilOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [factionOpen, setFactionOpen] = useState(false);
   const [shared, setShared] = useState(false);
   const { issues, used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const errors = issues.filter((i) => i.lvl === "err");
@@ -1962,20 +1961,11 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                       <textarea className="xr-field-in xr-field-area" value={list.description || ""} onChange={(e) => updateList({ description: e.target.value })}
                         placeholder="Backstory, tactics, or notes." rows={3} />
                     </label>
-                    <div className="xr-set-field">
-                      <span className="xr-set-field-l">Faction</span>
-                      <button className="xr-faction-pick" onClick={() => { setSettingsOpen(false); setFactionOpen(true); }}>
-                        {list.faction
-                          ? <><span className="xr-fac-ic sm">{factionIconUrl(list.faction.icon) ? <img src={factionIconUrl(list.faction.icon)} alt="" /> : <Alien size={18} />}</span><b>{list.faction.name}</b><i>{list.faction.tag}</i></>
-                          : <><Dice size={18} /> Pick a faction</>}
-                      </button>
-                      <span className="xr-set-field-h">Sets the detachment icon and the name pool used to roll unit names.</span>
-                    </div>
                     <div className="xr-set-field xr-set-img">
                       <span className="xr-set-field-l">Custom picture</span>
                       <div className="xr-set-img-row">
                         <ImageUpload image={list.image} onChange={(img) => updateList({ image: img || undefined })} title="Upload a detachment picture" />
-                        <span className="xr-set-field-h">Overrides the faction icon on the card and header.</span>
+                        <span className="xr-set-field-h">Overrides the emblem on the card and header.</span>
                       </div>
                     </div>
                     <button className={`xr-set-toggle ${list.freeplay ? "on" : ""}`} onClick={() => updateList({ freeplay: !list.freeplay })} aria-pressed={!!list.freeplay}>
@@ -1990,31 +1980,6 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
           </div>
         </div>
       </header>
-
-      {/* points, game-size stepper and unit count live at the bottom left, by the rail */}
-      <div className={`xr-musterdock ${over ? "over" : pct >= 90 ? "near" : ""}`}>
-        <span className="xr-muster-read"><b>{used}</b><span>/</span></span>
-        <div className="xr-sizestep" role="group" aria-label="Game size">
-          <button className="xr-sizestep-btn" onClick={() => updateList({ budget: Math.max(6, budget - 6) })} title="Smaller game size" aria-label="Smaller game size"><span>−</span></button>
-          <b className="xr-sizestep-val">{budget}{budget === 24 && <em className="xr-size-default">default</em>}</b>
-          <button className="xr-sizestep-btn" onClick={() => updateList({ budget: Math.min(120, budget + 6) })} title="Larger game size" aria-label="Larger game size"><span>+</span></button>
-        </div>
-        <span className="xr-muster-read xr-muster-pts"><span>pts</span></span>
-        <span className="xr-muster-track"><span className="xr-muster-fill" style={{ width: `${pct}%` }} /></span>
-        <div className="xr-statuswrap">
-          <button className={`xr-status ${status}`} onClick={() => setIssuesOpen((o) => !o)}
-            aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : undefined}>
-            {status === "ok" && <><Check size={16} /> {count} {count === 1 ? "unit" : "units"}</>}
-            {status === "err" && <><Warn size={16} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>}
-            {status === "empty" && <>Empty</>}
-          </button>
-          {issues.length > 0 && (
-            <div className={`xr-issue-pop up ${issuesOpen ? "open" : ""}`} role="region" aria-label="Issues">
-              {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
-            </div>
-          )}
-        </div>
-      </div>
 
       <div className={`xr-build-body ${sel ? "has-sel" : ""}`}>
         <main className="xr-ulist" aria-label="Detachment roster">
@@ -2063,7 +2028,32 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
       {adding && <AddUnitModal onAdd={(id) => { dispatch({ type: "add", typeId: id }); setAdding(false); }} onClose={() => setAdding(false)} />}
       {abilOpen && sel && <AbilitiesModal u={sel} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
       {cmdOpen && sel && sel.isCmd && <CommanderModal u={sel} dispatch={dispatch} onClose={() => setCmdOpen(false)} />}
-      {factionOpen && <FactionModal onPick={(f) => { updateList({ faction: f }); setFactionOpen(false); }} onClose={() => setFactionOpen(false)} />}
+
+      {/* points, game-size stepper and unit count: sticks to the bottom while you
+          scroll, then settles just above the footer at the end of the page */}
+      <div className={`xr-musterdock ${over ? "over" : pct >= 90 ? "near" : ""}`}>
+        <span className="xr-muster-read"><b>{used}</b><span>/</span></span>
+        <div className="xr-sizestep" role="group" aria-label="Game size">
+          <button className="xr-sizestep-btn" onClick={() => updateList({ budget: Math.max(6, budget - 6) })} title="Smaller game size" aria-label="Smaller game size"><span>−</span></button>
+          <b className="xr-sizestep-val">{budget}{budget === 24 && <em className="xr-size-default">default</em>}</b>
+          <button className="xr-sizestep-btn" onClick={() => updateList({ budget: Math.min(120, budget + 6) })} title="Larger game size" aria-label="Larger game size"><span>+</span></button>
+        </div>
+        <span className="xr-muster-read xr-muster-pts"><span>pts</span></span>
+        <span className="xr-muster-track"><span className="xr-muster-fill" style={{ width: `${pct}%` }} /></span>
+        <div className="xr-statuswrap">
+          <button className={`xr-status ${status}`} onClick={() => setIssuesOpen((o) => !o)}
+            aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : undefined}>
+            {status === "ok" && <><Check size={16} /> {count} {count === 1 ? "unit" : "units"}</>}
+            {status === "err" && <><Warn size={16} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>}
+            {status === "empty" && <>Empty</>}
+          </button>
+          {issues.length > 0 && (
+            <div className={`xr-issue-pop up ${issuesOpen ? "open" : ""}`} role="region" aria-label="Issues">
+              {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
+            </div>
+          )}
+        </div>
+      </div>
       <SiteFooter />
     </div>
   );
@@ -2622,7 +2612,7 @@ const CSS = `
 .xr-add-sticky:hover{background:var(--brand-deep-blue);border-color:var(--brand-deep-blue);}
 .xr-add-sticky:active{transform:scale(.98);}
 
-.xr-build{display:flex;flex-direction:column;min-height:100vh;padding-left:76px;padding-bottom:56px;}
+.xr-build{display:flex;flex-direction:column;min-height:100vh;padding-left:76px;}
 .xr-mast{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:3px solid var(--ink);padding:14px clamp(14px,3vw,30px) 12px;}
 .xr-mast-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .xr-detname{flex:1;min-width:170px;font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);background:transparent;border:none;border-bottom:2px solid var(--ink-30);padding:4px 2px 6px;}
@@ -2658,7 +2648,7 @@ const CSS = `
 .xr-muster.near .xr-muster-fill{background:var(--brass);}
 .xr-muster.over .xr-muster-fill{background:var(--coral);}
 /* points and unit-count dock: pinned bottom-left, just right of the nav rail */
-.xr-musterdock{position:fixed;left:76px;bottom:0;z-index:30;display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--paper);border-top:2px solid var(--ink);border-right:2px solid var(--ink);border-top-right-radius:14px;box-shadow:0 -4px 18px rgba(31,61,46,.16);}
+.xr-musterdock{position:sticky;bottom:0;align-self:flex-start;z-index:30;display:flex;align-items:center;gap:12px;margin-top:auto;padding:8px 16px;background:var(--paper);border:2px solid var(--ink);border-bottom:none;border-top-right-radius:14px;border-top-left-radius:14px;box-shadow:0 -4px 18px rgba(31,61,46,.16);}
 .xr-musterdock .xr-muster-read b{font-size:22px;}
 .xr-musterdock .xr-muster-read.xr-muster-pts{margin-left:-4px;}
 .xr-musterdock .xr-muster-track{width:130px;flex:none;}
@@ -3300,9 +3290,9 @@ const CSS = `
 /* ---------- mobile ---------- */
 @media(max-width:880px){
   .xr-build-body{display:block;}
-  /* the dock sits above the bottom nav bar on mobile, spanning the width */
-  .xr-musterdock{left:0;right:0;bottom:60px;border-radius:0;border-right:none;border-top:2px solid var(--ink);justify-content:center;}
-  .xr-ulist{padding-bottom:132px;}
+  /* the dock sticks above the bottom nav bar on mobile, spanning the width */
+  .xr-musterdock{align-self:stretch;bottom:60px;border-radius:0;border-left:none;border-right:none;justify-content:center;}
+  .xr-ulist{padding-bottom:24px;}
   .xr-detail{position:fixed;inset:0;z-index:60;background:var(--paper);border-left:none;max-height:none;overflow-y:auto;display:none;}
   .xr-build-body.has-sel .xr-detail{display:block;animation:xr-fade .18s ease;}
   .xr-panel-back{display:flex;}
