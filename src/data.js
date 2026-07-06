@@ -78,7 +78,7 @@ export const UNIT_TYPES = [
     "id": "fire-support",
     "name": "Fire Support",
     "cost": 4,
-    "text": "This unit can call in Fire Support as an ordered activation."
+    "text": "As an ordered activation, successful on a roll of 8+, the unit can make a Shoot action against a single target unit within line of sight. There are no penalties for range and the barrage hits on 4+. Ignore any rules the unit has that might affect regular Shoot actions, such as Anti-Tank or Armour-Piercing, as it is not the unit itself that is doing the firing. As with regular Shooting, ten dice are rolled, dropping to five if the unit calling in the strike is at half Strength or below. If more 1s are rolled than hits, the player whose unit was targeted may pick a different unit, friend or foe, within 6\" of the intended target to be hit by the barrage instead. Fire Support does not trigger the Firefight reaction, so the enemy cannot shoot back at the spotter. As with regular Shoot actions, the targeted unit must take a Courage test if any hits land, whether or not it loses models. If the target is inside a building, resolve the hits against the unit first, then the building takes the same number of hits."
    },
    {
     "id": "heavy-weapon",
@@ -159,7 +159,7 @@ export const UNIT_TYPES = [
     "id": "fire-support",
     "name": "Fire Support",
     "cost": 4,
-    "text": "This unit can call in Fire Support as an ordered activation."
+    "text": "As an ordered activation, successful on a roll of 8+, the unit can make a Shoot action against a single target unit within line of sight. There are no penalties for range and the barrage hits on 4+. Ignore any rules the unit has that might affect regular Shoot actions, such as Anti-Tank or Armour-Piercing, as it is not the unit itself that is doing the firing. As with regular Shooting, ten dice are rolled, dropping to five if the unit calling in the strike is at half Strength or below. If more 1s are rolled than hits, the player whose unit was targeted may pick a different unit, friend or foe, within 6\" of the intended target to be hit by the barrage instead. Fire Support does not trigger the Firefight reaction, so the enemy cannot shoot back at the spotter. As with regular Shoot actions, the targeted unit must take a Courage test if any hits land, whether or not it loses models. If the target is inside a building, resolve the hits against the unit first, then the building takes the same number of hits."
    },
    {
     "id": "heavy-weapon",
@@ -238,7 +238,7 @@ export const UNIT_TYPES = [
     "id": "fire-support",
     "name": "Fire Support",
     "cost": 4,
-    "text": "This unit can call in Fire Support as an ordered activation."
+    "text": "As an ordered activation, successful on a roll of 8+, the unit can make a Shoot action against a single target unit within line of sight. There are no penalties for range and the barrage hits on 4+. Ignore any rules the unit has that might affect regular Shoot actions, such as Anti-Tank or Armour-Piercing, as it is not the unit itself that is doing the firing. As with regular Shooting, ten dice are rolled, dropping to five if the unit calling in the strike is at half Strength or below. If more 1s are rolled than hits, the player whose unit was targeted may pick a different unit, friend or foe, within 6\" of the intended target to be hit by the barrage instead. Fire Support does not trigger the Firefight reaction, so the enemy cannot shoot back at the spotter. As with regular Shoot actions, the targeted unit must take a Courage test if any hits land, whether or not it loses models. If the target is inside a building, resolve the hits against the unit first, then the building takes the same number of hits."
    },
    {
     "id": "guerrillas",
@@ -508,7 +508,7 @@ export const UNIT_TYPES = [
     "id": "fire-support",
     "name": "Fire Support",
     "cost": 4,
-    "text": "This unit can call in Fire Support as an ordered activation."
+    "text": "As an ordered activation, successful on a roll of 8+, the unit can make a Shoot action against a single target unit within line of sight. There are no penalties for range and the barrage hits on 4+. Ignore any rules the unit has that might affect regular Shoot actions, such as Anti-Tank or Armour-Piercing, as it is not the unit itself that is doing the firing. As with regular Shooting, ten dice are rolled, dropping to five if the unit calling in the strike is at half Strength or below. If more 1s are rolled than hits, the player whose unit was targeted may pick a different unit, friend or foe, within 6\" of the intended target to be hit by the barrage instead. Fire Support does not trigger the Firefight reaction, so the enemy cannot shoot back at the spotter. As with regular Shoot actions, the targeted unit must take a Courage test if any hits land, whether or not it loses models. If the target is inside a building, resolve the hits against the unit first, then the building takes the same number of hits."
    },
    {
     "id": "green",

@@ -2923,5 +2923,11 @@ export const SETTINGS = [
         ]
       }
     ]
+  },
+  {
+    "id": "grimdark",
+    "name": "Grim Darkness",
+    "blurb": "In the grim darkness of the far future there is only war. Grimdark science-fantasy detachments. More lists coming soon.",
+    "detachments": []
   }
 ];

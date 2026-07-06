@@ -29,6 +29,7 @@ import icBook from "@iconify-icons/ph/book-open-fill";
 import icGear from "@iconify-icons/ph/gear-six-fill";
 import icImage from "@iconify-icons/ph/image-square-fill";
 import icBolt from "@iconify-icons/ph/lightning-fill";
+import icLink from "@iconify-icons/ph/link-bold";
 /* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
 import icoAttack from "./assets/stat/attack.png";
 import icoMove from "./assets/stat/move.png";
@@ -71,7 +72,7 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   Trash = mk(icTrash), Plus = mk(icPlus), XIc = mk(icX), Check = mk(icCheck),
   Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
   House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret),
-  Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt);
+  Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt), LinkIc = mk(icLink);
 
 /* two-letter placeholder per generic unit type; the user will refine by hand */
 const UNIT_ABBR = {
@@ -268,6 +269,45 @@ function savePlay(listId, st) {
   try { localStorage.setItem(`xrb.play.${listId}`, JSON.stringify(st)); } catch { /* ignore */ }
 }
 
+/* ---------------- share by URL ----------------
+   pack the detachment into a compact, URL-safe string. images are dropped (they
+   would blow up the link) and the faction name pool is left out; everything the
+   builder needs to rebuild the roster is kept. */
+function encodeShare(list) {
+  const faction = list.faction
+    ? { id: list.faction.id, name: list.faction.name, tag: list.faction.tag, icon: list.faction.icon, genre: list.faction.genre, group: list.faction.group }
+    : undefined;
+  const payload = {
+    n: list.name, b: list.budget, d: list.description || undefined,
+    f: faction, nt: list.nationalTrait, fp: list.freeplay || undefined, st: list.setting,
+    r: list.roster.map((u) => ({
+      t: u.typeId, nm: u.name || undefined, c: u.isCmd ? 1 : undefined,
+      tt: u.traitTable, ti: u.traitIndex, o: u.options, x: u.xenos,
+      p: (u.psychic && u.psychic.length) ? u.psychic : undefined,
+      cu: (u.custom && u.custom.length) ? u.custom : undefined,
+      mr: u.mercRoll, no: u.notes || undefined,
+    })),
+  };
+  const json = JSON.stringify(payload);
+  return btoa(unescape(encodeURIComponent(json))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function decodeShare(str) {
+  try {
+    const b64 = str.replace(/-/g, "+").replace(/_/g, "/");
+    const o = JSON.parse(decodeURIComponent(escape(atob(b64))));
+    return {
+      name: o.n || "", budget: o.b || 24, description: o.d || "",
+      faction: o.f, nationalTrait: o.nt, freeplay: o.fp, setting: o.st,
+      roster: (o.r || []).filter((u) => UNIT_BY_ID[u.t]).map((u) => sanitize({
+        key: uid(), typeId: u.t, name: u.nm || "", isCmd: !!u.c,
+        traitTable: u.tt || "aggressive", traitIndex: u.ti,
+        options: u.o || {}, xenos: u.x || {}, psychic: u.p || [],
+        custom: u.cu || [], mercRoll: u.mr, notes: u.no || "",
+      })),
+    };
+  } catch { return null; }
+}
+
 /* ---------------- hash routing ---------------- */
 function parseHash() {
   const h = window.location.hash.replace(/^#\/?/, "");
@@ -275,6 +315,7 @@ function parseHash() {
   if (view === "build") return { view: "build", unitKey: arg || null };
   if (view === "print") return { view: "print" };
   if (view === "play") return { view: "play" };
+  if (view === "s") return { view: "share", data: arg || "" };
   return { view: "home" };
 }
 const nav = (h) => { window.location.hash = h; };
@@ -767,6 +808,9 @@ function LoadPresetModal({ onLoad, onClose }) {
               {setting.optionalRules && <span>Optional rules: {setting.optionalRules.join(", ")}.</span>}
               {setting.url && <a href={setting.url} target="_blank" rel="noopener"> {setting.url}</a>}
             </p>
+          )}
+          {setting.detachments.length === 0 && (
+            <p className="xr-fac-empty">No detachments here yet. This section is coming soon.</p>
           )}
           <div className="xr-preset-grid">
             {setting.detachments.map((d) => (
@@ -1625,6 +1669,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const [cmdOpen, setCmdOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [factionOpen, setFactionOpen] = useState(false);
+  const [shared, setShared] = useState(false);
   const detImg = list.image || factionIconUrl(list.faction && list.faction.icon);
   const { issues, used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const errors = issues.filter((i) => i.lvl === "err");
@@ -1650,6 +1695,13 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
     navigator.clipboard?.writeText(lines.join("\n"));
   };
 
+  const shareLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}#/s/${encodeShare(list)}`;
+    navigator.clipboard?.writeText(url);
+    setShared(true);
+    window.setTimeout(() => setShared(false), 2200);
+  };
+
   return (
     <div className="xr-build">
       <RailNav view="build" />
@@ -1660,6 +1712,9 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
           <div className="xr-actions">
             <button className="xr-btn small" onClick={copyList} title="Copy the roster to the clipboard as text"><CopyIc size={17} /> Copy</button>
+            <button className={`xr-btn small ${shared ? "gold" : ""}`} onClick={shareLink} title="Copy a link that rebuilds this detachment (pictures are not included)">
+              {shared ? <><Check size={17} /> Link copied</> : <><LinkIc size={17} /> Share</>}
+            </button>
             <button className="xr-btn small" onClick={() => nav("#/print")} title="Open the print sheet"><Printer size={17} /> Print</button>
             <div className="xr-settingswrap">
               <button className={`xr-btn small ${list.freeplay ? "gold" : ""}`} onClick={() => setSettingsOpen((o) => !o)}
@@ -2005,6 +2060,20 @@ export default function App() {
   }, []);
   useEffect(() => saveLists(lists), [lists]);
   useEffect(() => { if (currentId) localStorage.setItem(LS_CURRENT, currentId); }, [currentId]);
+
+  /* a shared link (#/s/<data>) rebuilds the detachment as a new saved list */
+  useEffect(() => {
+    if (route.view !== "share") return;
+    const imported = route.data && decodeShare(route.data);
+    if (imported) {
+      const id = uid();
+      setLists((ls) => ({ ...ls, [id]: { id, ...imported, updated: Date.now() } }));
+      setCurrentId(id);
+      nav("#/build");
+    } else {
+      nav("#/");
+    }
+  }, [route.view, route.data]);
 
   const current = currentId ? lists[currentId] : null;
 
