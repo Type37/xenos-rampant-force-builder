@@ -933,22 +933,23 @@ function LoadPresetModal({ onLoad, onClose }) {
               {setting.url && <a href={setting.url} target="_blank" rel="noopener"> {setting.url}</a>}
             </p>
           )}
-          {setting.detachments.length === 0 && (
-            <p className="xr-fac-empty">No detachments here yet. This section is coming soon.</p>
+          {setting.comingSoon || setting.detachments.length === 0 ? (
+            <p className="xr-fac-empty">More to come.</p>
+          ) : (
+            <div className="xr-preset-grid">
+              {setting.detachments.map((d) => (
+                <button className="xr-preset-card" key={d.n} onClick={() => onLoad(d, setting)}>
+                  {d.image && <span className="xr-preset-img" style={{ backgroundImage: `url(${FACTION_BASE}${d.image})` }} aria-hidden="true" />}
+                  <span className="xr-preset-name">{d.name}</span>
+                  {d.subtitle && <span className="xr-preset-sub">{d.subtitle}</span>}
+                  <span className="xr-preset-foot">
+                    <span className="xr-preset-meta">{detachmentUnits(d)} units, {detachmentPoints(d)} pts</span>
+                    <span className="xr-preset-load"><Plus size={15} /> Load</span>
+                  </span>
+                </button>
+              ))}
+            </div>
           )}
-          <div className="xr-preset-grid">
-            {setting.detachments.map((d) => (
-              <button className="xr-preset-card" key={d.n} onClick={() => onLoad(d, setting)}>
-                {d.image && <span className="xr-preset-img" style={{ backgroundImage: `url(${FACTION_BASE}${d.image})` }} aria-hidden="true" />}
-                <span className="xr-preset-name">{d.name}</span>
-                {d.subtitle && <span className="xr-preset-sub">{d.subtitle}</span>}
-                <span className="xr-preset-foot">
-                  <span className="xr-preset-meta">{detachmentUnits(d)} units, {detachmentPoints(d)} pts</span>
-                  <span className="xr-preset-load"><Plus size={15} /> Load</span>
-                </span>
-              </button>
-            ))}
-          </div>
         </div>
       </div>
     </div>

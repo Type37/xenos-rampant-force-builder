@@ -498,6 +498,7 @@ const GRIMDARK_DETACHMENTS = [
 export const SETTINGS = [
   {
     "id": "weird-war",
+    "comingSoon": true,
     "name": "Weird War: Operation Werwolf",
     "blurb": "Superscience and occult darkness in the World Wars.",
     "nationalTraits": true,
@@ -1167,6 +1168,7 @@ export const SETTINGS = [
   },
   {
     "id": "urban-fantasy",
+    "comingSoon": true,
     "name": "Urban Fantasy: The Meanest Streets",
     "blurb": "Cults, cops, and things in the shadows of the modern city.",
     "nationalTraits": false,
@@ -1642,6 +1644,7 @@ export const SETTINGS = [
   },
   {
     "id": "war-on-terra",
+    "comingSoon": true,
     "name": "Five Minutes Into The Future: The War On Terra",
     "blurb": "Near-future soldiers, contractors, and first contact.",
     "nationalTraits": false,
@@ -2118,6 +2121,7 @@ export const SETTINGS = [
   },
   {
     "id": "post-apocalypse",
+    "comingSoon": true,
     "name": "Post-Apocalypse: After The End",
     "blurb": "Road warriors, raiders, and the walking dead.",
     "nationalTraits": false,
@@ -2586,6 +2590,7 @@ export const SETTINGS = [
   },
   {
     "id": "space-opera",
+    "comingSoon": true,
     "name": "Space Opera: Beyond The Final Frontier",
     "blurb": "Landing parties, pirates, and ancient horrors among the stars.",
     "nationalTraits": false,
@@ -3372,7 +3377,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Overseers",
-            "points": 5,
+            "points": 6,
             "options": [
               "armour-piercing"
             ],
