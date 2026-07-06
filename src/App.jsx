@@ -1493,18 +1493,27 @@ const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
   return (
     <button className={`xr-cat-card cat-${catOf(t)}`} onClick={() => onAdd(t.id)}>
       <span className="xr-cat-top">
-        <span className="xr-cat-badge" aria-hidden="true"><UnitIcon id={t.id} size={26} /></span>
         <span className="xr-cat-name">{t.name}</span>
-        <span className="xr-cat-stamp"><b>{t.base}</b><i>pts</i></span>
       </span>
       <span className="xr-cat-role">{t.role}</span>
-      <span className="xr-cat-stats">
+      <span className="xr-cat-acts" aria-label="Activation">
+        {ACT_KEYS.map(({ key, label }) => {
+          const o = orderFrom(t.act, key, t.noAttack);
+          return (
+            <span className={`xr-cat-act k-${key}`} key={key} title={`${label}, roll 2d6`}>
+              <b>{o ? o.val : "-"}{o && o.free && <sup>F</sup>}</b>
+              <em>{label.slice(0, 3)}</em>
+            </span>
+          );
+        })}
+      </span>
+      <span className="xr-cat-stats" aria-label="Profile">
         {CATALOG_STATS.map((s) => {
           const raw = s.get(t);
           const v = raw == null || raw === "n/a" || raw === "—" ? "-" : String(raw);
           return (
             <span className="xr-cat-stat" key={s.label} title={s.label}>
-              <img src={s.img} alt="" width="24" height="24" />
+              <img src={s.img} alt="" width="22" height="22" />
               <b>{v}</b>
             </span>
           );
@@ -1517,7 +1526,7 @@ const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
           ))}
         </span>
       )}
-      <span className="xr-cat-add"><Plus size={16} /> Add unit</span>
+      <span className="xr-cat-add"><Plus size={15} /> Add <b>{t.base} pts</b></span>
     </button>
   );
 });
@@ -1537,11 +1546,12 @@ function AddUnitModal({ onAdd, onClose }) {
           <span className="xr-modal-title"><Plus size={22} /> Add unit</span>
           <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
         </div>
-        <div className="xr-modal-tabs" role="tablist">
+        <div className="xr-stabs" role="tablist" style={{ "--n": CATS.length, "--i": Math.max(0, CATS.findIndex((c) => c.id === cat)) }}>
+          <span className="xr-stabs-ind" aria-hidden="true" />
           {CATS.map((c) => (
             <button key={c.id} role="tab" aria-selected={cat === c.id}
-              className={`xr-modal-tab cat-${c.id} ${cat === c.id ? "on" : ""}`} onClick={() => setCat(c.id)}>
-              <c.Icon size={18} /> {c.label}
+              className={`xr-stab cat-${c.id} ${cat === c.id ? "on" : ""}`} onClick={() => setCat(c.id)}>
+              <c.Icon size={18} /> <span>{c.label}</span>
             </button>
           ))}
         </div>
@@ -2593,6 +2603,12 @@ const CSS = `
 .xr-modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:3px solid var(--ink);}
 .xr-modal-title{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.33;}
 .xr-modal-tabs{display:flex;gap:8px;padding:12px 20px;border-bottom:2px solid var(--ink-18);flex-wrap:wrap;}
+/* smooth sliding tabs (add-unit categories) */
+.xr-stabs{position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);margin:12px clamp(14px,3vw,20px);padding:4px;background:var(--paper-3);border-radius:11px;border:2px solid var(--ink-30);}
+.xr-stabs-ind{position:absolute;top:4px;bottom:4px;left:calc(4px + var(--i) * (100% - 8px) / var(--n));width:calc((100% - 8px)/var(--n));border-radius:8px;background:var(--brand-deep);box-shadow:var(--shadow4);transition:left var(--dur-gentle) var(--curve-ease-max);}
+.xr-stab{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;font-family:var(--ui);font-weight:600;font-size:16px;color:var(--ink-2);border-radius:8px;transition:color var(--dur-fast) var(--curve-ease);}
+.xr-stab:hover:not(.on){color:var(--ink);}
+.xr-stab.on{color:#fff;}
 .xr-modal-tab{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:16.5px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:8px 15px;border-radius:9px;min-height:44px;transition:.12s;}
 .xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
 .xr-modal-tab.on{color:var(--cream);background:var(--ink);border-color:var(--ink);}
@@ -2602,9 +2618,9 @@ const CSS = `
 .xr-modal-tab.cat-xeno.on{background:var(--iris);border-color:var(--iris);}
 .xr-modal-tab.cat-veh.on{background:var(--rust);border-color:var(--rust);}
 .xr-modal-body{overflow-y:auto;padding:16px 20px 24px;}
-.xr-modal.xr-modal-wide{width:min(1080px,100%);height:min(780px,90vh);}
-.xr-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:13px;}
-.xr-cat-card{display:flex;flex-direction:column;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:14px 15px 12px;border-radius:var(--r);transition:transform .14s cubic-bezier(.2,.8,.2,1),background .14s,box-shadow .14s;}
+.xr-modal.xr-modal-wide{width:min(1080px,100%);height:min(840px,92vh);}
+.xr-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:10px;}
+.xr-cat-card{display:flex;flex-direction:column;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:11px 12px 10px;border-radius:var(--r);transition:transform .14s cubic-bezier(.2,.8,.2,1),background .14s,box-shadow .14s;}
 .xr-cat-card:hover{background:var(--paper-3);box-shadow:0 6px 15px rgba(31,61,46,.16);transform:translateY(-3px);}
 .xr-cat-card:active{transform:scale(.98);}
 .xr-cat-top{display:flex;align-items:flex-start;gap:10px;}
@@ -2618,16 +2634,27 @@ const CSS = `
 .xr-cat-stamp{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--coral);color:var(--ink);border:2px solid var(--ink);}
 .xr-cat-stamp b{font-family:var(--mono);font-weight:700;font-size:18px;line-height:1;}
 .xr-cat-stamp i{font-style:normal;font-size:11px;font-weight:700;}
-.xr-cat-name{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.15;padding-top:2px;}
-.xr-cat-role{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-family:var(--flavor);font-style:italic;font-size:15px;line-height:1.38;color:var(--ink-2);margin:4px 0 9px;}
-.xr-cat-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 6px;margin-bottom:9px;}
-.xr-cat-rules{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px;}
-.xr-cat-rule{font-family:var(--ui);font-weight:600;font-size:12px;color:var(--ink-2);background:var(--cream);border:1px solid var(--ink-18);border-radius:6px;padding:2px 7px;cursor:help;}
+.xr-cat-name{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.15;}
+.xr-cat-role{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-family:var(--flavor);font-style:italic;font-size:14px;line-height:1.35;color:var(--ink-2);margin:3px 0 8px;}
+/* activation row of 4, colour-coded like the builder dice, distinct from the profile values */
+.xr-cat-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px;}
+.xr-cat-act{display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px;border-radius:7px;border:1.5px solid var(--ink-30);background:var(--paper);}
+.xr-cat-act b{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--ink);}
+.xr-cat-act b sup{font-size:8px;color:var(--coral-ink);}
+.xr-cat-act em{font-family:var(--ui);font-style:normal;font-weight:600;font-size:9.5px;letter-spacing:.02em;color:var(--ink-2);text-transform:uppercase;}
+.xr-cat-act.k-atk{border-color:var(--coral-ink);background:#F4604C14;}
+.xr-cat-act.k-mov{border-color:var(--sage);background:#5C7A5214;}
+.xr-cat-act.k-sho{border-color:var(--iris);background:#6A4A8C14;}
+.xr-cat-act.k-cou{border-color:var(--brass);background:#8A6A1F14;}
+.xr-cat-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 6px;margin-bottom:8px;}
+.xr-cat-rules{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.xr-cat-rule{font-family:var(--ui);font-weight:600;font-size:11px;color:var(--ink-2);background:var(--cream);border:1px solid var(--ink-18);border-radius:5px;padding:1px 6px;cursor:help;}
 .xr-cat-rule:hover{border-color:var(--ink-30);color:var(--ink);}
 .xr-cat-stat{display:flex;align-items:center;gap:7px;}
 .xr-cat-stat img{flex:none;opacity:.9;}
-.xr-cat-stat b{font-family:var(--mono);font-weight:700;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;}
-.xr-cat-add{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:var(--display);font-weight:600;font-size:15.5px;color:var(--cream);background:var(--ink);border-radius:9px;padding:8px 12px;min-height:40px;}
+.xr-cat-stat b{font-family:var(--mono);font-weight:700;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-cat-add{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:var(--display);font-weight:600;font-size:15px;color:var(--cream);background:var(--ink);border-radius:9px;padding:8px 12px;min-height:40px;}
+.xr-cat-add b{font-family:var(--mono);font-weight:700;}
 .xr-cat-card:hover .xr-cat-add{background:var(--brand-deep-blue);}
 /* dashboard action buttons */
 .xr-home-bar-btns{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
