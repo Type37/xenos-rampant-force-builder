@@ -1179,7 +1179,7 @@ export const UNIT_TYPES = [
      "transport-10",
      "transport-15"
     ],
-    "text": "This vehicle can carry an infantry unit with up to 5 Strength Points. Cannot be combined with Transport (10) or Transport (15). Copplestone Castings Assault Troopers (Heavy Infantry) on patrol. Transport Vehicles help you to move your units around the table swiftly"
+    "text": "This vehicle can carry an infantry unit with up to 5 Strength Points. Cannot be combined with Transport (10) or Transport (15)."
    },
    {
     "id": "transport-10",

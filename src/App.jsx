@@ -792,10 +792,10 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
           <div className="xr-home-bar">
             <h2 className="xr-home-h">Detachments <em>{arr.length}</em></h2>
             <div className="xr-home-bar-btns">
+              <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={20} /> New detachment</button>
               {SETTINGS.length > 0 && (
                 <button className="xr-btn" onClick={() => setLoading(true)} title="Start from a ready-made detachment out of the rulebook"><Book size={19} /> Load a preset</button>
               )}
-              <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={20} /> New detachment</button>
             </div>
           </div>
         )}
@@ -1200,7 +1200,7 @@ function configSummary(x, u) {
     const i = typeof u.xenos[x.id] === "number" ? u.xenos[x.id] : 0;
     const t = x.tiers[i];
     let s = t.label + (t.sub ? `, ${t.sub}` : "");
-    if (x.id === "psychic") { const n = (u.psychic || []).length; s += ` · ${n} of ${t.powers} powers`; }
+    if (x.id === "psychic") { const n = (u.psychic || []).length; s += `, ${n} of ${t.powers} powers`; }
     return s;
   }
   return "";
