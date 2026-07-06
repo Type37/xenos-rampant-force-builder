@@ -486,7 +486,7 @@ function RailNav({ view }) {
   const items = [
     { v: "home", Icon: House, label: "Lists", hash: "#/" },
     { v: "build", Icon: Edit, label: "Build", hash: "#/build" },
-    { v: "print", Icon: Printer, label: "Print", hash: "#/print" },
+    { v: "print", Icon: Printer, label: "Print setup", hash: "#/print" },
     { v: "play", Icon: Play, label: "Play", hash: "#/play" },
   ];
   return (
@@ -1742,7 +1742,7 @@ function PrintView({ list }) {
       <RailNav view="print" />
       <div className="xr-print-chrome">
         <button className="xr-iconbtn" onClick={() => nav("#/build")} aria-label="Back to builder"><Back size={20} /></button>
-        <h2 className="xr-print-h">Print</h2>
+        <h2 className="xr-print-h">Print setup</h2>
         <div className="xr-print-opts">
           <span className="xr-print-optlabel">Sections</span>
           {[["stats", "Stat table"], ["upgrades", "Upgrades and xeno rules"], ["glossary", "Special rules glossary"], ["traits", "Commander trait"]].map(([k, lab]) => (
@@ -1773,12 +1773,12 @@ function PrintView({ list }) {
               const a = t.act, p = t.prof;
               const order = ACT_KEYS.map(({ key, label }) => { const c = parseAct(t.noAttack && key === "atk" ? "n/a" : a[key]); return { label, val: c.val === "n/a" ? "-" : c.val, free: c.free }; });
               const prof = [
-                { label: "Attack", val: p.atk === "n/a" ? "-" : p.atk },
-                { label: "Defence", val: p.def },
-                { label: "Shoot", val: splitRange(p.sho).main === "n/a" ? "-" : p.sho },
-                { label: "Armour", val: p.arm },
-                { label: "Move", val: p.mov },
-                { label: "Strength", val: unitSP(u) },
+                { label: "Attack", val: p.atk === "n/a" ? "-" : p.atk, img: icoAttack },
+                { label: "Defence", val: p.def, img: icoDefence },
+                { label: "Shoot", val: splitRange(p.sho).main === "n/a" ? "-" : p.sho, img: icoShoot },
+                { label: "Armour", val: p.arm, img: icoArmour },
+                { label: "Move", val: p.mov, img: icoMove },
+                { label: "Strength", val: unitSP(u), img: icoStrength },
               ];
               const os = t.options.filter((o) => u.options[o.id]);
               const xs = XENO_RULES.filter((x) => x.id in u.xenos);
@@ -1796,14 +1796,35 @@ function PrintView({ list }) {
                   </div>
                   {opts.stats && (
                     <div className="xr-pc-stats">
-                      <div className="xr-pc-line"><span className="xr-pc-ll">Activate</span>{order.map((o) => <span className="xr-pc-cell" key={o.label}><em>{o.label}</em><b>{o.val}{o.free && <sup className="fmk">F</sup>}</b></span>)}</div>
-                      <div className="xr-pc-line"><span className="xr-pc-ll">Value</span>{prof.map((o) => <span className="xr-pc-cell" key={o.label}><em>{o.label}</em><b>{o.val}</b></span>)}</div>
+                      <div className="xr-pc-line act">
+                        <span className="xr-pc-ll">Activate</span>
+                        <div className="xr-pc-chips">
+                          {order.map((o) => (
+                            <span className="xr-pc-chip" key={o.label}>
+                              <b>{o.val}{o.free && <sup className="fmk">F</sup>}</b>
+                              <em>{o.label}</em>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="xr-pc-line val">
+                        <span className="xr-pc-ll">Profile</span>
+                        <div className="xr-pc-vals">
+                          {prof.map((o) => (
+                            <span className="xr-pc-stat" key={o.label}>
+                              <img src={o.img} alt="" width="14" height="14" />
+                              <em>{o.label}</em>
+                              <b>{o.val}</b>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
                   {opts.upgrades && hasRules && (
                     <div className="xr-pc-rules">
                       {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
-                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : <>{x.text.flavor && <i>{x.text.flavor} </i>}{ruleBodyText(x.text)}</>}</p>)}
+                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : ruleBodyText(x.text)}</p>)}
                       {powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
                       {cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                       {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
@@ -1822,7 +1843,7 @@ function PrintView({ list }) {
             {glossary.map((g) => (
               <p key={g.name}>
                 <b>{g.name}.</b>{" "}
-                {typeof g.text === "string" ? g.text : <>{g.text.flavor && <i>{g.text.flavor} </i>}{ruleBodyText(g.text)}</>}
+                {typeof g.text === "string" ? g.text : ruleBodyText(g.text)}
               </p>
             ))}
           </div>
@@ -2686,7 +2707,7 @@ const CSS = `
 .xr-print-optlabel{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);}
 .xr-print-check{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:15.5px;min-height:44px;cursor:pointer;}
 .xr-print-check input{width:20px;height:20px;accent-color:var(--ink);cursor:pointer;}
-.xr-sheet{max-width:880px;margin:26px auto 60px;background:#fff;color:#1a1a1a;padding:34px 38px;box-shadow:0 4px 22px rgba(31,61,46,.2);}
+.xr-sheet{max-width:800px;margin:26px auto 60px;background:#fff;color:#1a1a1a;padding:30px 34px;box-shadow:0 4px 22px rgba(31,61,46,.2);}
 .xr-sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:3px solid #1a1a1a;padding-bottom:10px;margin-bottom:16px;}
 .xr-sheet-title{font-family:var(--display);font-weight:700;font-size:29px;}
 .xr-sheet-meta{font-family:var(--ui);font-weight:500;font-size:15px;}
@@ -2708,28 +2729,34 @@ const CSS = `
 .xr-sheet-note .fmk{font-style:normal;}
 @media print{.xr-sheet-note .fmk{color:#000;}}
 /* print stat cards */
-.xr-sheet-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-top:14px;align-items:start;}
+.xr-sheet-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(264px,1fr));gap:9px;margin-top:14px;align-items:start;}
 .xr-pc{border:1.5px solid #1a1a1a;border-radius:8px;padding:9px 13px 10px;break-inside:avoid;}
 .xr-pc-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:5px;margin-bottom:7px;}
 .xr-pc-name{font-family:var(--display);font-weight:700;font-size:16.5px;display:inline-flex;align-items:center;gap:5px;}
 .xr-pc-type{font-family:var(--flavor);font-style:italic;font-size:13.5px;color:#444;}
 .xr-pc-pts{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:13.5px;}
-.xr-pc-stats{display:flex;flex-direction:column;gap:4px;}
-.xr-pc-line{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;}
-.xr-pc-ll{font-family:var(--ui);font-weight:600;font-size:11.5px;color:#666;width:50px;flex:none;}
-.xr-pc-cell{display:inline-flex;align-items:baseline;gap:4px;}
-.xr-pc-cell em{font-family:var(--ui);font-style:normal;font-size:11.5px;color:#555;}
-.xr-pc-cell b{font-family:var(--mono);font-weight:700;font-size:14px;}
-.xr-pc-cell .fmk{font-family:var(--display);font-weight:700;color:#c23a1e;}
-@media print{.xr-pc-cell .fmk{color:#000;}}
+.xr-pc-stats{display:flex;flex-direction:column;gap:7px;}
+.xr-pc-line{display:flex;align-items:flex-start;gap:9px;}
+.xr-pc-ll{font-family:var(--ui);font-weight:700;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#777;width:44px;flex:none;padding-top:5px;}
+.xr-pc-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.xr-pc-chip{display:inline-flex;flex-direction:column;align-items:center;gap:1px;min-width:42px;border:1.5px solid #1a1a1a;border-radius:7px;padding:3px 5px 4px;background:#f3efe4;}
+.xr-pc-chip b{font-family:var(--mono);font-weight:700;font-size:15px;line-height:1;}
+.xr-pc-chip em{font-family:var(--ui);font-style:normal;font-size:9.5px;color:#555;}
+.xr-pc-chip .fmk{font-family:var(--display);font-weight:700;font-size:9px;color:#c23a1e;}
+.xr-pc-vals{display:flex;gap:5px 12px;flex-wrap:wrap;align-items:center;}
+.xr-pc-stat{display:inline-flex;align-items:center;gap:4px;}
+.xr-pc-stat img{opacity:.8;}
+.xr-pc-stat em{font-family:var(--ui);font-style:normal;font-size:11px;color:#555;}
+.xr-pc-stat b{font-family:var(--mono);font-weight:700;font-size:13.5px;}
+@media print{.xr-pc-chip .fmk{color:#000;}}
 .xr-pc-rules{margin-top:8px;border-top:1px solid #ccc;padding-top:7px;}
 .xr-pc-rules p{font-family:var(--body);font-size:12.5px;line-height:1.42;margin-bottom:3px;}
 .xr-pc-rules p b{font-weight:700;}
 .xr-printview.large .xr-pc-name{font-size:18px;}
-.xr-printview.large .xr-pc-cell b{font-size:15.5px;}
+.xr-printview.large .xr-pc-chip b,.xr-printview.large .xr-pc-stat b{font-size:16px;}
 .xr-printview.large .xr-pc-rules p{font-size:14px;}
 .xr-printview.contrast .xr-pc,.xr-printview.contrast .xr-pc-head{border-color:#000;}
-.xr-printview.contrast .xr-pc-type,.xr-printview.contrast .xr-pc-cell em,.xr-printview.contrast .xr-pc-ll{color:#000;}
+.xr-printview.contrast .xr-pc-type,.xr-printview.contrast .xr-pc-chip em,.xr-printview.contrast .xr-pc-stat em,.xr-printview.contrast .xr-pc-ll{color:#000;}
 .xr-sheet-units{margin-top:20px;column-count:2;column-gap:28px;}
 .xr-sheet-unit{break-inside:avoid;margin-bottom:14px;}
 .xr-sheet-unit h3{font-family:var(--display);font-size:17px;border-bottom:1.5px solid #1a1a1a;padding-bottom:2px;margin-bottom:5px;}
@@ -2834,8 +2861,8 @@ const CSS = `
   .xr-rail,.xr-print-chrome,.game-info-footer{display:none !important;}
   .xr-printview{background:#fff;padding-left:0;}
   .xr-sheet{box-shadow:none;margin:0;max-width:none;padding:0;}
-  .xr-sheet-cards{grid-template-columns:1fr 1fr;gap:8px;}
+  .xr-sheet-cards{grid-template-columns:1fr 1fr;gap:7px;}
   .xr-pc{break-inside:avoid;}
-  @page{margin:12mm;}
+  @page{size:A4;margin:11mm;}
 }
 `;
