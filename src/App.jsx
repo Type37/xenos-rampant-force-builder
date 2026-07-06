@@ -197,6 +197,19 @@ function unitSP(u) {
   }
   return sp;
 }
+/* the special rules a unit actually carries: its type's rules, with the generic
+   "Vehicle" entry expanded into the specific vehicle rules (Walkers skip movement) */
+function unitSpecialRules(u, t) {
+  let rules = t.special.filter((s) => s !== "None");
+  if (t.cls === VEHICLE) {
+    rules = rules.filter((s) => s !== "Vehicle");
+    const veh = [];
+    if (!u.options.walker) veh.push("Vehicle Movement");
+    veh.push("Vehicle Shooting", "Vehicle Melee", "Severe Damage");
+    rules = [...veh, ...rules];
+  }
+  return rules;
+}
 function eligibleXenos(t) {
   return XENO_RULES.filter((x) => {
     const pol = t.xenoPolicy;
@@ -1274,17 +1287,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
   const sp = unitSP(u);
   const elig = useMemo(() => eligibleXenos(t), [t]);
   const topOpts = t.options.filter((o) => !o.requires);
-  const stdRules = useMemo(() => {
-    let rules = t.special.filter((s) => s !== "None");
-    if (t.cls === VEHICLE) {
-      rules = rules.filter((s) => s !== "Vehicle");
-      const veh = [];
-      if (!u.options.walker) veh.push("Vehicle Movement");
-      veh.push("Vehicle Shooting", "Vehicle Melee", "Severe Damage");
-      rules = [...veh, ...rules];
-    }
-    return rules;
-  }, [t, u.options]);
+  const stdRules = useMemo(() => unitSpecialRules(u, t), [t, u.options]);
   const tbl = u.traitTable || "aggressive";
   const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
   const boughtOpts = t.options.filter((o) => u.options[o.id]);
@@ -1970,15 +1973,9 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
  * ================================================================== */
 function PrintView({ list }) {
   const { roster, budget } = list;
-  const [opts, setOpts] = useState({ stats: true, upgrades: true, glossary: true, traits: true, contrast: false, large: false });
+  const [opts, setOpts] = useState({ stats: true, upgrades: true, rules: true, traits: true, contrast: false, large: false });
   const { used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const tog = (k) => setOpts((o) => ({ ...o, [k]: !o[k] }));
-
-  const glossary = useMemo(() => {
-    const names = new Set();
-    roster.forEach((u) => UNIT_BY_ID[u.typeId].special.forEach((s) => { if (s !== "None") names.add(s); }));
-    return [...names].sort().map((n) => ({ name: n, text: SPECIAL_RULES[n] })).filter((g) => g.text);
-  }, [roster]);
 
   return (
     <div className={`xr-printview ${opts.contrast ? "contrast" : ""} ${opts.large ? "large" : ""}`}>
@@ -1988,7 +1985,7 @@ function PrintView({ list }) {
         <h2 className="xr-print-h">Print setup</h2>
         <div className="xr-print-opts">
           <span className="xr-print-optlabel">Sections</span>
-          {[["stats", "Stat table"], ["upgrades", "Upgrades and xeno rules"], ["glossary", "Special rules glossary"], ["traits", "Commander trait"]].map(([k, lab]) => (
+          {[["stats", "Stat table"], ["upgrades", "Upgrades and xeno rules"], ["rules", "Special rules"], ["traits", "Commander trait"]].map(([k, lab]) => (
             <label key={k} className="xr-print-check">
               <input type="checkbox" checked={opts[k]} onChange={() => tog(k)} /> {lab}
             </label>
@@ -2018,8 +2015,8 @@ function PrintView({ list }) {
               const cs = u.custom || [];
               const trait = opts.traits && u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
               const powers = (u.psychic || []).map((n) => PSYCHIC_POWERS.find((pp) => pp.name === n)).filter(Boolean);
-              const stdRules = opts.glossary ? [] : t.special.filter((s) => s !== "None");
-              const hasRules = os.length || xs.length || cs.length || trait || powers.length;
+              const stdRules = opts.rules ? unitSpecialRules(u, t).map((n) => ({ name: n, text: SPECIAL_RULES[n] })).filter((g) => g.text) : [];
+              const showUp = opts.upgrades && (os.length || xs.length || cs.length || trait || powers.length);
               return (
                 <div className="xr-pc" key={u.key}>
                   <div className="xr-pc-head">
@@ -2030,13 +2027,14 @@ function PrintView({ list }) {
                   {opts.stats && (
                     <div className="xr-pc-stt"><StatTable t={t} sp={unitSP(u)} u={u} hint={false} /></div>
                   )}
-                  {opts.upgrades && hasRules && (
+                  {(showUp || stdRules.length > 0) && (
                     <div className="xr-pc-rules">
-                      {os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
-                      {xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : ruleBodyText(x.text)}</p>)}
-                      {powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
-                      {cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
-                      {trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
+                      {showUp && os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
+                      {showUp && xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : ruleBodyText(x.text)}</p>)}
+                      {showUp && powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
+                      {showUp && cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
+                      {showUp && trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
+                      {stdRules.map((g) => <p key={`sr-${g.name}`} className="xr-pc-std"><b>{g.name}.</b> {typeof g.text === "string" ? g.text : ruleBodyText(g.text)}</p>)}
                     </div>
                   )}
                   {u.notes && u.notes.trim() && <p className="xr-pc-note">{u.notes.trim()}</p>}
@@ -2046,19 +2044,6 @@ function PrintView({ list }) {
           </div>
         )}
         {opts.stats && <p className="xr-sheet-note">The coral <b className="fmk">Free</b> chip marks a free action: it activates on its own, no 2d6 roll needed.</p>}
-
-        {opts.glossary && glossary.length > 0 && (
-          <div className="xr-sheet-gloss">
-            <h2>Special rules</h2>
-            {glossary.map((g) => (
-              <p key={g.name}>
-                <b>{g.name}.</b>{" "}
-                {typeof g.text === "string" ? g.text : ruleBodyText(g.text)}
-              </p>
-            ))}
-          </div>
-        )}
-
       </div>
     </div>
   );
@@ -3106,9 +3091,11 @@ const CSS = `
 .xr-pc-stt .xr-die-free{font-size:7px;right:2px;}
 .xr-pc-note{font-family:var(--flavor);font-style:italic;font-size:12px;line-height:1.35;color:#333;margin-top:5px;border-top:1px dotted #bbb;padding-top:4px;}
 .xr-sheet-notes{font-family:var(--body);font-size:13.5px;line-height:1.45;color:#333;margin:0 0 10px;white-space:pre-wrap;}
-.xr-pc-rules{margin-top:5px;border-top:1px solid #ccc;padding-top:4px;}
-.xr-pc-rules p{font-family:var(--body);font-size:12px;line-height:1.36;margin-bottom:2px;}
+.xr-pc-rules{margin-top:4px;border-top:1px solid #ccc;padding-top:3px;}
+.xr-pc-rules p{font-family:var(--body);font-size:9.5px;line-height:1.28;margin-bottom:1px;}
 .xr-pc-rules p b{font-weight:700;}
+.xr-pc-std b{font-weight:700;}
+.xr-printview.contrast .xr-pc-std{color:#000;}
 .xr-printview.large .xr-pc-name{font-size:18px;}
 .xr-printview.large .xr-pc-stt .xr-stt-cell b{font-size:16px;}
 .xr-printview.large .xr-pc-stt .xr-stt-stat{font-size:14px;}
