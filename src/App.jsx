@@ -527,7 +527,7 @@ function deriveStats(u, t) {
   });
   return { act, prof, changed, dirs };
 }
-function StatTable({ t, sp, u, hint = true }) {
+function StatTable({ t, sp, u, hint = true, spBubbles = false }) {
   const d = u ? deriveStats(u, t) : { act: t.act, prof: t.prof, changed: new Set() };
   const spMod = !!u && sp !== t.sp;
   return (
@@ -551,7 +551,11 @@ function StatTable({ t, sp, u, hint = true }) {
               {modO && <span className={`xr-mod-dir ${dirO || "neutral"}`} aria-hidden="true">{dirO === "up" ? "▲" : dirO === "down" ? "▼" : "●"}</span>}
             </span>
             <span className={`xr-stt-cell ${modV ? "mod " + (dirV || "") : ""}`} title={modV ? tip(dirV) : undefined}>
-              {v ? <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range} range</i>}</> : <span className="xr-dash">-</span>}
+              {v
+                ? (spBubbles && row.key === "sp"
+                    ? <span className="xr-stt-bubbles" aria-label={`${v.main} Strength Points`}>{Array.from({ length: Math.max(0, Number(v.main) || 0) }, (_, bi) => <i key={bi} className="xr-bub" aria-hidden="true" />)}</span>
+                    : <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range} range</i>}</>)
+                : <span className="xr-dash">-</span>}
               {modV && <span className={`xr-mod-dir ${dirV || "neutral"}`} aria-hidden="true">{dirV === "up" ? "▲" : dirV === "down" ? "▼" : "●"}</span>}
             </span>
           </div>
@@ -1114,6 +1118,42 @@ const ruleBodyText = (text) => {
   if (text.table) return text.table.map((r) => `${r.roll} ${r.name}: ${r.text}`).join(" ");
   return flatRule(text.rule);
 };
+
+/* every named rule and its text, so a printed rule that names another rule (eg.
+   Demonic mentions Fearsome and Stun Weapons) can pull those definitions in too */
+const RULE_TEXT_BY_NAME = (() => {
+  const map = {};
+  for (const [name, text] of Object.entries(SPECIAL_RULES)) if (name !== "None") map[name] = ruleBodyText(text);
+  for (const x of XENO_RULES) if (x.name && !(x.name in map)) map[x.name] = ruleBodyText(x.text);
+  return map;
+})();
+const RULE_NAMES = Object.keys(RULE_TEXT_BY_NAME).sort((a, b) => b.length - a.length);
+const escapeReg = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/* find rules referenced inside the given texts but not already shown, following a
+   couple of levels of nesting (a nested rule may itself name another) */
+function nestedRuleDefs(shownNames, texts) {
+  const seen = new Set([...shownNames].map((n) => n.toLowerCase()));
+  const out = [];
+  let queue = texts.filter(Boolean);
+  let depth = 0;
+  while (queue.length && depth < 3) {
+    const next = [];
+    for (const text of queue) {
+      for (const name of RULE_NAMES) {
+        if (seen.has(name.toLowerCase())) continue;
+        if (new RegExp(`\\b${escapeReg(name)}\\b`).test(text)) {
+          seen.add(name.toLowerCase());
+          const body = RULE_TEXT_BY_NAME[name];
+          out.push({ name, text: body });
+          next.push(body);
+        }
+      }
+    }
+    queue = next;
+    depth++;
+  }
+  return out;
+}
 
 /* renders a rule as an italic flavour line above the mechanical text. the body may be
    a plain string, an array of bullets (a list), or a d6 outcome table. */
@@ -2017,17 +2057,26 @@ function PrintView({ list }) {
               const powers = (u.psychic || []).map((n) => PSYCHIC_POWERS.find((pp) => pp.name === n)).filter(Boolean);
               const stdRules = opts.rules ? unitSpecialRules(u, t).map((n) => ({ name: n, text: SPECIAL_RULES[n] })).filter((g) => g.text) : [];
               const showUp = opts.upgrades && (os.length || xs.length || cs.length || trait || powers.length);
+              const shownNames = new Set([
+                ...(showUp ? [...os.map((o) => o.name), ...xs.map((x) => x.name), ...cs.map((c) => c.name || "")] : []),
+                ...stdRules.map((g) => g.name),
+              ]);
+              const scanTexts = [
+                ...(showUp ? [...os.map((o) => o.text), ...xs.map((x) => ruleBodyText(x.text)), ...cs.map((c) => c.text || ""), ...(trait ? [trait.rule] : []), ...powers.map((pw) => pw.effect)] : []),
+                ...stdRules.map((g) => ruleBodyText(g.text)),
+              ];
+              const nested = (showUp || stdRules.length > 0) ? nestedRuleDefs(shownNames, scanTexts) : [];
               return (
                 <div className="xr-pc" key={u.key}>
                   <div className="xr-pc-head">
                     <span className="xr-pc-name">{u.isCmd && <Crown size={13} className="xr-sheet-crown" />}{unitDisplayName(u, i)}</span>
                     <span className="xr-pc-type">{t.name}</span>
-                    <span className="xr-pc-pts">{unitPoints(u)} pts, {unitSP(u)} SP</span>
+                    <span className="xr-pc-pts">{unitPoints(u)} pts</span>
                   </div>
                   {opts.stats && (
-                    <div className="xr-pc-stt"><StatTable t={t} sp={unitSP(u)} u={u} hint={false} /></div>
+                    <div className="xr-pc-stt"><StatTable t={t} sp={unitSP(u)} u={u} hint={false} spBubbles /></div>
                   )}
-                  {(showUp || stdRules.length > 0) && (
+                  {(showUp || stdRules.length > 0 || nested.length > 0) && (
                     <div className="xr-pc-rules">
                       {showUp && os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
                       {showUp && xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : ruleBodyText(x.text)}</p>)}
@@ -2035,6 +2084,7 @@ function PrintView({ list }) {
                       {showUp && cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                       {showUp && trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
                       {stdRules.map((g) => <p key={`sr-${g.name}`} className="xr-pc-std"><b>{g.name}.</b> {typeof g.text === "string" ? g.text : ruleBodyText(g.text)}</p>)}
+                      {nested.map((g) => <p key={`nx-${g.name}`} className="xr-pc-std xr-pc-nested"><b>{g.name}.</b> {g.text}</p>)}
                     </div>
                   )}
                   {u.notes && u.notes.trim() && <p className="xr-pc-note">{u.notes.trim()}</p>}
@@ -2043,7 +2093,6 @@ function PrintView({ list }) {
             })}
           </div>
         )}
-        {opts.stats && <p className="xr-sheet-note">The coral <b className="fmk">Free</b> chip marks a free action: it activates on its own, no 2d6 roll needed.</p>}
       </div>
     </div>
   );
@@ -3059,7 +3108,7 @@ const CSS = `
 .xr-pc-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:3px;margin-bottom:4px;}
 .xr-pc-name{font-family:var(--display);font-weight:700;font-size:15.5px;display:inline-flex;align-items:center;gap:5px;}
 .xr-pc-type{font-family:var(--flavor);font-style:italic;font-size:12.5px;color:#444;}
-.xr-pc-pts{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:13px;}
+.xr-pc-pts{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:10px;color:#555;}
 .xr-pc-stats{display:flex;flex-direction:column;gap:7px;}
 .xr-pc-line{display:flex;align-items:flex-start;gap:9px;}
 .xr-pc-ll{font-family:var(--ui);font-weight:700;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#777;width:44px;flex:none;padding-top:5px;}
@@ -3078,12 +3127,15 @@ const CSS = `
    keep the two value columns (Activate, Value) side by side per stat */
 .xr-pc-stt{margin-top:0;}
 .xr-pc-stt .xr-stt{padding:0;}
-.xr-pc-stt .xr-stt-head{grid-template-columns:minmax(0,1.4fr) 44px minmax(0,1fr);gap:2px 8px;font-size:10.5px;padding-bottom:2px;color:#555;border-color:#1a1a1a;}
-.xr-pc-stt .xr-stt-head em{font-size:10px;}
-.xr-pc-stt .xr-stt-row{grid-template-columns:minmax(0,1.4fr) 44px minmax(0,1fr);gap:2px 8px;padding:1.5px 0;border-color:#ddd;}
-.xr-pc-stt .xr-stt-stat{font-size:12px;gap:5px;color:#1a1a1a;}
-.xr-pc-stt .xr-stt-ic{width:15px;height:15px;}
-.xr-pc-stt .xr-stt-cell b{font-size:13.5px;}
+.xr-pc-stt .xr-stt-head{grid-template-columns:minmax(0,1.4fr) 42px minmax(0,1fr);gap:1px 8px;font-size:8px;letter-spacing:.02em;text-transform:uppercase;padding-bottom:1px;color:#777;border-color:#1a1a1a;}
+.xr-pc-stt .xr-stt-head em{font-size:8px;}
+.xr-pc-stt .xr-stt-row{grid-template-columns:minmax(0,1.4fr) 42px minmax(0,1fr);gap:1px 8px;padding:1px 0;border-color:#e2e2e2;}
+.xr-pc-stt .xr-stt-stat{font-size:11.5px;gap:5px;color:#1a1a1a;}
+.xr-pc-stt .xr-stt-ic{width:14px;height:14px;}
+.xr-pc-stt .xr-stt-cell b{font-size:13px;}
+/* strength points as bubbles on the print sheet */
+.xr-stt-bubbles{display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px;}
+.xr-bub{display:inline-block;width:9px;height:9px;border:1.5px solid #1a1a1a;border-radius:50%;}
 .xr-pc-stt .xr-rng{font-size:10.5px;}
 .xr-pc-stt .xr-mod-dir{display:none;}
 .xr-pc-stt .xr-die{width:36px;font-size:12.5px;padding:1px 3px;}
@@ -3095,7 +3147,9 @@ const CSS = `
 .xr-pc-rules p{font-family:var(--body);font-size:9.5px;line-height:1.28;margin-bottom:1px;}
 .xr-pc-rules p b{font-weight:700;}
 .xr-pc-std b{font-weight:700;}
+.xr-pc-nested{color:#555;padding-left:8px;border-left:2px solid #ddd;}
 .xr-printview.contrast .xr-pc-std{color:#000;}
+.xr-printview.contrast .xr-pc-nested{color:#000;border-left-color:#000;}
 .xr-printview.large .xr-pc-name{font-size:18px;}
 .xr-printview.large .xr-pc-stt .xr-stt-cell b{font-size:16px;}
 .xr-printview.large .xr-pc-stt .xr-stt-stat{font-size:14px;}

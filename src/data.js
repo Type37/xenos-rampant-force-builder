@@ -1845,9 +1845,11 @@ export const SPECIAL_RULES = {
  },
  "Vehicle Melee": {
   "rule": [
-   "Attacks only by moving straight forwards and cannot turn during the charge, so pre-position it. Walkers are exempt.",
-   "In a vehicle-versus-infantry Attack the infantry always Retreats, whatever the result.",
-   "If it Attacks a building, the building Defends, hitting on 4+; ramming solid structures is unwise without a Combat Engineering Vehicle."
+   "Vehicles can Attack and Defend like anyone else, but most are poorly suited to melee.",
+   "It can only Attack by moving directly forwards and cannot turn during the charge, so you have to pre-position it. Walkers are exempt, as they move like infantry.",
+   "Vehicle versus vehicle Attacks resolve normally.",
+   "In a vehicle versus infantry Attack the infantry always Retreats, whatever the result, getting out of the way of several tons of metal.",
+   "If a vehicle Attacks a building, ramming it, the building Defends and hits on 4+. Ramming solid structures is not recommended without the Combat Engineering Vehicle upgrade."
   ]
  },
  "Severe Damage": {
