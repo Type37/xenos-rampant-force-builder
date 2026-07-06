@@ -1,6 +1,500 @@
 /* Pre-made example detachments, transcribed from the genre settings in
    Xenos Rampant (Osprey Games, 2022) and mapped to this app's unit and option
    ids. Grouped by setting. Generated, then reviewed by hand. */
+
+/* Grim Darkness: Combat Patrol boxes rebuilt as Xenos Rampant detachments. This
+   setting is wired up but hidden (see "hidden": true below) until it is ready to
+   go public. Populate this array to add the lists. */
+const GRIMDARK_DETACHMENTS = [
+  {
+    "n": 1,
+    "name": "Astra Militarum: Karsk's Gunners",
+    "subtitle": "Cadian discipline and overwhelming firepower.",
+    "lore": "The soldiers gathered under Major Karsk's banner are but one small part of the far larger Astra Militarum muster now defending the vaunted Sanctus Wall systems. Gathered to battle the forces of Chaos, they have also faced alien pirates and even heretic insurgents, emerging victorious time and again thanks to a blend of tight regimental discipline and raw, overwhelming firepower.",
+    "image": "grimdark/astra-militarum-karsks-gunners.jpg",
+    "units": [
+      {
+        "typeId": "light",
+        "count": 1,
+        "isCmd": true,
+        "label": "Command Squad Karsk",
+        "points": 3,
+        "options": [],
+        "xenos": { "combat-medic": true },
+        "notes": "Major Karsk is every bit the unforgiving and grizzled Cadian commander of the propaganda vid-feeds. A gifted strategist, he is accompanied by a cadre of specialist troopers who aid him in his command duties."
+      },
+      {
+        "typeId": "light",
+        "count": 1,
+        "label": "Cadian Shock Troops, first squad",
+        "points": 3,
+        "options": ["increased-squad"],
+        "xenos": {},
+        "notes": "Born soldiers, the Shock Troops of Cadia have trained their entire lives for military service. Decades of rigorous firing drills have forged them into expert sharpshooters."
+      },
+      {
+        "typeId": "light",
+        "count": 1,
+        "label": "Cadian Shock Troops, second squad",
+        "points": 3,
+        "options": ["increased-squad"],
+        "xenos": {},
+        "notes": "Same card as the first squad, with a grenade launcher and plasma gun in the mix."
+      },
+      {
+        "typeId": "support",
+        "count": 1,
+        "label": "Field Ordnance Battery, bombast field gun",
+        "points": 8,
+        "options": ["artillery", "indirect-fire"],
+        "xenos": {},
+        "notes": "Amongst the largest man-portable weapons fielded by the Astra Militarum are those crewed by Ordnance Teams. Bombast field guns fire heavy shells indirectly."
+      },
+      {
+        "typeId": "support",
+        "count": 1,
+        "label": "Field Ordnance Battery, malleus rocket launcher",
+        "points": 7,
+        "options": ["anti-tank"],
+        "xenos": {},
+        "notes": "Same card as the bombast gun; the malleus rocket launcher fires multiple warheads."
+      },
+      {
+        "typeId": "fighting-vehicle",
+        "count": 1,
+        "label": "Armoured Sentinel",
+        "points": 6,
+        "options": ["light-armoured", "walker"],
+        "xenos": {},
+        "notes": "Modified with extra protective panelling, Armoured Sentinels are superb front-line hunters. As mobile hunter-killers, they excel in destroying vehicles, bunkers and xenos monstrosities."
+      }
+    ]
+  },
+  {
+    "n": 2,
+    "name": "T'au Empire: Protectors of Aun'Shar",
+    "subtitle": "The Greater Good, backed by battlesuit firepower.",
+    "lore": "The Ethereal Aun'Shar believes he can best spread the light of the Greater Good by taking to the battlefield and overseeing the destruction of foes who cannot be enlightened through diplomacy. The Fire caste warriors at his side follow his commands without hesitation.",
+    "image": "grimdark/tau-empire-protectors-of-aunshar.jpg",
+    "units": [
+      {
+        "typeId": "light",
+        "count": 1,
+        "isCmd": true,
+        "label": "Aun'Shar",
+        "points": 4,
+        "options": [],
+        "xenos": { "skimmer": true, "fanatical-discipline": true },
+        "notes": "Like all Ethereals, Aun'Shar is serene and wise, a spiritual leader of the T'au. In war he skims above the battle aboard his hover drone and invokes the might of the T'au castes."
+      },
+      {
+        "typeId": "light",
+        "count": 1,
+        "label": "Shas'nel D'tano",
+        "points": 4,
+        "options": ["armour-piercing", "heavy-weapon"],
+        "xenos": {},
+        "notes": "Cadre Fireblades fight selflessly amongst the Fire caste rank and file, optimising the ferocity and accuracy of their firepower."
+      },
+      {
+        "typeId": "fighting-vehicle",
+        "count": 1,
+        "label": "Ghostkeel Battlesuit",
+        "points": 11,
+        "options": ["light-armoured", "walker", "veteran-crew"],
+        "xenos": { "cloaking-device": true },
+        "notes": "Between its stealth field and electrowarfare suite the Ghostkeel slips unnoticed across the battlefield, then unleashes ferocious volleys of firepower."
+      },
+      {
+        "typeId": "light",
+        "count": 1,
+        "label": "Strike Team",
+        "points": 6,
+        "options": ["increased-squad", "heavy-weapon", "armour-piercing"],
+        "xenos": {},
+        "notes": "Fire Warrior Strike Teams are the mainstay of many Hunter Cadres, unleashing storms of anti-personnel firepower."
+      },
+      {
+        "typeId": "recon",
+        "count": 1,
+        "label": "Stealth Battlesuits",
+        "points": 5,
+        "options": ["veterans"],
+        "xenos": { "skimmer": true },
+        "notes": "The XV25 conceals its pilot behind sensor-baffling stealth technology, with jet-assisted speed and impressive firepower."
+      }
+    ]
+  },
+  {
+    "n": 3,
+    "name": "Leagues of Votann",
+    "subtitle": "Well-armoured Kin and their Oathband firepower.",
+    "image": "grimdark/leagues-of-votann.jpg",
+    "units": [
+      {
+        "typeId": "elite",
+        "count": 1,
+        "isCmd": true,
+        "label": "Kâhl Warspeke",
+        "points": 8,
+        "options": ["high-powered-blades", "armour-piercing"],
+        "xenos": {},
+        "notes": "Kâhl Warspeke's strategic wisdom and martial might inspire his warriors, bludgeoning with his mass gauntlet those not obliterated by his volkanite disintegrator."
+      },
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "label": "Hearthkyn Warriors",
+        "points": 9,
+        "options": ["increased-squad", "heavy-weapon", "armour-piercing"],
+        "xenos": { "combat-medic": true },
+        "notes": "Well-armoured and well-trained, Hearthkyn Warriors form the backbone of most Oathbands, laying down hails of firepower."
+      },
+      {
+        "typeId": "berserk",
+        "count": 1,
+        "label": "Cthonian Beserks",
+        "points": 7,
+        "options": ["heavy-armour", "high-powered-blades"],
+        "xenos": { "combat-medic": true },
+        "notes": "Cthonian Beserks are amongst the most heavily augmented Kin, storming enemy strongpoints and breaking them open."
+      },
+      {
+        "typeId": "softskin-vehicle",
+        "count": 1,
+        "label": "Hernkyn Pioneers",
+        "points": 6,
+        "options": ["transport-10"],
+        "xenos": { "skimmer": true, "special-insertion": true },
+        "notes": "Hernkyn Pioneers skim across alien worlds on magna-coil bikes, striking from unexpected quarters."
+      }
+    ]
+  },
+  {
+    "n": 4,
+    "name": "Drukhari: The Blades of Torment",
+    "subtitle": "Quicksilver raiders who prize merciless butchery.",
+    "lore": "Assembled for the terror raids on the night world of Somniad, Archon Malivex's warriors prize swift and merciless butchery. His followers strive to impress their cruel master and never fall behind the quicksilver tempo of his hit-and-run attacks.",
+    "image": "grimdark/drukhari-the-blades-of-torment.jpg",
+    "units": [
+      {
+        "typeId": "elite",
+        "count": 1,
+        "isCmd": true,
+        "label": "Archon Malivex",
+        "points": 9,
+        "options": ["high-powered-blades", "mobile", "armour-piercing"],
+        "xenos": {},
+        "notes": "Swift and deadly, the Archon hacks the souls from his victims with his huskblade while evading counterstrikes with contemptuous ease."
+      },
+      {
+        "typeId": "light",
+        "count": 1,
+        "label": "Kabalite Warriors",
+        "points": 5,
+        "options": ["increased-squad", "heavy-weapon"],
+        "xenos": {},
+        "notes": "Kabalite Warriors unleash hails of toxin-coated shards during swift, agile advances."
+      },
+      {
+        "typeId": "berserk",
+        "count": 1,
+        "label": "Incubi",
+        "points": 6,
+        "options": ["high-powered-blades", "heavy-armour", "mobile"],
+        "xenos": {},
+        "notes": "Warrior-perfectionists in ancient warsuits, the Incubi sweep giant klaives in decapitating strikes."
+      },
+      {
+        "typeId": "softskin-vehicle",
+        "count": 1,
+        "label": "Raider",
+        "points": 5,
+        "options": ["transport-10"],
+        "xenos": { "skimmer": true },
+        "notes": "A favoured transport cutter that speeds on anti-grav turbines, its passengers loosing shots from the trophy-hung decking."
+      },
+      {
+        "typeId": "fighting-vehicle",
+        "count": 1,
+        "label": "Ravager",
+        "points": 5,
+        "options": ["light-armoured"],
+        "xenos": { "skimmer": true },
+        "notes": "Ravager gunships are mobile assassins, mounting enough firepower to gut enemy tanks."
+      }
+    ]
+  },
+  {
+    "n": 5,
+    "name": "Necrons: Amonhotekh's Guard",
+    "subtitle": "Undying android legions that self-repair and advance.",
+    "image": "grimdark/necrons-amonhotekhs-guard.jpg",
+    "units": [
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "isCmd": true,
+        "label": "Necron Warriors led by Overlord Amonhotekh",
+        "points": 8,
+        "options": ["increased-squad", "heavy-weapon", "armour-piercing"],
+        "xenos": { "undead": true, "regeneration": true },
+        "notes": "Overlord Amonhotekh's android mind is swift, his body implacably resilient. Necron Warriors attack in shambling rank upon rank, self-repairing from hideous damage."
+      },
+      {
+        "typeId": "berserk",
+        "count": 1,
+        "label": "Skorpekh Destroyers",
+        "points": 7,
+        "options": ["heavy-armour", "high-powered-blades"],
+        "xenos": { "mechanoid": true, "fearsome": true },
+        "notes": "The Destroyer cult pass through enemy lines in a madcap pirouette of slashing hyperphase blades."
+      },
+      {
+        "typeId": "lesser-xeno",
+        "count": 1,
+        "label": "Canoptek Scarab Swarms",
+        "points": 5,
+        "options": ["swarm"],
+        "xenos": { "mechanoid": true, "skimmer": true },
+        "notes": "Canoptek Scarabs descend in skimming swarms, breaking down infantry and tanks alike with their feeder mandibles."
+      },
+      {
+        "typeId": "fighting-vehicle",
+        "count": 1,
+        "label": "Canoptek Doomstalker",
+        "points": 10,
+        "options": ["walker", "veteran-crew"],
+        "xenos": { "mechanoid": true },
+        "notes": "Doomstalkers stride with eerie grace, annihilating all who stand against them with searing salvoes from their doomsday blasters."
+      }
+    ]
+  },
+  {
+    "n": 6,
+    "name": "Death Guard: The Shambling Horde",
+    "subtitle": "Plague-ridden hulks and their swarming pox victims.",
+    "image": "grimdark/death-guard-the-shambling-horde.jpg",
+    "units": [
+      {
+        "typeId": "elite",
+        "count": 1,
+        "isCmd": true,
+        "label": "Typhus",
+        "points": 10,
+        "options": ["high-powered-blades"],
+        "xenos": { "fearsome": true, "regeneration": true },
+        "notes": "Host of the Destroyer Hive, Typhus slices apart countless foes with his filth-encrusted power scythe and unleashes swarming plague-flies."
+      },
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "label": "Folgoth Grelch",
+        "points": 5,
+        "options": ["heavy-weapon", "armour-piercing"],
+        "xenos": {},
+        "notes": "Biologus Putrifiers carry blight grenades bloated with the latest contagions, implanting killing maladies into the enemy."
+      },
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "label": "Plague Marines",
+        "points": 9,
+        "options": ["increased-squad", "heavy-weapon", "armour-piercing"],
+        "xenos": { "fearsome": true },
+        "notes": "The mainstay of Death Guard vectoriums, excelling in short-ranged firefights and relentless assaults."
+      },
+      {
+        "typeId": "militia",
+        "count": 3,
+        "label": "Poxwalkers",
+        "points": 2,
+        "options": [],
+        "xenos": { "undead": true, "contagious": true },
+        "notes": "Victims of the Walking Pox, terror troops whose ceaseless groaning infects the living."
+      }
+    ]
+  },
+  {
+    "n": 7,
+    "name": "Space Marines: Strike Force Octavius",
+    "subtitle": "Terminator-clad veterans purging dug-in foes.",
+    "lore": "The Space Marines of Strike Force Octavius specialise in purging the Emperor's enemies amongst the most tangled terrain, their resilience and close-range firepower enough to eradicate dug-in foes.",
+    "image": "grimdark/space-marines-strike-force-octavius.jpg",
+    "units": [
+      {
+        "typeId": "elite",
+        "count": 1,
+        "isCmd": true,
+        "label": "Captain Octavius",
+        "points": 9,
+        "options": ["super-heavy-armour", "high-powered-blades"],
+        "xenos": {},
+        "notes": "Captain Octavius goes to battle clad in Terminator plate, shrugging off the worst his enemies can hurl before carving them apart with his relic blade."
+      },
+      {
+        "typeId": "elite",
+        "count": 1,
+        "label": "Librarian Tantus",
+        "points": 7,
+        "options": [],
+        "xenos": { "psychic": 0 },
+        "notes": "Librarians in warded Terminator armour blast the foe with powerful psychic energies."
+      },
+      {
+        "typeId": "elite",
+        "count": 1,
+        "label": "Terminator Squad",
+        "points": 8,
+        "options": ["super-heavy-armour"],
+        "xenos": {},
+        "notes": "Terminator armour enables its wearer to survive anything; Terminator Squads appear in the midst of the foe firing fearsome weapons."
+      },
+      {
+        "typeId": "elite",
+        "count": 1,
+        "label": "Infernus Squad",
+        "points": 6,
+        "options": [],
+        "xenos": {},
+        "notes": "Infernus Squads purge swathes of enemy ranks with incandescent firestorms from their pyreblasters."
+      }
+    ]
+  },
+  {
+    "n": 8,
+    "name": "Astra Militarum: Karsk's Gunners, lean version",
+    "subtitle": "The same guns, trimmed for a 24 point muster.",
+    "image": "grimdark/astra-militarum-karsks-gunners-lean-version.jpg",
+    "units": [
+      {
+        "typeId": "light",
+        "count": 1,
+        "isCmd": true,
+        "label": "Command Squad Karsk",
+        "points": 3,
+        "options": [],
+        "xenos": { "combat-medic": true }
+      },
+      {
+        "typeId": "light",
+        "count": 2,
+        "label": "Cadian Shock Troops, two squads",
+        "points": 3,
+        "options": ["increased-squad"],
+        "xenos": {}
+      },
+      {
+        "typeId": "support",
+        "count": 1,
+        "label": "Field Ordnance Battery",
+        "points": 8,
+        "options": ["artillery", "indirect-fire"],
+        "xenos": {}
+      },
+      {
+        "typeId": "fighting-vehicle",
+        "count": 1,
+        "label": "Armoured Sentinel",
+        "points": 7,
+        "options": ["armour-piercing", "light-armoured", "walker"],
+        "xenos": {}
+      }
+    ]
+  },
+  {
+    "n": 9,
+    "name": "Militarum Tempestus: Tempestus Scions",
+    "subtitle": "Grav-chute storm troopers dropping into the enemy.",
+    "lore": "A force built from generic Tempestus Scion models. The whole force deep-strikes on grav-chutes, carapace armour turning aside return fire as their hotshot volleys burn through the enemy.",
+    "image": "grimdark/militarum-tempestus-tempestus-scions.jpg",
+    "units": [
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "isCmd": true,
+        "label": "Tempestor Prime",
+        "points": 6,
+        "options": ["armour-piercing"],
+        "xenos": { "special-insertion": true, "fanatical-discipline": true },
+        "notes": "A Tempestor Prime drops from the sky at the head of his storm troopers, calling targets and holding the line steady."
+      },
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "label": "Scion Squad, first",
+        "points": 6,
+        "options": ["increased-squad", "armour-piercing"],
+        "xenos": { "special-insertion": true },
+        "notes": "Scions descend on grav-chutes into the heart of the enemy position."
+      },
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "label": "Scion Squad, second",
+        "points": 6,
+        "options": ["increased-squad", "armour-piercing"],
+        "xenos": { "special-insertion": true }
+      },
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "label": "Scion Special Weapons Squad",
+        "points": 6,
+        "options": ["heavy-weapon", "armour-piercing"],
+        "xenos": { "special-insertion": true },
+        "notes": "Every hand carries a special weapon, dropping in to crack a tank or bunker before the enemy can react."
+      }
+    ]
+  },
+  {
+    "n": 10,
+    "name": "Adeptus Mechanicus: Maniple Verask-Alpha",
+    "subtitle": "Cyborg warriors purging the greenskin waves.",
+    "lore": "This combined arms maniple was assembled by Enginseer Verask for protection during the fighting around the turbine-city of Shadravorsk, his cyborg warriors exterminating one greenskin wave after another.",
+    "image": "grimdark/adeptus-mechanicus-maniple-verask-alpha.jpg",
+    "units": [
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "isCmd": true,
+        "label": "Enginseer Verask",
+        "points": 4,
+        "options": [],
+        "xenos": { "combat-medic": true },
+        "notes": "Enginseer Verask is respected for his connection to machine spirits and his uncompromising brutality in battle."
+      },
+      {
+        "typeId": "light",
+        "count": 1,
+        "label": "Skitarii Rangers",
+        "points": 5,
+        "options": ["increased-squad", "heavy-weapon"],
+        "xenos": {},
+        "notes": "Rangers bear antique galvanic rifles whose energised ammunition leaves the prey a smoking husk."
+      },
+      {
+        "typeId": "heavy",
+        "count": 1,
+        "label": "Kataphron Destroyers",
+        "points": 5,
+        "options": ["heavy-weapon", "armour-piercing"],
+        "xenos": { "mechanoid": true },
+        "notes": "Biomechanical constructs operating as mobile heavy weapons platforms."
+      },
+      {
+        "typeId": "fighting-vehicle",
+        "count": 1,
+        "label": "Onager Dunecrawler",
+        "points": 10,
+        "options": ["walker", "veteran-crew"],
+        "xenos": { "mechanoid": true },
+        "notes": "The Onager's flexible armaments blast apart aircraft or atomise elite infantry, advancing on multiple limbs over treacherous obstacles."
+      }
+    ]
+  }
+];
+
 export const SETTINGS = [
   {
     "id": "weird-war",
@@ -2676,7 +3170,7 @@ export const SETTINGS = [
   {
     "id": "anvil",
     "name": "Anvil Industries",
-    "blurb": "Fan detachments by Anvil Industries, mapped to this app.",
+    "blurb": "Richard Cowen, co-creator of the sci-fi miniature game Xenos Rampant, put together these army lists using Anvil minis from the Mutant Horrors digital pack, Daughters of the Burning Rose, and Exo-Lords.",
     "url": "https://anvilindustry.co.uk/xenos-rampant-army-lists",
     "detachments": [
       {
@@ -2927,7 +3421,8 @@ export const SETTINGS = [
   {
     "id": "grimdark",
     "name": "Grim Darkness",
-    "blurb": "In the grim darkness of the far future there is only war. Grimdark science-fantasy detachments. More lists coming soon.",
-    "detachments": []
+    "hidden": true,
+    "blurb": "Combat Patrol boxes rebuilt as Xenos Rampant detachments. Ready lists for friends who own the models but do not play 40k.",
+    "detachments": GRIMDARK_DETACHMENTS
   }
 ];

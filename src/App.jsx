@@ -42,9 +42,11 @@ import icoStrength from "./assets/stat/strength.png";
 import {
   INFANTRY, VEHICLE, UNIT_TYPES, XENO_RULES, SPECIAL_RULES,
   COMMANDER_TABLES, BUDGET_PRESETS, UNIT_BY_ID, XENO_BY_ID,
-  NATIONAL_TRAITS, NATIONAL_BY_ID, PSYCHIC_POWERS,
+  PSYCHIC_POWERS,
 } from "./data.js";
 import { SETTINGS } from "./premade.js";
+/* settings flagged hidden are wired up but kept out of the preset picker */
+const PRESET_SETTINGS = SETTINGS.filter((s) => !s.hidden);
 import { ALL_GENRES, randomName } from "./factions.js";
 import { RULES_REFERENCE, RULES_CATS } from "./rules.js";
 
@@ -176,6 +178,9 @@ function sanitize(u) {
     if (!(x.id in xenos)) continue;
     if (x.requiresXeno && !(x.requiresXeno in xenos)) delete xenos[x.id];
     if (x.requiresAny && !x.requiresAny.some((r) => r in xenos)) delete xenos[x.id];
+    // a tiered rule must carry a numeric tier index; coerce anything else (eg. a
+    // preset that stored `true`) to the first tier so tier lookups never crash
+    if (x.tiers && x.id in xenos && typeof xenos[x.id] !== "number") xenos[x.id] = 0;
   }
   // keep chosen psychic powers within what the class allows
   let psychic = u.psychic || [];
@@ -772,13 +777,13 @@ function NewArmyModal({ onCreate, onClose }) {
 
 /* load-a-preset modal: pick a genre setting, then a ready-made detachment */
 function LoadPresetModal({ onLoad, onClose }) {
-  const [sid, setSid] = useState(SETTINGS[0] ? SETTINGS[0].id : null);
+  const [sid, setSid] = useState(PRESET_SETTINGS[0] ? PRESET_SETTINGS[0].id : null);
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-  const setting = SETTINGS.find((s) => s.id === sid) || SETTINGS[0];
+  const setting = PRESET_SETTINGS.find((s) => s.id === sid) || PRESET_SETTINGS[0];
   if (!setting) return null;
   return (
     <div className="xr-modal-backdrop" onClick={onClose}>
@@ -788,7 +793,7 @@ function LoadPresetModal({ onLoad, onClose }) {
           <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
         </div>
         <div className="xr-modal-tabs" role="tablist">
-          {SETTINGS.map((s) => (
+          {PRESET_SETTINGS.map((s) => (
             <button key={s.id} role="tab" aria-selected={sid === s.id} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} onClick={() => setSid(s.id)}>
               {s.name.split(":")[0]}
             </button>
@@ -853,7 +858,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
             <h2 className="xr-home-h">Detachments <em>{arr.length}</em></h2>
             <div className="xr-home-bar-btns">
               <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={20} /> New detachment</button>
-              {SETTINGS.length > 0 && (
+              {PRESET_SETTINGS.length > 0 && (
                 <button className="xr-btn" onClick={() => setLoading(true)} title="Start from a ready-made detachment out of the rulebook"><Book size={19} /> Load a preset</button>
               )}
             </div>
@@ -866,7 +871,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
             <p>Start from scratch, or load a ready-made force from the rulebook.</p>
             <div className="xr-home-welcome-btns">
               <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={19} /> New detachment</button>
-              {SETTINGS.length > 0 && (
+              {PRESET_SETTINGS.length > 0 && (
                 <button className="xr-btn" onClick={() => setLoading(true)}><Book size={18} /> Load a preset</button>
               )}
             </div>
@@ -1206,7 +1211,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
                   <AbilityItem key={o.id} name={o.name} cost={optCost(o)} text={o.text} kind="Option" />
                 ))}
                 {boughtXenos.map((x) => (
-                  <AbilityItem key={x.id} name={`${x.name}${x.tiers ? ` (${x.tiers[u.xenos[x.id]].label})` : ""}`} cost={xenoCost(x, u.xenos[x.id])} text={x.text} tone="xeno" kind="Xeno rule" />
+                  <AbilityItem key={x.id} name={`${x.name}${x.tiers ? ` (${x.tiers[typeof u.xenos[x.id] === "number" ? u.xenos[x.id] : 0].label})` : ""}`} cost={xenoCost(x, u.xenos[x.id])} text={x.text} tone="xeno" kind="Xeno rule" />
                 ))}
                 {(u.psychic || []).map((name) => {
                   const pw = PSYCHIC_POWERS.find((p) => p.name === name);
@@ -1681,7 +1686,6 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
 
   const copyList = () => {
     const lines = [`${list.name || "Untitled detachment"} (${used}/${budget} pts, ${count} units)`];
-    if (list.nationalTrait && NATIONAL_BY_ID[list.nationalTrait]) lines.push(`National trait: ${NATIONAL_BY_ID[list.nationalTrait].name}`);
     roster.forEach((u, i) => {
       const t = UNIT_BY_ID[u.typeId];
       lines.push(`${u.isCmd ? "[CMD] " : ""}${unitDisplayName(u, i)} (${t.name}, ${unitPoints(u)} pts, ${unitSP(u)} SP)`);
@@ -1748,17 +1752,6 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                       <span className="xr-set-toggle-box">{list.freeplay && <Check size={14} />}</span>
                       <span className="xr-set-toggle-txt"><b>Free play</b><i>Ignore composition limits (unit count, vehicles, one Commander).</i></span>
                     </button>
-                    <label className="xr-set-field">
-                      <span className="xr-set-field-l">National trait</span>
-                      <select className="xr-natl-sel" value={list.nationalTrait || ""} onChange={(e) => updateList({ nationalTrait: e.target.value || undefined })}>
-                        <option value="">None</option>
-                        {NATIONAL_TRAITS.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
-                      </select>
-                      <span className="xr-set-field-h">Weird War optional rule for the whole detachment.</span>
-                      {list.nationalTrait && NATIONAL_BY_ID[list.nationalTrait] && (
-                        <span className="xr-set-field-rule">{NATIONAL_BY_ID[list.nationalTrait].rule}</span>
-                      )}
-                    </label>
                     <button className="xr-btn small danger xr-set-delete" onClick={onDelete}><Trash size={16} /> Delete this detachment</button>
                   </div>
                 </>
@@ -1886,9 +1879,6 @@ function PrintView({ list }) {
           <h1 className="xr-sheet-title">{list.name || "Untitled detachment"}</h1>
           <div className="xr-sheet-meta">Xenos Rampant &nbsp; {used}/{budget} pts &nbsp; {count} {count === 1 ? "unit" : "units"}</div>
         </div>
-        {list.nationalTrait && NATIONAL_BY_ID[list.nationalTrait] && (
-          <p className="xr-sheet-natl"><b>National trait, {NATIONAL_BY_ID[list.nationalTrait].name}:</b> {NATIONAL_BY_ID[list.nationalTrait].rule}</p>
-        )}
         {list.description && list.description.trim() && (
           <p className="xr-sheet-notes">{list.description.trim()}</p>
         )}
@@ -2040,6 +2030,29 @@ function PlayView({ list }) {
       <SiteFooter />
     </div>
   );
+}
+
+/* a friendly stop instead of a white screen when something throws */
+function ErrorScreen({ error }) {
+  return (
+    <div className="xr-errscreen" role="alert">
+      <span className="xr-errscreen-badge"><Warn size={44} /></span>
+      <h1 className="xr-errscreen-h">Something went sideways.</h1>
+      <p className="xr-errscreen-p">The builder hit an error and stopped this view. Your saved detachments are safe in this browser.</p>
+      {error && error.message && <pre className="xr-errscreen-detail">{String(error.message)}</pre>}
+      <div className="xr-errscreen-btns">
+        <button className="xr-btn primary" onClick={() => window.location.reload()}><Reset size={17} /> Reload the builder</button>
+        <button className="xr-btn" onClick={() => { window.location.hash = "#/"; window.location.reload(); }}><House size={17} /> Back to your lists</button>
+      </div>
+      <p className="xr-errscreen-foot">If it keeps happening, <a href="mailto:warlore1@outlook.com">send feedback</a> and I will take a look.</p>
+    </div>
+  );
+}
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidUpdate(prev) { if (prev.routeKey !== this.props.routeKey && this.state.error) this.setState({ error: null }); }
+  render() { return this.state.error ? <ErrorScreen error={this.state.error} /> : this.props.children; }
 }
 
 /* ================================================================== *
@@ -2206,10 +2219,12 @@ export default function App() {
   return (
     <div className="xr-app">
       <style>{CSS}</style>
-      {route.view === "home" && <Dashboard lists={lists} onOpen={openList} onCreate={createList} onLoadPreset={loadPreset} onDup={dupList} onDel={delList} />}
-      {route.view === "build" && <Builder list={current} selectedKey={route.unitKey} dispatch={dispatch} updateList={updateList} onDelete={() => delList(current.id)} />}
-      {route.view === "print" && <PrintView list={current} />}
-      {route.view === "play" && <PlayView list={current} />}
+      <ErrorBoundary routeKey={`${route.view}/${route.unitKey || ""}`}>
+        {route.view === "home" && <Dashboard lists={lists} onOpen={openList} onCreate={createList} onLoadPreset={loadPreset} onDup={dupList} onDel={delList} />}
+        {route.view === "build" && <Builder list={current} selectedKey={route.unitKey} dispatch={dispatch} updateList={updateList} onDelete={() => delList(current.id)} />}
+        {route.view === "print" && <PrintView list={current} />}
+        {route.view === "play" && <PlayView list={current} />}
+      </ErrorBoundary>
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
     </div>
   );
@@ -2467,6 +2482,15 @@ const CSS = `
 .xr-issue{font-family:var(--ui);font-weight:600;font-size:14.5px;padding:6px 11px;border-radius:8px;border-left:4px solid;background:var(--paper-2);}
 .xr-issue.err{color:var(--coral-ink);border-color:var(--coral-ink);}
 .xr-issue.warn{color:var(--brass);border-color:var(--brass);}
+/* error boundary screen */
+.xr-errscreen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:40px 22px;background:var(--paper-3);}
+.xr-errscreen-badge{display:flex;align-items:center;justify-content:center;width:84px;height:84px;border-radius:50%;background:var(--coral);color:var(--ink);border:3px solid var(--ink);}
+.xr-errscreen-h{font-family:var(--display);font-weight:700;font-size:30px;color:var(--ink);}
+.xr-errscreen-p{font-family:var(--body);font-size:18px;line-height:1.5;color:var(--ink-2);max-width:52ch;}
+.xr-errscreen-detail{font-family:var(--mono);font-size:13px;color:var(--coral-ink);background:var(--paper);border:2px solid var(--ink-30);border-radius:9px;padding:9px 12px;max-width:min(92vw,640px);overflow:auto;white-space:pre-wrap;text-align:left;}
+.xr-errscreen-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px;}
+.xr-errscreen-foot{font-family:var(--flavor);font-style:italic;font-size:15px;color:var(--ink-2);margin-top:8px;}
+.xr-errscreen-foot a{color:var(--brand-deep-blue);}
 
 .xr-build-body{flex:1;display:grid;grid-template-columns:minmax(320px,430px) 1fr;gap:0;align-items:start;}
 .xr-ulist{display:flex;flex-direction:column;gap:10px;padding:18px clamp(12px,1.6vw,20px) 72px;}
