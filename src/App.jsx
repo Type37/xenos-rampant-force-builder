@@ -35,6 +35,40 @@ import giWings from "@iconify-icons/game-icons/angel-wings";
 import giGears from "@iconify-icons/game-icons/gears";
 import giRadar from "@iconify-icons/game-icons/radar-dish";
 import giFlame from "@iconify-icons/game-icons/flame";
+import giGunRose from "@iconify-icons/game-icons/gun-rose";
+import giMeeple from "@iconify-icons/game-icons/meeple-army";
+import giBear from "@iconify-icons/game-icons/bear-face";
+import giDoubleDragon from "@iconify-icons/game-icons/double-dragon";
+import giDragonSpiral from "@iconify-icons/game-icons/dragon-spiral";
+import giMonsterGrasp from "@iconify-icons/game-icons/monster-grasp";
+import giDeadEye from "@iconify-icons/game-icons/dead-eye";
+import giCenturion from "@iconify-icons/game-icons/centurion-helmet";
+import giElfHelm from "@iconify-icons/game-icons/elf-helmet";
+import giKnightBanner from "@iconify-icons/game-icons/knight-banner";
+import giMountedKnight from "@iconify-icons/game-icons/mounted-knight";
+import giCrownedSkull from "@iconify-icons/game-icons/crowned-skull";
+import giVisor from "@iconify-icons/game-icons/visored-helm";
+import giBarbute from "@iconify-icons/game-icons/barbute";
+import giCultist from "@iconify-icons/game-icons/cultist";
+import giDaemon from "@iconify-icons/game-icons/gooey-daemon";
+import giAlienFire from "@iconify-icons/game-icons/alien-fire";
+import giAlienStare from "@iconify-icons/game-icons/alien-stare";
+import giCyborg from "@iconify-icons/game-icons/cyborg-face";
+import giExplosion from "@iconify-icons/game-icons/spiky-explosion";
+import giPistols from "@iconify-icons/game-icons/crossed-pistols";
+import giWolfHowl from "@iconify-icons/game-icons/wolf-howl";
+import giRaven from "@iconify-icons/game-icons/raven";
+import giBatMask from "@iconify-icons/game-icons/bat-mask";
+import giSpider from "@iconify-icons/game-icons/spider-alt";
+import giHydra from "@iconify-icons/game-icons/hydra";
+import giTiger from "@iconify-icons/game-icons/tiger-head";
+import miSkull from "@iconify-icons/mdi/skull-crossbones";
+import miCrosshair from "@iconify-icons/mdi/crosshairs-gps";
+import miCross from "@iconify-icons/mdi/cross-celtic";
+import miKnight from "@iconify-icons/mdi/chess-knight";
+import miAlien from "@iconify-icons/mdi/alien";
+import tbMeteor from "@iconify-icons/tabler/meteor";
+import tbSword from "@iconify-icons/tabler/sword";
 import icCrown from "@iconify-icons/ph/crown-simple-fill";
 import icDice from "@iconify-icons/ph/dice-six-fill";
 import icPrinter from "@iconify-icons/ph/printer-fill";
@@ -101,8 +135,9 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret),
   Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt), LinkIc = mk(icLink);
 
-/* badge/emblem choices offered when starting a detachment; id is stored on the list */
-const DETACH_ICONS = [
+/* badge/emblem choices offered when starting a detachment; id is stored on the list.
+   all monochrome, drawn in the ink colour, and shuffled for the picker below. */
+const DETACH_ICON_LIST = [
   { id: "crossed-swords", C: mk(giCrossedSwords) }, { id: "spartan-helmet", C: mk(giSpartan) },
   { id: "eagle-emblem", C: mk(giEagle) }, { id: "checked-shield", C: mk(giCheckedShield) },
   { id: "spiked-shield", C: mk(giSpikedShield) }, { id: "shield-echoes", C: mk(giShieldEchoes) },
@@ -115,8 +150,34 @@ const DETACH_ICONS = [
   { id: "star-formation", C: mk(giStars) }, { id: "mailed-fist", C: mk(giFist) },
   { id: "angel-wings", C: mk(giWings) }, { id: "gears", C: mk(giGears) },
   { id: "radar-dish", C: mk(giRadar) }, { id: "flame", C: mk(giFlame) },
+  { id: "gun-rose", C: mk(giGunRose) }, { id: "meeple-army", C: mk(giMeeple) },
+  { id: "bear-face", C: mk(giBear) }, { id: "double-dragon", C: mk(giDoubleDragon) },
+  { id: "dragon-spiral", C: mk(giDragonSpiral) }, { id: "monster-grasp", C: mk(giMonsterGrasp) },
+  { id: "dead-eye", C: mk(giDeadEye) }, { id: "centurion-helmet", C: mk(giCenturion) },
+  { id: "elf-helmet", C: mk(giElfHelm) }, { id: "knight-banner", C: mk(giKnightBanner) },
+  { id: "mounted-knight", C: mk(giMountedKnight) }, { id: "crowned-skull", C: mk(giCrownedSkull) },
+  { id: "visored-helm", C: mk(giVisor) }, { id: "barbute", C: mk(giBarbute) },
+  { id: "cultist", C: mk(giCultist) }, { id: "gooey-daemon", C: mk(giDaemon) },
+  { id: "alien-fire", C: mk(giAlienFire) }, { id: "alien-stare", C: mk(giAlienStare) },
+  { id: "cyborg-face", C: mk(giCyborg) }, { id: "spiky-explosion", C: mk(giExplosion) },
+  { id: "crossed-pistols", C: mk(giPistols) }, { id: "wolf-howl", C: mk(giWolfHowl) },
+  { id: "raven", C: mk(giRaven) }, { id: "bat-mask", C: mk(giBatMask) },
+  { id: "spider-alt", C: mk(giSpider) }, { id: "hydra", C: mk(giHydra) },
+  { id: "tiger-head", C: mk(giTiger) },
+  { id: "mdi-skull", C: mk(miSkull) }, { id: "mdi-crosshair", C: mk(miCrosshair) },
+  { id: "mdi-cross", C: mk(miCross) }, { id: "mdi-knight", C: mk(miKnight) },
+  { id: "mdi-alien", C: mk(miAlien) }, { id: "tb-meteor", C: mk(tbMeteor) },
+  { id: "tb-sword", C: mk(tbSword) },
 ];
-const DETACH_ICON_BY_ID = Object.fromEntries(DETACH_ICONS.map((i) => [i.id, i.C]));
+const DETACH_ICON_BY_ID = Object.fromEntries(DETACH_ICON_LIST.map((i) => [i.id, i.C]));
+const DETACH_ICON_IDS = DETACH_ICON_LIST.map((i) => i.id);
+/* shuffled once at load so the picker shows them in a roughly random order */
+const DETACH_ICONS = (() => {
+  const a = [...DETACH_ICON_LIST];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+})();
+const randomEmblemId = () => DETACH_ICON_IDS[Math.floor(Math.random() * DETACH_ICON_IDS.length)];
 
 /* one big pool of faction names for the "get a random one" link */
 const ALL_NAMES = ALL_GENRES.flatMap((g) => g.groups.flatMap((gr) => gr.factions.flatMap((f) => f.pool || [])));
@@ -2343,7 +2404,8 @@ export default function App() {
 
   const createList = (opts = {}) => {
     const id = uid();
-    setLists((ls) => ({ ...ls, [id]: { id, name: opts.name || "", budget: opts.budget || 24, description: opts.description || "", roster: [], faction: opts.faction || undefined, image: opts.image || undefined, icon: opts.icon || undefined, collection: opts.collection || undefined, updated: Date.now() } }));
+    const icon = opts.icon || (opts.image || (opts.faction && opts.faction.icon) ? undefined : randomEmblemId());
+    setLists((ls) => ({ ...ls, [id]: { id, name: opts.name || "", budget: opts.budget || 24, description: opts.description || "", roster: [], faction: opts.faction || undefined, image: opts.image || undefined, icon, collection: opts.collection || undefined, updated: Date.now() } }));
     setCurrentId(id);
     nav("#/build");
   };
