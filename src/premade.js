@@ -2675,7 +2675,7 @@ export const SETTINGS = [
   },
   {
     "id": "anvil",
-    "name": "Anvil Industries Army Lists",
+    "name": "Anvil Industries",
     "blurb": "Fan detachments by Anvil Industries, mapped to this app.",
     "url": "https://anvilindustry.co.uk/xenos-rampant-army-lists",
     "detachments": [

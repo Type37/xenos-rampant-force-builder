@@ -1800,7 +1800,33 @@ export const SPECIAL_RULES = {
  "High-Powered Blades": "During Attacks, whether Attacking or Defending, count the target's Armour as 1 point lower than usual. It cannot be combined with Demolitions.",
  "Line-Breaker": "This unit is not slowed by linear obstacles such as barricades, wire, low walls, fences or trench parapets. Where an obstacle could plausibly be crushed, remove a matching stretch of it after the unit passes over.",
  "Vehicle": "This unit is a vehicle and is subject to all the vehicle rules.",
- "Transport (5)": "This vehicle can carry one infantry unit of up to 5 Strength Points.",
+ "Transport (5)": {
+  "rule": [
+   "Carries one infantry unit of up to 5 Strength Points.",
+   "Passengers may start embarked for free and are not deployed on the table; if the transport arrives from off-table, its passengers arrive inside it.",
+   "To board, the infantry makes a Move action into contact with an un-Suppressed transport and must have at least half its Maximum Movement left to do so.",
+   "A passenger may take only one action while aboard: a Move action to disembark, using half its Maximum Movement.",
+   "A vehicle that boards or disembarks passengers may Move only up to half its Maximum Movement that turn; if it does both, it may not Move at all."
+  ]
+ },
+ "Transport (10)": {
+  "rule": [
+   "Carries one infantry unit of up to 10 Strength Points.",
+   "Passengers may start embarked for free and are not deployed on the table; if the transport arrives from off-table, its passengers arrive inside it.",
+   "To board, the infantry makes a Move action into contact with an un-Suppressed transport and must have at least half its Maximum Movement left to do so.",
+   "A passenger may take only one action while aboard: a Move action to disembark, using half its Maximum Movement.",
+   "A vehicle that boards or disembarks passengers may Move only up to half its Maximum Movement that turn; if it does both, it may not Move at all."
+  ]
+ },
+ "Transport (15)": {
+  "rule": [
+   "Carries one infantry unit of up to 15 Strength Points.",
+   "Passengers may start embarked for free and are not deployed on the table; if the transport arrives from off-table, its passengers arrive inside it.",
+   "To board, the infantry makes a Move action into contact with an un-Suppressed transport and must have at least half its Maximum Movement left to do so.",
+   "A passenger may take only one action while aboard: a Move action to disembark, using half its Maximum Movement.",
+   "A vehicle that boards or disembarks passengers may Move only up to half its Maximum Movement that turn; if it does both, it may not Move at all."
+  ]
+ },
  "Vehicle Movement": {
   "rule": [
    "Moves only straight forwards or backwards, based on where the model points.",

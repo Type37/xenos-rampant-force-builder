@@ -7,4 +7,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig(({ command }) => ({
   base: command === "build" ? "/xenos-rampant-force-builder/" : "/",
   plugins: [react()],
+  // honour a PORT env var (preview tooling assigns one) so the dev server binds
+  // where the harness expects; falls back to Vite's default for plain `npm run dev`.
+  server: process.env.PORT ? { port: Number(process.env.PORT), strictPort: true } : undefined,
 }));

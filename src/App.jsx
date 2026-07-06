@@ -423,13 +423,13 @@ function deriveStats(u, t) {
   });
   return { act, prof, changed, dirs };
 }
-function StatTable({ t, sp, u }) {
+function StatTable({ t, sp, u, hint = true }) {
   const d = u ? deriveStats(u, t) : { act: t.act, prof: t.prof, changed: new Set() };
   const spMod = !!u && sp !== t.sp;
   return (
     <div className="xr-stt">
       <div className="xr-stt-head">
-        <span>Stat</span><span>Activate <em>2d6</em></span><span>Value</span>
+        <span>Stat</span><span>Activate {hint && <em>2d6</em>}</span><span>Value</span>
       </div>
       {STAT_ROWS.map((row) => {
         const o = row.order ? orderFrom(d.act, row.key, t.noAttack) : null;
@@ -572,10 +572,10 @@ function BudgetPicker({ budget, onChange }) {
     <div className="xr-budget" role="group" aria-label="Game size">
       {BUDGET_PRESETS.map((b) => (
         <button key={b} className={`xr-budget-chip ${isPreset && budget === b ? "on" : ""} ${b === 24 ? "std" : ""}`}
-          title={b === 24 ? "Standard game size, recommended" : `${b}-point game`}
+          title={b === 24 ? "Standard game size, the default" : `${b}-point game`}
           onClick={() => { setCustomOpen(false); onChange(b); }}>
           <span className="xr-budget-num">{b}</span>
-          {b === 24 && <em className="xr-budget-rec">recommended</em>}
+          {b === 24 && <em className="xr-budget-rec">default</em>}
         </button>
       ))}
       <div className={`xr-budget-customwrap ${custom ? "open" : ""} ${!isPreset ? "on" : ""}`}>
@@ -866,7 +866,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
 /* ================================================================== *
  * BUILDER: compact rows + detail panel
  * ================================================================== */
-const UnitRow = React.memo(function UnitRow({ u, i, selected }) {
+const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const taken = [
@@ -874,21 +874,27 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected }) {
     ...XENO_RULES.filter((x) => x.id in u.xenos).map((x) => x.name),
   ];
   return (
-    <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={() => nav(selected ? "#/build" : `#/build/${u.key}`)} aria-expanded={selected}>
-      {u.image
-        ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />
-        : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={26} /></span>}
-      <span className="xr-urow-body">
-        <span className="xr-urow-top">
-          {u.isCmd && <Crown className="xr-urow-crown" size={17} />}
-          <span className="xr-urow-name">{unitDisplayName(u, i)}</span>
-          <b className="xr-urow-pts">{pts}<i>pts</i></b>
+    <div className="xr-urow-wrap">
+      <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={() => nav(selected ? "#/build" : `#/build/${u.key}`)} aria-expanded={selected}>
+        {u.image
+          ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />
+          : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={26} /></span>}
+        <span className="xr-urow-body">
+          <span className="xr-urow-top">
+            {u.isCmd && <Crown className="xr-urow-crown" size={17} />}
+            <span className="xr-urow-name">{unitDisplayName(u, i)}</span>
+            <b className="xr-urow-pts">{pts}<i>pts</i></b>
+          </span>
+          <span className="xr-urow-sub">
+            {t.name}, {unitSP(u)} SP{taken.length > 0 && <em> / {taken.join(", ")}</em>}
+          </span>
         </span>
-        <span className="xr-urow-sub">
-          {t.name}, {unitSP(u)} SP{taken.length > 0 && <em> / {taken.join(", ")}</em>}
-        </span>
-      </span>
-    </button>
+      </button>
+      <div className="xr-urow-tools">
+        <button onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
+        <button className="danger" onClick={() => { dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
+      </div>
+    </div>
   );
 });
 
@@ -1029,11 +1035,9 @@ function TraitPicker({ u, tbl, trait, dispatch }) {
 }
 
 const COMMANDER_RULES = [
-  "Commanders are part of a unit and cannot leave it.",
-  "They move and fight as an ordinary model, and are always the last model in their unit to die.",
-  "They give +1 to Courage tests and ordered activations for units within 12\" (including their own unit).",
-  "Commander Traits may change this.",
-  "Commander rules only apply while the Commander is on the table and their unit is not Suppressed.",
+  "Your Commander is part of a unit and may not join a different unit during the game.",
+  "Your Commander grants a +1 modifier to all ordered activations and Courage tests taken by units within 12\" of its unit, including the Commander's own unit.",
+  "These bonuses only apply if the Commander is not Suppressed.",
 ].join("\n");
 
 /* commander traits, in a focused modal: pick the table, then roll or pick a trait */
@@ -1125,16 +1129,10 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
           <button className="xr-iconbtn xr-name-roll" onClick={() => dispatch({ type: "name", key: u.key, name: randomName(factionPool, u.name) })}
             title="Roll a name from the faction pool" aria-label="Roll a unit name"><Dice size={19} /></button>
         )}
+        <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
         <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })} title={COMMANDER_RULES}>
           <Crown size={17} /> {u.isCmd ? "Commander" : "Make Commander"}
         </button>
-      </div>
-
-      <div className="xr-panel-tools">
-        <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
-        <span className="xr-panel-tools-sp" />
-        <button className="xr-btn small icon" onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
-        <button className="xr-btn small icon danger" onClick={() => { dispatch({ type: "del", key: u.key }); onClose(); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
       </div>
 
       <div className="xr-panel-cols">
@@ -1196,7 +1194,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
       <div className="xr-panel-notes">
         <label className="xr-notes-l" htmlFor={`notes-${u.key}`}>Notes</label>
         <textarea id={`notes-${u.key}`} className="xr-field-in xr-field-area xr-notes-area" value={u.notes || ""}
-          placeholder="Loadout reminders, lore, or tactics for this unit. Prints with the roster."
+          placeholder="Loadout reminders, lore, or tactics for this unit."
           onChange={(e) => dispatch({ type: "notes", key: u.key, notes: e.target.value })} rows={2} />
       </div>
     </section>
@@ -1372,8 +1370,15 @@ function AbilitiesModal({ u, dispatch, onClose }) {
   if (eligPsy.length) tabs.push({ id: "psychic", label: "Psychic", n: eligPsy.filter((x) => x.id in u.xenos).length });
   tabs.push({ id: "custom", label: "Custom", n: custom.length });
   const [tab, setTab] = useState(tabs[0] ? tabs[0].id : "load");
+  const [q, setQ] = useState("");
   const [config, setConfig] = useState(null);
   const openConfig = (id, step) => setConfig({ id, step });
+  const needle = q.trim().toLowerCase();
+  const searchText = (text) => (typeof text === "string" ? text : text ? [text.flavor, ruleBodyText(text)].filter(Boolean).join(" ") : "");
+  const matches = (name, text) => !needle || `${name} ${searchText(text)}`.toLowerCase().includes(needle);
+  const foundOpts = needle ? topOpts.filter((o) => matches(o.name, o.text) || subsOf(o.id).some((s) => matches(s.name, s.text))) : [];
+  const foundXeno = needle ? [...eligXeno, ...eligPsy].filter((x) => matches(x.name, x.text)) : [];
+  const noHits = needle && !foundOpts.length && !foundXeno.length;
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -1397,7 +1402,35 @@ function AbilitiesModal({ u, dispatch, onClose }) {
             ))}
           </div>
         )}
+        <div className="xr-abil-searchbar">
+          <input className="xr-abil-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search abilities by name or effect" spellCheck={false} aria-label="Search abilities" />
+          {q && <button className="xr-iconbtn small" onClick={() => setQ("")} aria-label="Clear search"><XIc size={16} /></button>}
+        </div>
         <div className="xr-modal-body">
+          {needle ? (
+            <>
+              {foundOpts.map((o) => {
+                const on = !!u.options[o.id];
+                const subs = subsOf(o.id);
+                return (
+                  <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
+                    onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
+                    {on && subs.length > 0 && (
+                      <div className="xr-subs">
+                        {subs.map((s) => (
+                          <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
+                            onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
+                        ))}
+                      </div>
+                    )}
+                  </OptionRow>
+                );
+              })}
+              {foundXeno.map((x) => <XenoRow key={x.id} x={x} u={u} dispatch={dispatch} onConfigure={openConfig} />)}
+              {noHits && <p className="xr-abil-empty">No abilities match that search.</p>}
+            </>
+          ) : (
+          <>
           {tab === "load" && topOpts.map((o) => {
             const on = !!u.options[o.id];
             const subs = subsOf(o.id);
@@ -1419,6 +1452,8 @@ function AbilitiesModal({ u, dispatch, onClose }) {
           {tab === "psychic" && <PsychicTab u={u} rules={eligPsy} dispatch={dispatch} onConfigure={openConfig} />}
           {tab === "custom" && (
             <CustomTab u={u} custom={custom} dispatch={dispatch} />
+          )}
+          </>
           )}
         </div>
         <div className="xr-modal-foot">
@@ -1543,7 +1578,7 @@ const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
           ))}
         </span>
       )}
-      <span className="xr-cat-add"><Plus size={15} /> Add <b>{t.base} pts</b></span>
+      <span className="xr-cat-add"><Plus size={15} /> Add <b>+{t.base}pts</b></span>
     </button>
   );
 });
@@ -1676,17 +1711,17 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             </div>
           </div>
         </div>
-        <div className="xr-mast-row2">
-          <div className="xr-budgetrow">
-            <span className="xr-budget-l">Game size</span>
-            <BudgetPicker budget={budget} onChange={(b) => updateList({ budget: b })} />
-          </div>
-        </div>
       </header>
 
-      {/* points and unit count live at the bottom left, just right of the rail */}
+      {/* points, game-size stepper and unit count live at the bottom left, by the rail */}
       <div className={`xr-musterdock ${over ? "over" : pct >= 90 ? "near" : ""}`}>
-        <span className="xr-muster-read"><b>{used}</b><span>/{budget} pts</span></span>
+        <span className="xr-muster-read"><b>{used}</b><span>/</span></span>
+        <div className="xr-sizestep" role="group" aria-label="Game size">
+          <button className="xr-sizestep-btn" onClick={() => updateList({ budget: Math.max(6, budget - 6) })} title="Smaller game size" aria-label="Smaller game size"><span>−</span></button>
+          <b className="xr-sizestep-val">{budget}{budget === 24 && <em className="xr-size-default">default</em>}</b>
+          <button className="xr-sizestep-btn" onClick={() => updateList({ budget: Math.min(120, budget + 6) })} title="Larger game size" aria-label="Larger game size"><span>+</span></button>
+        </div>
+        <span className="xr-muster-read xr-muster-pts"><span>pts</span></span>
         <span className="xr-muster-track"><span className="xr-muster-fill" style={{ width: `${pct}%` }} /></span>
         <div className="xr-statuswrap">
           <button className={`xr-status ${status}`} onClick={() => setIssuesOpen((o) => !o)}
@@ -1716,7 +1751,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             <>
               <div className="xr-ulist-rows">
                 {roster.map((u, i) => (
-                  <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey} />
+                  <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey} dispatch={dispatch} />
                 ))}
               </div>
               <button className="xr-add-sticky" onClick={() => setAdding(true)}><Plus size={20} /> Add unit</button>
@@ -1822,7 +1857,7 @@ function PrintView({ list }) {
                     <span className="xr-pc-pts">{unitPoints(u)} pts, {unitSP(u)} SP</span>
                   </div>
                   {opts.stats && (
-                    <div className="xr-pc-stt"><StatTable t={t} sp={unitSP(u)} u={u} /></div>
+                    <div className="xr-pc-stt"><StatTable t={t} sp={unitSP(u)} u={u} hint={false} /></div>
                   )}
                   {opts.upgrades && hasRules && (
                     <div className="xr-pc-rules">
@@ -1853,7 +1888,6 @@ function PrintView({ list }) {
           </div>
         )}
 
-        <div className="xr-sheet-foot">Xenos Rampant is by Daniel Mersey and Richard Cowen (Osprey Games, 2022). Roster built with the WarLore force builder.</div>
       </div>
     </div>
   );
@@ -2281,7 +2315,7 @@ const CSS = `
 .xr-add-sticky:hover{background:var(--brand-deep-blue);border-color:var(--brand-deep-blue);}
 .xr-add-sticky:active{transform:scale(.98);}
 
-.xr-build{display:flex;flex-direction:column;min-height:100vh;padding-left:76px;}
+.xr-build{display:flex;flex-direction:column;min-height:100vh;padding-left:76px;padding-bottom:56px;}
 .xr-mast{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:3px solid var(--ink);padding:14px clamp(14px,3vw,30px) 12px;}
 .xr-mast-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .xr-detname{flex:1;min-width:170px;font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);background:transparent;border:none;border-bottom:2px solid var(--ink-30);padding:4px 2px 6px;}
@@ -2319,11 +2353,18 @@ const CSS = `
 /* points and unit-count dock: pinned bottom-left, just right of the nav rail */
 .xr-musterdock{position:fixed;left:76px;bottom:0;z-index:30;display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--paper);border-top:2px solid var(--ink);border-right:2px solid var(--ink);border-top-right-radius:14px;box-shadow:0 -4px 18px rgba(31,61,46,.16);}
 .xr-musterdock .xr-muster-read b{font-size:22px;}
+.xr-musterdock .xr-muster-read.xr-muster-pts{margin-left:-4px;}
 .xr-musterdock .xr-muster-track{width:130px;flex:none;}
 .xr-musterdock.near .xr-muster-fill{background:var(--brass);}
 .xr-musterdock.over .xr-muster-fill{background:var(--coral);}
 .xr-musterdock .xr-status{padding:6px 11px;font-size:14.5px;}
 .xr-issue-pop.up{top:auto;bottom:calc(100% + 8px);right:auto;left:0;}
+/* game-size incrementer inside the dock */
+.xr-sizestep{display:inline-flex;align-items:center;gap:6px;}
+.xr-sizestep-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink-30);border-radius:8px;background:var(--paper-2);color:var(--ink);font-family:var(--display);font-weight:700;font-size:20px;line-height:1;transition:border-color .12s,background .12s;}
+.xr-sizestep-btn:hover{border-color:var(--ink);background:var(--paper-3);}
+.xr-sizestep-val{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:30px;line-height:1;font-family:var(--mono);font-weight:700;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.xr-size-default{font-family:var(--ui);font-style:normal;font-weight:700;font-size:8px;letter-spacing:.03em;text-transform:uppercase;color:var(--coral-ink);margin-top:1px;}
 .xr-natl-sel{font-family:var(--body);font-size:15px;font-weight:600;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:8px 9px;min-height:44px;width:100%;cursor:pointer;}
 .xr-natl-sel:focus{outline:none;border-color:var(--coral);}
 /* detachment settings popover */
@@ -2393,6 +2434,13 @@ const CSS = `
 .xr-urow-pts i{font-style:normal;font-size:14px;color:var(--ink-2);margin-left:3px;}
 .xr-urow-sub{font-family:var(--ui);font-weight:500;font-size:14.5px;color:var(--ink-2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .xr-urow-sub em{font-style:italic;}
+/* duplicate/delete live on the left unit card, in a reserved right gutter */
+.xr-urow-wrap{position:relative;}
+.xr-urow-wrap>.xr-urow{width:100%;padding-right:48px;}
+.xr-urow-tools{position:absolute;top:0;bottom:0;right:7px;width:34px;display:flex;flex-direction:column;justify-content:center;gap:6px;}
+.xr-urow-tools button{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s;}
+.xr-urow-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
+.xr-urow-tools button.danger:hover{border-color:var(--coral-ink);color:var(--coral-ink);background:#F4604C14;}
 
 /* unit panel */
 .xr-panel{padding:16px clamp(14px,2vw,24px) 40px;animation:xr-rise var(--dur-gentle) var(--curve-decel-min);}
@@ -2527,6 +2575,10 @@ const CSS = `
 .xr-fac-genre-card i{font-family:var(--flavor);font-style:italic;font-size:14.5px;color:var(--ink-2);}
 .xr-fac-search{min-width:220px;flex:1;font-family:var(--body);font-size:15px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:8px 11px;min-height:40px;}
 .xr-fac-search:focus{outline:none;border-color:var(--coral);}
+/* ability search bar in the Manage abilities modal */
+.xr-abil-searchbar{display:flex;align-items:center;gap:8px;padding:12px clamp(14px,3vw,20px) 0;}
+.xr-abil-search{flex:1;min-width:0;font-family:var(--body);font-size:15px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:9px 12px;min-height:44px;}
+.xr-abil-search:focus{outline:none;border-color:var(--coral);}
 .xr-fac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
 .xr-fac-card{display:flex;align-items:center;gap:11px;text-align:left;border:2px solid var(--ink-30);background:var(--paper-2);border-radius:11px;padding:10px 12px;min-height:62px;transition:transform .12s cubic-bezier(.2,.8,.2,1),border-color .12s,box-shadow .12s;}
 .xr-fac-card:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 5px 13px rgba(31,61,46,.14);}
@@ -2708,7 +2760,7 @@ const CSS = `
 .xr-cat-stat img{flex:none;opacity:.9;}
 .xr-cat-stat b{font-family:var(--mono);font-weight:700;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;}
 .xr-cat-add{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:var(--display);font-weight:600;font-size:15px;color:var(--cream);background:var(--ink);border-radius:9px;padding:8px 12px;min-height:40px;}
-.xr-cat-add b{font-family:var(--mono);font-weight:700;}
+.xr-cat-add b{font-family:var(--display);font-weight:700;}
 .xr-cat-card:hover .xr-cat-add{background:var(--brand-deep-blue);}
 /* dashboard action buttons */
 .xr-home-bar-btns{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -2733,18 +2785,20 @@ const CSS = `
 .xr-preset-card:hover .xr-preset-load{background:var(--brand-deep-blue);}
 
 /* ---------- print ---------- */
-.xr-printview{min-height:100vh;background:var(--paper-3);padding-left:76px;}
+.xr-printview{--pg-w:210mm;--pg-h:297mm;--pg-m:11mm;min-height:100vh;background:var(--paper-3);padding-left:76px;}
 .xr-print-chrome{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px clamp(14px,3vw,30px);border-bottom:3px solid var(--ink);background:var(--paper);position:sticky;top:0;z-index:20;}
 .xr-print-h{font-family:var(--display);font-weight:700;font-size:24px;margin-right:8px;}
 .xr-print-opts{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;}
 .xr-print-optlabel{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);}
 .xr-print-check{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:15.5px;min-height:44px;cursor:pointer;}
 .xr-print-check input{width:20px;height:20px;accent-color:var(--ink);cursor:pointer;}
-.xr-sheet{max-width:800px;margin:26px auto 60px;background:#fff;color:#1a1a1a;padding:30px 34px;box-shadow:0 4px 22px rgba(31,61,46,.2);}
-.xr-sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:3px solid #1a1a1a;padding-bottom:10px;margin-bottom:16px;}
-.xr-sheet-title{font-family:var(--display);font-weight:700;font-size:29px;}
-.xr-sheet-meta{font-family:var(--ui);font-weight:500;font-size:15px;}
-.xr-sheet-natl{font-family:var(--flavor);font-style:italic;font-size:14px;line-height:1.45;margin:-6px 0 14px;padding:8px 12px;border-left:4px solid #8A6A1F;background:#8A6A1F14;}
+/* the preview is sized to a real A4 page, with faint guide lines at each physical
+   page break so the sheet reads as the pages it will actually print to */
+.xr-sheet{width:var(--pg-w);max-width:100%;box-sizing:border-box;margin:22px auto 56px;color:#1a1a1a;padding:var(--pg-m);box-shadow:0 4px 22px rgba(31,61,46,.22);background-color:#fff;background-image:repeating-linear-gradient(#0000 0,#0000 calc(var(--pg-h) - 2px),rgba(190,51,25,.30) calc(var(--pg-h) - 2px),rgba(190,51,25,.30) var(--pg-h));background-clip:border-box;}
+.xr-sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2.5px solid #1a1a1a;padding-bottom:6px;margin-bottom:10px;}
+.xr-sheet-title{font-family:var(--display);font-weight:700;font-size:26px;}
+.xr-sheet-meta{font-family:var(--ui);font-weight:500;font-size:14px;}
+.xr-sheet-natl{font-family:var(--flavor);font-style:italic;font-size:13.5px;line-height:1.4;margin:0 0 8px;padding:6px 10px;border-left:4px solid #8A6A1F;background:#8A6A1F14;}
 .xr-sheet-natl b{font-style:normal;}
 .xr-sheet-natl b{color:#6b5218;}
 .xr-sheet-table{width:100%;border-collapse:collapse;font-size:14.5px;}
@@ -2762,12 +2816,12 @@ const CSS = `
 .xr-sheet-note .fmk{font-style:normal;}
 @media print{.xr-sheet-note .fmk{color:#000;}}
 /* print stat cards */
-.xr-sheet-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:11px;margin-top:14px;align-items:start;}
-.xr-pc{border:1.5px solid #1a1a1a;border-radius:8px;padding:9px 13px 10px;break-inside:avoid;}
-.xr-pc-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:5px;margin-bottom:7px;}
-.xr-pc-name{font-family:var(--display);font-weight:700;font-size:16.5px;display:inline-flex;align-items:center;gap:5px;}
-.xr-pc-type{font-family:var(--flavor);font-style:italic;font-size:13.5px;color:#444;}
-.xr-pc-pts{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:13.5px;}
+.xr-sheet-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:7px;margin-top:9px;align-items:start;}
+.xr-pc{border:1.5px solid #1a1a1a;border-radius:0;padding:6px 10px 7px;break-inside:avoid;}
+.xr-pc-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:3px;margin-bottom:4px;}
+.xr-pc-name{font-family:var(--display);font-weight:700;font-size:15.5px;display:inline-flex;align-items:center;gap:5px;}
+.xr-pc-type{font-family:var(--flavor);font-style:italic;font-size:12.5px;color:#444;}
+.xr-pc-pts{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:13px;}
 .xr-pc-stats{display:flex;flex-direction:column;gap:7px;}
 .xr-pc-line{display:flex;align-items:flex-start;gap:9px;}
 .xr-pc-ll{font-family:var(--ui);font-weight:700;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#777;width:44px;flex:none;padding-top:5px;}
@@ -2784,23 +2838,23 @@ const CSS = `
 @media print{.xr-pc-chip .fmk{color:#000;}}
 /* the print card reuses the builder StatTable, tightened to fit the card and to
    keep the two value columns (Activate, Value) side by side per stat */
-.xr-pc-stt{margin-top:2px;}
+.xr-pc-stt{margin-top:0;}
 .xr-pc-stt .xr-stt{padding:0;}
-.xr-pc-stt .xr-stt-head{grid-template-columns:minmax(0,1.4fr) 46px minmax(0,1fr);gap:3px 8px;font-size:11px;padding-bottom:4px;color:#555;border-color:#1a1a1a;}
+.xr-pc-stt .xr-stt-head{grid-template-columns:minmax(0,1.4fr) 44px minmax(0,1fr);gap:2px 8px;font-size:10.5px;padding-bottom:2px;color:#555;border-color:#1a1a1a;}
 .xr-pc-stt .xr-stt-head em{font-size:10px;}
-.xr-pc-stt .xr-stt-row{grid-template-columns:minmax(0,1.4fr) 46px minmax(0,1fr);gap:3px 8px;padding:3px 0;border-color:#ccc;}
-.xr-pc-stt .xr-stt-stat{font-size:12.5px;gap:5px;color:#1a1a1a;}
-.xr-pc-stt .xr-stt-ic{width:16px;height:16px;}
-.xr-pc-stt .xr-stt-cell b{font-size:14px;}
-.xr-pc-stt .xr-rng{font-size:11px;}
+.xr-pc-stt .xr-stt-row{grid-template-columns:minmax(0,1.4fr) 44px minmax(0,1fr);gap:2px 8px;padding:1.5px 0;border-color:#ddd;}
+.xr-pc-stt .xr-stt-stat{font-size:12px;gap:5px;color:#1a1a1a;}
+.xr-pc-stt .xr-stt-ic{width:15px;height:15px;}
+.xr-pc-stt .xr-stt-cell b{font-size:13.5px;}
+.xr-pc-stt .xr-rng{font-size:10.5px;}
 .xr-pc-stt .xr-mod-dir{display:none;}
-.xr-pc-stt .xr-die{width:38px;font-size:13px;padding:2px 3px;}
+.xr-pc-stt .xr-die{width:36px;font-size:12.5px;padding:1px 3px;}
 .xr-pc-stt .xr-die.free{padding-left:6px;}
 .xr-pc-stt .xr-die-free{font-size:7px;right:2px;}
-.xr-pc-note{font-family:var(--flavor);font-style:italic;font-size:12.5px;line-height:1.4;color:#333;margin-top:7px;border-top:1px dotted #bbb;padding-top:6px;}
-.xr-sheet-notes{font-family:var(--body);font-size:14px;line-height:1.5;color:#333;margin:-4px 0 14px;white-space:pre-wrap;}
-.xr-pc-rules{margin-top:8px;border-top:1px solid #ccc;padding-top:7px;}
-.xr-pc-rules p{font-family:var(--body);font-size:12.5px;line-height:1.42;margin-bottom:3px;}
+.xr-pc-note{font-family:var(--flavor);font-style:italic;font-size:12px;line-height:1.35;color:#333;margin-top:5px;border-top:1px dotted #bbb;padding-top:4px;}
+.xr-sheet-notes{font-family:var(--body);font-size:13.5px;line-height:1.45;color:#333;margin:0 0 10px;white-space:pre-wrap;}
+.xr-pc-rules{margin-top:5px;border-top:1px solid #ccc;padding-top:4px;}
+.xr-pc-rules p{font-family:var(--body);font-size:12px;line-height:1.36;margin-bottom:2px;}
 .xr-pc-rules p b{font-weight:700;}
 .xr-printview.large .xr-pc-name{font-size:18px;}
 .xr-printview.large .xr-pc-stt .xr-stt-cell b{font-size:16px;}
@@ -2814,9 +2868,9 @@ const CSS = `
 .xr-sheet-unit h3 em{font-weight:400;font-style:italic;font-size:14.5px;}
 .xr-sheet-unit p{font-family:var(--body);font-style:normal;font-size:13.5px;line-height:1.45;margin-bottom:5px;}
 .xr-sheet-unit p b{font-style:normal;}
-.xr-sheet-gloss{margin-top:20px;border-top:2px solid #1a1a1a;padding-top:10px;}
-.xr-sheet-gloss h2{font-family:var(--display);font-size:19px;margin-bottom:8px;}
-.xr-sheet-gloss p{font-family:var(--body);font-style:normal;font-size:13.5px;line-height:1.45;margin-bottom:6px;}
+.xr-sheet-gloss{margin-top:12px;border-top:2px solid #1a1a1a;padding-top:7px;}
+.xr-sheet-gloss h2{font-family:var(--display);font-size:18px;margin-bottom:5px;}
+.xr-sheet-gloss p{font-family:var(--body);font-style:normal;font-size:12.5px;line-height:1.4;margin-bottom:4px;}
 .xr-sheet-gloss p b{font-style:normal;}
 .xr-sheet-gloss p i{font-family:var(--flavor);font-style:italic;color:#333;}
 .xr-sheet-foot{margin-top:22px;border-top:1px solid #bbb;padding-top:8px;font-size:12.5px;font-style:italic;color:#555;}
@@ -2914,8 +2968,8 @@ const CSS = `
   .xr-app{background:#fff;}
   .xr-rail,.xr-print-chrome,.game-info-footer{display:none !important;}
   .xr-printview{background:#fff;padding-left:0;}
-  .xr-sheet{box-shadow:none;margin:0;max-width:none;padding:0;}
-  .xr-sheet-cards{grid-template-columns:1fr 1fr;gap:7px;}
+  .xr-sheet{box-shadow:none;margin:0;width:auto;max-width:none;padding:0;background-image:none;}
+  .xr-sheet-cards{grid-template-columns:1fr 1fr;gap:6px;}
   .xr-pc{break-inside:avoid;}
   @page{size:A4;margin:11mm;}
 }
