@@ -6,6 +6,10 @@ dist-ssr
 .vite
 npm-debug.log*
 
+# editor and local tooling state, and my working notes: kept on disk, never pushed
+.claude/
+WARLORE-BUILDER-NOTES.md
+
 # Local reference material kept on disk only, never committed to this public repo.
 # Rulebook scans, FAQ and errata PDFs, and any working documents live here.
 documents/

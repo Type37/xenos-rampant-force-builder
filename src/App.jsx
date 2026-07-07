@@ -150,7 +150,6 @@ import { RULES_REFERENCE, RULES_CATS } from "./rules.js";
 import { EMBLEM_EXTRA } from "./emblems-extra.js";
 
 const FACTION_BASE = import.meta.env.BASE_URL;
-const factionIconUrl = (icon) => (icon ? `${FACTION_BASE}factions/${icon}` : null);
 
 /* ================================================================== *
  * XENOS RAMPANT: FORCE BUILDER
@@ -468,12 +467,9 @@ function savePlay(listId, st) {
    would blow up the link) and the faction name pool is left out; everything the
    builder needs to rebuild the roster is kept. */
 function encodeShare(list) {
-  const faction = list.faction
-    ? { id: list.faction.id, name: list.faction.name, tag: list.faction.tag, icon: list.faction.icon, genre: list.faction.genre, group: list.faction.group }
-    : undefined;
   const payload = {
     n: list.name, b: list.budget, d: list.description || undefined,
-    f: faction, ic: list.icon, co: list.collection, fp: list.freeplay || undefined, st: list.setting,
+    ic: list.icon, co: list.collection, fp: list.freeplay || undefined, st: list.setting,
     r: list.roster.map((u) => ({
       t: u.typeId, nm: u.name || undefined, c: u.isCmd ? 1 : undefined,
       tt: u.traitTable, ti: u.traitIndex, o: u.options, x: u.xenos,
@@ -491,7 +487,7 @@ function decodeShare(str) {
     const o = JSON.parse(decodeURIComponent(escape(atob(b64))));
     return {
       name: o.n || "", budget: o.b || 24, description: o.d || "",
-      faction: o.f, icon: o.ic, collection: o.co, freeplay: o.fp, setting: o.st,
+      icon: o.ic, collection: o.co, freeplay: o.fp, setting: o.st,
       roster: (o.r || []).filter((u) => UNIT_BY_ID[u.t]).map((u) => sanitize({
         key: uid(), typeId: u.t, name: u.nm || "", isCmd: !!u.c,
         traitTable: u.tt || "aggressive", traitIndex: u.ti,
@@ -830,94 +826,11 @@ function BudgetPicker({ budget, onChange }) {
   );
 }
 
-/* faction picker: genre -> group -> faction. picking one themes the detachment
-   (sets its icon) and hands over a name pool for the randomiser. */
-/* a true drill-down: one screen at a time (genre, then group, then faction),
-   each with a back arrow, rather than tabs that show every level at once. */
-function FactionModal({ onPick, onClose }) {
-  const [gid, setGid] = useState(null);
-  const [grpId, setGrpId] = useState(null);
-  const [q, setQ] = useState("");
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-  const genre = ALL_GENRES.find((g) => g.id === gid);
-  const group = genre && genre.groups.find((g) => g.id === grpId);
-  const step = group ? 3 : genre ? 2 : 1;
-  const back = () => { if (step === 3) setGrpId(null); else if (step === 2) setGid(null); };
-  const needle = q.trim().toLowerCase();
-  const factions = group ? group.factions.filter((f) => !needle || f.name.toLowerCase().includes(needle) || (f.tag || "").toLowerCase().includes(needle)) : [];
-  const title = step === 1 ? "Pick a setting" : step === 2 ? genre.label : group.label;
-  return (
-    <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Pick a faction" onClick={(e) => e.stopPropagation()}>
-        <div className="xr-modal-head">
-          {step > 1 && <button className="xr-iconbtn" onClick={back} aria-label="Back"><Back size={20} /></button>}
-          <span className="xr-modal-title"><Dice size={22} /> {title}</span>
-          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
-        </div>
-        {step === 1 && (
-          <div className="xr-modal-body">
-            <p className="xr-fac-lead">What kind of setting is this detachment?</p>
-            <div className="xr-fac-genre-grid">
-              {ALL_GENRES.map((g) => (
-                <button key={g.id} className="xr-fac-genre-card" onClick={() => setGid(g.id)}>
-                  <b>{g.label}</b><i>{g.blurb}</i>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        {step === 2 && (
-          <div className="xr-modal-body">
-            <p className="xr-fac-lead">{genre.blurb}</p>
-            <div className="xr-fac-genre-grid">
-              {genre.groups.map((g) => (
-                <button key={g.id} className="xr-fac-genre-card" onClick={() => setGrpId(g.id)}>
-                  <b>{g.label}</b><i>{g.factions.length} {g.factions.length === 1 ? "faction" : "factions"}</i>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        {step === 3 && (
-          <>
-            <div className="xr-fac-sub">
-              <input className="xr-fac-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search factions" spellCheck={false} autoFocus />
-            </div>
-            <div className="xr-modal-body">
-              <div className="xr-fac-grid">
-                {factions.map((f) => {
-                  const url = factionIconUrl(f.icon);
-                  return (
-                    <button key={f.id} className="xr-fac-card" onClick={() => onPick({ ...f, genre: genre.id, group: group.id })} title={`${f.pool.length} names`}>
-                      <span className="xr-fac-ic">{url ? <img src={url} alt="" loading="lazy" /> : <Alien size={22} />}</span>
-                      <span className="xr-fac-body">
-                        <span className="xr-fac-name">{f.name}</span>
-                        <span className="xr-fac-tag">{f.tag}</span>
-                      </span>
-                    </button>
-                  );
-                })}
-                {factions.length === 0 && <p className="xr-fac-empty">No factions match that search.</p>}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* renders a detachment's picture: uploaded image, chosen badge icon, or faction icon */
+/* renders a detachment's picture: an uploaded image or a chosen badge icon */
 function DetachIcon({ list, size = 26, className }) {
   if (list && list.image) return <span className={className} style={{ backgroundImage: `url(${list.image})` }} aria-hidden="true" />;
   const Ico = list && list.icon && DETACH_ICON_BY_ID[list.icon];
   if (Ico) return <span className={`${className || ""} xr-dicon-glyph`} aria-hidden="true"><Ico size={size} /></span>;
-  const fic = factionIconUrl(list && list.faction && list.faction.icon);
-  if (fic) return <span className={className} style={{ backgroundImage: `url(${fic})` }} aria-hidden="true" />;
   return null;
 }
 
@@ -2004,7 +1917,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
       <header className="xr-mast">
         <div className="xr-mast-row">
           <button className="xr-mast-emblem" onClick={() => setEmblemOpen(true)} title="Choose an emblem or upload a picture" aria-label="Choose an emblem or upload a picture">
-            {(list.image || list.icon || (list.faction && list.faction.icon))
+            {(list.image || list.icon)
               ? <DetachIcon list={list} size={26} className="xr-mast-img" />
               : <span className="xr-mast-img xr-mast-emblem-add"><Image size={20} /></span>}
           </button>
@@ -2072,7 +1985,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
         </main>
         <div className="xr-detail">
           {sel ? (
-            <UnitPanel key={sel.key} u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} onEditCommander={() => setCmdOpen(true)} factionPool={(list.faction && list.faction.pool) || ALL_NAMES} />
+            <UnitPanel key={sel.key} u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} onEditCommander={() => setCmdOpen(true)} factionPool={ALL_NAMES} />
           ) : (
             roster.length > 0 && (
               <div className="xr-detoverview" aria-label="Detachment notes">
@@ -2462,8 +2375,8 @@ export default function App() {
 
   const createList = (opts = {}) => {
     const id = uid();
-    const icon = opts.icon || (opts.image || (opts.faction && opts.faction.icon) ? undefined : randomEmblemId());
-    setLists((ls) => ({ ...ls, [id]: { id, name: opts.name || "", budget: opts.budget || 24, description: opts.description || "", roster: [], faction: opts.faction || undefined, image: opts.image || undefined, icon, collection: opts.collection || undefined, updated: Date.now() } }));
+    const icon = opts.icon || (opts.image ? undefined : randomEmblemId());
+    setLists((ls) => ({ ...ls, [id]: { id, name: opts.name || "", budget: opts.budget || 24, description: opts.description || "", roster: [], image: opts.image || undefined, icon, collection: opts.collection || undefined, updated: Date.now() } }));
     setCurrentId(id);
     nav("#/build");
   };
@@ -2973,34 +2886,6 @@ const CSS = `
 /* collection groups on the dashboard */
 .xr-home-group{margin-bottom:24px;}
 .xr-home-grouph{font-family:var(--display);font-weight:700;font-size:19px;color:var(--ink);letter-spacing:.02em;padding-bottom:6px;margin-bottom:12px;border-bottom:2px solid var(--ink-18);}
-/* faction picker */
-.xr-faction-pick{display:inline-flex;align-items:center;gap:9px;width:100%;text-align:left;font-family:var(--ui);font-weight:600;font-size:15.5px;color:var(--ink);border:2px solid var(--ink-30);background:var(--paper-2);border-radius:10px;padding:9px 12px;min-height:50px;transition:border-color .12s,background .12s;}
-.xr-faction-pick:hover{border-color:var(--ink);background:var(--paper-3);}
-.xr-faction-pick b{font-weight:700;}
-.xr-faction-pick i{font-style:normal;font-size:13.5px;color:var(--ink-2);margin-left:auto;}
-.xr-fac-sub{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:10px clamp(14px,3vw,22px) 0;}
-.xr-fac-lead{font-family:var(--flavor);font-style:italic;font-size:16px;color:var(--ink-2);padding:12px clamp(14px,3vw,22px) 4px;}
-.xr-fac-genre-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
-.xr-fac-genre-card{display:flex;flex-direction:column;gap:5px;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);border-radius:13px;padding:16px 18px;min-height:76px;transition:transform .13s cubic-bezier(.2,.8,.2,1),box-shadow .13s,background .13s;}
-.xr-fac-genre-card:hover{background:var(--paper-3);transform:translateY(-2px);box-shadow:0 5px 14px rgba(31,61,46,.15);}
-.xr-fac-genre-card b{font-family:var(--display);font-weight:700;font-size:19px;color:var(--ink);}
-.xr-fac-genre-card i{font-family:var(--flavor);font-style:italic;font-size:14.5px;color:var(--ink-2);}
-.xr-fac-search{min-width:220px;flex:1;font-family:var(--body);font-size:15px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:8px 11px;min-height:40px;}
-.xr-fac-search:focus{outline:none;border-color:var(--coral);}
-/* ability search bar in the Manage abilities modal */
-.xr-abil-searchbar{display:flex;align-items:center;gap:8px;padding:12px clamp(14px,3vw,20px) 0;}
-.xr-abil-search{flex:1;min-width:0;font-family:var(--body);font-size:15px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:9px;padding:9px 12px;min-height:44px;}
-.xr-abil-search:focus{outline:none;border-color:var(--coral);}
-.xr-fac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
-.xr-fac-card{display:flex;align-items:center;gap:11px;text-align:left;border:2px solid var(--ink-30);background:var(--paper-2);border-radius:11px;padding:10px 12px;min-height:62px;transition:transform .12s cubic-bezier(.2,.8,.2,1),border-color .12s,box-shadow .12s;}
-.xr-fac-card:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 5px 13px rgba(31,61,46,.14);}
-.xr-fac-ic{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9px;border:2px solid var(--ink);background:var(--cream);color:var(--ink-2);overflow:hidden;}
-.xr-fac-ic img{width:100%;height:100%;object-fit:contain;padding:3px;}
-.xr-fac-ic.sm{width:30px;height:30px;border-radius:7px;}
-.xr-fac-ic.sm img{padding:2px;}
-.xr-fac-body{display:flex;flex-direction:column;gap:1px;min-width:0;}
-.xr-fac-name{font-family:var(--ui);font-weight:600;font-size:15px;color:var(--ink);line-height:1.2;}
-.xr-fac-tag{font-family:var(--flavor);font-style:italic;font-size:13px;color:var(--ink-2);}
 .xr-fac-empty{font-family:var(--flavor);font-style:italic;color:var(--ink-2);padding:10px 2px;}
 .xr-field-in:focus{outline:none;border-color:var(--coral);}
 .xr-field-area{resize:vertical;min-height:76px;line-height:1.5;}
