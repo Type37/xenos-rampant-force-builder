@@ -69,6 +69,43 @@ import miKnight from "@iconify-icons/mdi/chess-knight";
 import miAlien from "@iconify-icons/mdi/alien";
 import tbMeteor from "@iconify-icons/tabler/meteor";
 import tbSword from "@iconify-icons/tabler/sword";
+import siGunicorn from "@iconify-icons/simple-icons/gunicorn";
+import siDassault from "@iconify-icons/simple-icons/dassaultsystemes";
+import siGitlab from "@iconify-icons/simple-icons/gitlab";
+import faEmpire from "@iconify-icons/fa6-brands/empire";
+import faJedi from "@iconify-icons/fa6-brands/jedi-order";
+import faMando from "@iconify-icons/fa6-brands/mandalorian";
+import faGitkraken from "@iconify-icons/fa6-brands/gitkraken";
+import faSenate from "@iconify-icons/fa6-brands/galactic-senate";
+import faJoomla from "@iconify-icons/fa6-brands/joomla";
+import faPhoenix from "@iconify-icons/fa6-brands/phoenix-squadron";
+import faWatchman from "@iconify-icons/fa6-brands/watchman-monitoring";
+import faFulcrum from "@iconify-icons/fa6-brands/fulcrum";
+import faFirstOrder from "@iconify-icons/fa6-brands/first-order";
+import faOldRepublic from "@iconify-icons/fa6-brands/old-republic";
+import faDragon from "@iconify-icons/fa6-solid/dragon";
+import faSkull from "@iconify-icons/fa6-solid/skull";
+import faKhanda from "@iconify-icons/fa6-solid/khanda";
+import fiDragonfly from "@iconify-icons/file-icons/dragonflybsd";
+import icShieldMoon from "@iconify-icons/ic/twotone-shield-moon";
+import imWink from "@iconify-icons/iconamoon/winking-face-fill";
+import cilCompress from "@iconify-icons/cil/compress";
+import cilFunctions from "@iconify-icons/cil/functions-alt";
+import cilFootball from "@iconify-icons/cil/football";
+import cilDiamond from "@iconify-icons/cil/diamond";
+import cilLifeRing from "@iconify-icons/cil/life-ring";
+import cilSpa from "@iconify-icons/cil/spa";
+import arAttack from "@iconify-icons/arcticons/attacktheblock";
+import arChess from "@iconify-icons/arcticons/openchaoschess";
+import arAiChat from "@iconify-icons/arcticons/ai-chat";
+import arAaaaxy from "@iconify-icons/arcticons/aaaaxy-alt";
+import arTriodos from "@iconify-icons/arcticons/triodos-bank";
+import mdiCrossBolnisi from "@iconify-icons/mdi/cross-bolnisi";
+import mdiCrosshairs from "@iconify-icons/mdi/crosshairs";
+import hiDeath from "@iconify-icons/healthicons/death";
+import hiDeathOutline from "@iconify-icons/healthicons/death-outline";
+import hiSkull from "@iconify-icons/healthicons/skull";
+import msSwords from "@iconify-icons/material-symbols/swords";
 import icCrown from "@iconify-icons/ph/crown-simple-fill";
 import icDice from "@iconify-icons/ph/dice-six-fill";
 import icPrinter from "@iconify-icons/ph/printer-fill";
@@ -168,6 +205,25 @@ const DETACH_ICON_LIST = [
   { id: "mdi-cross", C: mk(miCross) }, { id: "mdi-knight", C: mk(miKnight) },
   { id: "mdi-alien", C: mk(miAlien) }, { id: "tb-meteor", C: mk(tbMeteor) },
   { id: "tb-sword", C: mk(tbSword) },
+  { id: "si-gunicorn", C: mk(siGunicorn) }, { id: "si-dassault", C: mk(siDassault) },
+  { id: "si-gitlab", C: mk(siGitlab) }, { id: "fa-empire", C: mk(faEmpire) },
+  { id: "fa-jedi", C: mk(faJedi) }, { id: "fa-mando", C: mk(faMando) },
+  { id: "fa-gitkraken", C: mk(faGitkraken) }, { id: "fa-senate", C: mk(faSenate) },
+  { id: "fa-joomla", C: mk(faJoomla) }, { id: "fa-phoenix", C: mk(faPhoenix) },
+  { id: "fa-watchman", C: mk(faWatchman) }, { id: "fa-fulcrum", C: mk(faFulcrum) },
+  { id: "fa-firstorder", C: mk(faFirstOrder) }, { id: "fa-oldrepublic", C: mk(faOldRepublic) },
+  { id: "fa-dragon", C: mk(faDragon) }, { id: "fa-skull", C: mk(faSkull) },
+  { id: "fa-khanda", C: mk(faKhanda) },
+  { id: "fi-dragonfly", C: mk(fiDragonfly) }, { id: "ic-shieldmoon", C: mk(icShieldMoon) },
+  { id: "im-wink", C: mk(imWink) }, { id: "cil-compress", C: mk(cilCompress) },
+  { id: "cil-functions", C: mk(cilFunctions) }, { id: "cil-football", C: mk(cilFootball) },
+  { id: "cil-diamond", C: mk(cilDiamond) }, { id: "cil-lifering", C: mk(cilLifeRing) },
+  { id: "cil-spa", C: mk(cilSpa) }, { id: "ar-attack", C: mk(arAttack) },
+  { id: "ar-chess", C: mk(arChess) }, { id: "ar-aichat", C: mk(arAiChat) },
+  { id: "ar-aaaaxy", C: mk(arAaaaxy) }, { id: "ar-triodos", C: mk(arTriodos) },
+  { id: "mdi-crossbolnisi", C: mk(mdiCrossBolnisi) }, { id: "mdi-crosshairs", C: mk(mdiCrosshairs) },
+  { id: "hi-death", C: mk(hiDeath) }, { id: "hi-deathoutline", C: mk(hiDeathOutline) },
+  { id: "hi-skull", C: mk(hiSkull) }, { id: "ms-swords", C: mk(msSwords) },
 ];
 const DETACH_ICON_BY_ID = Object.fromEntries(DETACH_ICON_LIST.map((i) => [i.id, i.C]));
 const DETACH_ICON_IDS = DETACH_ICON_LIST.map((i) => i.id);
@@ -234,6 +290,19 @@ const optCost = (o) => o.cost || 0;
 function xenoCost(rule, val) {
   if (rule.tiers) return rule.tiers[typeof val === "number" ? val : 0].cost;
   return rule.cost || 0;
+}
+/* display name for a xeno rule, spelling out the chosen tier: the psychic class
+   and its chosen powers, or a levelled rule's level (eg. Force Field) */
+function xenoLabel(x, u) {
+  if (!x.tiers) return x.name;
+  const ti = typeof u.xenos[x.id] === "number" ? u.xenos[x.id] : 0;
+  const tier = x.tiers[ti];
+  const level = tier.label + (tier.sub ? `, ${tier.sub}` : "");
+  if (x.id === "psychic") {
+    const powers = u.psychic || [];
+    return `Psychic (${level}${powers.length ? `: ${powers.join(", ")}` : ""})`;
+  }
+  return `${x.name} (${level})`;
 }
 function unitPoints(u) {
   const t = UNIT_BY_ID[u.typeId];
@@ -1125,7 +1194,7 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch }) {
   const pts = unitPoints(u);
   const taken = [
     ...t.options.filter((o) => u.options[o.id]).map((o) => o.name),
-    ...XENO_RULES.filter((x) => x.id in u.xenos).map((x) => x.name),
+    ...XENO_RULES.filter((x) => x.id in u.xenos).map((x) => xenoLabel(x, u)),
   ];
   return (
     <div className="xr-urow-wrap">
@@ -1896,6 +1965,8 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const [cmdOpen, setCmdOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shared, setShared] = useState(false);
+  const [emblemOpen, setEmblemOpen] = useState(false);
+  const emblemFileRef = useRef(null);
   const { issues, used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const errors = issues.filter((i) => i.lvl === "err");
   const status = errors.length ? "err" : count === 0 ? "empty" : "ok";
@@ -1931,7 +2002,13 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
       <RailNav view="build" />
       <header className="xr-mast">
         <div className="xr-mast-row">
-          <DetachIcon list={list} size={26} className="xr-mast-img" />
+          <button className="xr-mast-emblem" onClick={() => setEmblemOpen(true)} title="Choose an emblem or upload a picture" aria-label="Choose an emblem or upload a picture">
+            {(list.image || list.icon || (list.faction && list.faction.icon))
+              ? <DetachIcon list={list} size={26} className="xr-mast-img" />
+              : <span className="xr-mast-img xr-mast-emblem-add"><Image size={20} /></span>}
+          </button>
+          <input ref={emblemFileRef} type="file" accept="image/*" hidden
+            onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) downscaleImage(f, 256, (d) => { if (d) updateList({ image: d, icon: undefined }); }); e.target.value = ""; }} />
           <input className="xr-detname" value={list.name} placeholder="Name your detachment"
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
           <div className="xr-actions">
@@ -2019,6 +2096,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
       {adding && <AddUnitModal onAdd={(id) => { dispatch({ type: "add", typeId: id }); setAdding(false); }} onClose={() => setAdding(false)} />}
       {abilOpen && sel && <AbilitiesModal u={sel} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
       {cmdOpen && sel && sel.isCmd && <CommanderModal u={sel} dispatch={dispatch} onClose={() => setCmdOpen(false)} />}
+      {emblemOpen && <IconPickerModal onPick={(id) => { updateList({ icon: id, image: undefined }); setEmblemOpen(false); }} onUpload={() => { setEmblemOpen(false); emblemFileRef.current && emblemFileRef.current.click(); }} onClose={() => setEmblemOpen(false)} />}
 
       {/* points, game-size stepper and unit count: sticks to the bottom while you
           scroll, then settles just above the footer at the end of the page */}
@@ -2105,7 +2183,6 @@ function PrintView({ list }) {
                 ...stdRules.map((g) => g.name),
               ]);
               const nested = grantedRuleDefs([...shownNames]);
-              const psyTier = typeof u.xenos.psychic === "number" ? u.xenos.psychic : 0;
               return (
                 <div className="xr-pc" key={u.key}>
                   <div className="xr-pc-head">
@@ -2120,7 +2197,7 @@ function PrintView({ list }) {
                   {(showUp || stdRules.length > 0 || nested.length > 0) && (
                     <div className="xr-pc-rules">
                       {showUp && os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
-                      {showUp && xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.id === "psychic" ? XENO_BY_ID.psychic.tiers[psyTier].label : (typeof x.text === "string" ? x.text : ruleBodyText(x.text))}</p>)}
+                      {showUp && xs.map((x) => <p key={x.id}><b>{xenoLabel(x, u)}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}){x.id === "psychic" ? "" : <>: {typeof x.text === "string" ? x.text : ruleBodyText(x.text)}</>}</p>)}
                       {showUp && powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
                       {showUp && cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                       {showUp && trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
@@ -2757,6 +2834,10 @@ const CSS = `
 .xr-imgup-x:hover{background:var(--coral-ink);color:#fff;}
 /* detachment picture on masthead + dashboard */
 .xr-mast-img{flex:none;width:44px;height:44px;border-radius:9px;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);}
+.xr-mast-emblem{flex:none;display:flex;padding:0;border-radius:9px;transition:transform .12s;}
+.xr-mast-emblem:hover{transform:translateY(-1px);}
+.xr-mast-emblem:hover .xr-mast-img{border-color:var(--brand-deep-blue);}
+.xr-mast-emblem-add{display:flex;align-items:center;justify-content:center;color:var(--ink-2);}
 .xr-list-img{width:100%;height:120px;border-radius:8px;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);margin-bottom:2px;}
 .xr-set-img-row{display:flex;align-items:center;gap:11px;}
 .xr-panel-id{flex:1;min-width:0;}
