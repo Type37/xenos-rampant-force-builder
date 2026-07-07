@@ -152,7 +152,7 @@ import { EMBLEM_EXTRA } from "./emblems-extra.js";
 const FACTION_BASE = import.meta.env.BASE_URL;
 
 /* ================================================================== *
- * XENOS RAMPANT: FORCE BUILDER
+ * XENOS RAMPANT: DETACHMENT BUILDER
  * Profiles transcribed from Xenos Rampant (Osprey Games, 2022).
  * Not an official product. Built by WarLore.
  * ================================================================== */
@@ -704,7 +704,7 @@ function SiteFooter() {
         <span className="gif-sep">|</span>
         <a href="https://www.ospreypublishing.com/us/xenos-rampant-9781472852366/" target="_blank" rel="noopener">Buy the game</a>
         <span className="gif-sep">|</span>
-        <span className="gif-builder">Force builder by <a className="warlore-mark" href="https://jetwong.neocities.org" target="_blank" rel="noopener" title="WarLore">War<span className="wl-lore">Lore</span></a></span>
+        <span className="gif-builder">Detachment builder by <a className="warlore-mark" href="https://jetwong.neocities.org" target="_blank" rel="noopener" title="WarLore">War<span className="wl-lore">Lore</span></a></span>
         <span className="gif-sep">|</span>
         <a href="https://github.com/Type37/xenos-rampant-force-builder" target="_blank" rel="noopener">Source on GitHub</a>
         <span className="gif-sep">|</span>
@@ -1055,7 +1055,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
       <header className="xr-home-mast">
         <div className="xr-titlestack">
           <h1 className="xr-word">Xenos Rampant</h1>
-          <span className="xr-sub">Force Builder</span>
+          <span className="xr-sub">Detachment Builder</span>
         </div>
       </header>
       <main className="xr-home-body">

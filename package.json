@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "A force builder UX study for Xenos Rampant (Osprey Games).",
+  "description": "A detachment builder for Xenos Rampant (Osprey Games).",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

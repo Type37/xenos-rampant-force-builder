@@ -1,4 +1,4 @@
-# Xenos Rampant Force Builder
+# Xenos Rampant Detachment Builder
 
 A free browser tool for building a Xenos Rampant army and getting it to the table. Made by WarLore.
 
