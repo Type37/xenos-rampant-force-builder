@@ -1180,38 +1180,29 @@ const ruleBodyText = (text) => {
   return flatRule(text.rule);
 };
 
-/* every named rule and its text, so a printed rule that names another rule (eg.
-   Demonic mentions Fearsome and Stun Weapons) can pull those definitions in too */
+/* text of every named rule, keyed by name, so an ability that grants another rule
+   can pull in that rule's definition */
 const RULE_TEXT_BY_NAME = (() => {
   const map = {};
   for (const [name, text] of Object.entries(SPECIAL_RULES)) if (name !== "None") map[name] = ruleBodyText(text);
   for (const x of XENO_RULES) if (x.name && !(x.name in map)) map[x.name] = ruleBodyText(x.text);
   return map;
 })();
-const RULE_NAMES = Object.keys(RULE_TEXT_BY_NAME).sort((a, b) => b.length - a.length);
-const escapeReg = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-/* find rules referenced inside the given texts but not already shown, following a
-   couple of levels of nesting (a nested rule may itself name another) */
-function nestedRuleDefs(shownNames, texts) {
-  const seen = new Set([...shownNames].map((n) => n.toLowerCase()));
+/* which abilities actually GRANT another rule (not merely mention it). only these
+   pull in a definition, so a unit is not saddled with every rule its text names */
+const RULE_GRANTS = {
+  "Demonic": ["Fearsome", "Unstable"],
+};
+/* definitions for rules a unit is granted by one of its own abilities */
+function grantedRuleDefs(shownNames) {
+  const shown = new Set([...shownNames].map((n) => n.toLowerCase()));
   const out = [];
-  let queue = texts.filter(Boolean);
-  let depth = 0;
-  while (queue.length && depth < 3) {
-    const next = [];
-    for (const text of queue) {
-      for (const name of RULE_NAMES) {
-        if (seen.has(name.toLowerCase())) continue;
-        if (new RegExp(`\\b${escapeReg(name)}\\b`).test(text)) {
-          seen.add(name.toLowerCase());
-          const body = RULE_TEXT_BY_NAME[name];
-          out.push({ name, text: body });
-          next.push(body);
-        }
-      }
+  for (const name of shownNames) {
+    for (const g of RULE_GRANTS[name] || []) {
+      if (shown.has(g.toLowerCase())) continue;
+      shown.add(g.toLowerCase());
+      if (RULE_TEXT_BY_NAME[g]) out.push({ name: g, text: RULE_TEXT_BY_NAME[g] });
     }
-    queue = next;
-    depth++;
   }
   return out;
 }
@@ -2090,6 +2081,7 @@ function PrintView({ list }) {
 
       <div className="xr-sheet">
         <div className="xr-sheet-head">
+          <DetachIcon list={list} size={22} className="xr-sheet-emblem" />
           <h1 className="xr-sheet-title">{list.name || "Untitled detachment"}</h1>
           <div className="xr-sheet-meta">Xenos Rampant &nbsp; {used}/{budget} pts &nbsp; {count} {count === 1 ? "unit" : "units"}</div>
         </div>
@@ -2112,14 +2104,12 @@ function PrintView({ list }) {
                 ...(showUp ? [...os.map((o) => o.name), ...xs.map((x) => x.name), ...cs.map((c) => c.name || "")] : []),
                 ...stdRules.map((g) => g.name),
               ]);
-              const scanTexts = [
-                ...(showUp ? [...os.map((o) => o.text), ...xs.map((x) => ruleBodyText(x.text)), ...cs.map((c) => c.text || ""), ...(trait ? [trait.rule] : []), ...powers.map((pw) => pw.effect)] : []),
-                ...stdRules.map((g) => ruleBodyText(g.text)),
-              ];
-              const nested = (showUp || stdRules.length > 0) ? nestedRuleDefs(shownNames, scanTexts) : [];
+              const nested = grantedRuleDefs([...shownNames]);
+              const psyTier = typeof u.xenos.psychic === "number" ? u.xenos.psychic : 0;
               return (
                 <div className="xr-pc" key={u.key}>
                   <div className="xr-pc-head">
+                    {u.image && <span className="xr-pc-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />}
                     <span className="xr-pc-name">{u.isCmd && <Crown size={13} className="xr-sheet-crown" />}{unitDisplayName(u, i)}</span>
                     <span className="xr-pc-type">{t.name}</span>
                     <span className="xr-pc-pts">{unitPoints(u)} pts</span>
@@ -2130,7 +2120,7 @@ function PrintView({ list }) {
                   {(showUp || stdRules.length > 0 || nested.length > 0) && (
                     <div className="xr-pc-rules">
                       {showUp && os.map((o) => <p key={o.id}><b>{o.name}</b> ({costLabel(optCost(o))}): {o.text}</p>)}
-                      {showUp && xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {typeof x.text === "string" ? x.text : ruleBodyText(x.text)}</p>)}
+                      {showUp && xs.map((x) => <p key={x.id}><b>{x.name}</b> ({costLabel(xenoCost(x, u.xenos[x.id]))}): {x.id === "psychic" ? XENO_BY_ID.psychic.tiers[psyTier].label : (typeof x.text === "string" ? x.text : ruleBodyText(x.text))}</p>)}
                       {showUp && powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
                       {showUp && cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                       {showUp && trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
@@ -3134,9 +3124,11 @@ const CSS = `
 /* the preview is sized to a real A4 page, with faint guide lines at each physical
    page break so the sheet reads as the pages it will actually print to */
 .xr-sheet{width:var(--pg-w);max-width:100%;box-sizing:border-box;margin:22px auto 56px;color:#1a1a1a;padding:var(--pg-m);box-shadow:0 4px 22px rgba(31,61,46,.22);background-color:#fff;background-image:repeating-linear-gradient(#0000 0,#0000 calc(var(--pg-h) - 2px),rgba(190,51,25,.30) calc(var(--pg-h) - 2px),rgba(190,51,25,.30) var(--pg-h));background-clip:border-box;}
-.xr-sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2.5px solid #1a1a1a;padding-bottom:6px;margin-bottom:10px;}
-.xr-sheet-title{font-family:var(--display);font-weight:700;font-size:26px;}
-.xr-sheet-meta{font-family:var(--ui);font-weight:500;font-size:14px;}
+.xr-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:6px 10px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:3px;margin-bottom:7px;}
+.xr-sheet-emblem{flex:none;width:22px;height:22px;color:#1a1a1a;background:transparent;}
+.xr-sheet-emblem.xr-dicon-glyph{background:transparent;}
+.xr-sheet-title{flex:1;min-width:0;font-family:var(--display);font-weight:700;font-size:17px;line-height:1.1;}
+.xr-sheet-meta{font-family:var(--ui);font-weight:500;font-size:11px;color:#555;}
 .xr-sheet-natl{font-family:var(--flavor);font-style:italic;font-size:13.5px;line-height:1.4;margin:0 0 8px;padding:6px 10px;border-left:4px solid #8A6A1F;background:#8A6A1F14;}
 .xr-sheet-natl b{font-style:normal;}
 .xr-sheet-natl b{color:#6b5218;}
@@ -3157,7 +3149,8 @@ const CSS = `
 /* print stat cards */
 .xr-sheet-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:7px;margin-top:9px;align-items:start;}
 .xr-pc{border:1.5px solid #1a1a1a;border-radius:0;padding:6px 10px 7px;break-inside:avoid;}
-.xr-pc-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:3px;margin-bottom:4px;}
+.xr-pc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:3px;margin-bottom:4px;}
+.xr-pc-img{flex:none;width:26px;height:26px;border-radius:5px;border:1px solid #1a1a1a;background-size:cover;background-position:center;}
 .xr-pc-name{font-family:var(--display);font-weight:700;font-size:15.5px;display:inline-flex;align-items:center;gap:5px;}
 .xr-pc-type{font-family:var(--flavor);font-style:italic;font-size:12.5px;color:#444;}
 .xr-pc-pts{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:10px;color:#555;}
