@@ -147,6 +147,7 @@ const PRESET_SETTINGS = SETTINGS.filter((s) => !s.hidden && !s.comingSoon);
 const BOOK_COLLECTIONS = SETTINGS.filter((s) => !["anvil", "grimdark"].includes(s.id)).map((s) => s.name.split(":")[0]);
 import { ALL_GENRES, randomName } from "./factions.js";
 import { RULES_REFERENCE, RULES_CATS } from "./rules.js";
+import { EMBLEM_EXTRA } from "./emblems-extra.js";
 
 const FACTION_BASE = import.meta.env.BASE_URL;
 const factionIconUrl = (icon) => (icon ? `${FACTION_BASE}factions/${icon}` : null);
@@ -223,6 +224,7 @@ const DETACH_ICON_LIST = [
   { id: "mdi-crossbolnisi", C: mk(mdiCrossBolnisi) }, { id: "mdi-crosshairs", C: mk(mdiCrosshairs) },
   { id: "hi-death", C: mk(hiDeath) }, { id: "hi-deathoutline", C: mk(hiDeathOutline) },
   { id: "hi-skull", C: mk(hiSkull) }, { id: "ms-swords", C: mk(msSwords) },
+  ...Object.entries(EMBLEM_EXTRA).map(([id, d]) => ({ id, C: mk(d) })),
 ];
 const DETACH_ICON_BY_ID = Object.fromEntries(DETACH_ICON_LIST.map((i) => [i.id, i.C]));
 const DETACH_ICON_IDS = DETACH_ICON_LIST.map((i) => i.id);
