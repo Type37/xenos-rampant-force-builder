@@ -143,6 +143,8 @@ import {
 import { SETTINGS } from "./premade.js";
 /* settings flagged hidden or comingSoon are wired up but kept out of the preset picker */
 const PRESET_SETTINGS = SETTINGS.filter((s) => !s.hidden && !s.comingSoon);
+/* the rulebook's genre settings, offered as ready-made collections to save into */
+const BOOK_COLLECTIONS = SETTINGS.filter((s) => !["anvil", "grimdark"].includes(s.id)).map((s) => s.name.split(":")[0]);
 import { ALL_GENRES, randomName } from "./factions.js";
 import { RULES_REFERENCE, RULES_CATS } from "./rules.js";
 
@@ -177,12 +179,10 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
 const DETACH_ICON_LIST = [
   { id: "crossed-swords", C: mk(giCrossedSwords) }, { id: "spartan-helmet", C: mk(giSpartan) },
   { id: "eagle-emblem", C: mk(giEagle) }, { id: "checked-shield", C: mk(giCheckedShield) },
-  { id: "spiked-shield", C: mk(giSpikedShield) }, { id: "shield-echoes", C: mk(giShieldEchoes) },
   { id: "skull-crossed-bones", C: mk(giSkullCross) }, { id: "death-skull", C: mk(giDeathSkull) },
   { id: "crown", C: mk(giCrown) }, { id: "laurel-crown", C: mk(giLaurel) },
   { id: "wolf-head", C: mk(giWolf) }, { id: "dragon-head", C: mk(giDragon) },
-  { id: "alien-bug", C: mk(giAlien2) }, { id: "robot-golem", C: mk(giRobot) },
-  { id: "battle-tank", C: mk(giTank) }, { id: "rocket-thruster", C: mk(giRocket) },
+  { id: "battle-tank", C: mk(giTank) },
   { id: "crosshair", C: mk(giCrosshair) }, { id: "biohazard", C: mk(giBiohazard) },
   { id: "star-formation", C: mk(giStars) }, { id: "mailed-fist", C: mk(giFist) },
   { id: "angel-wings", C: mk(giWings) }, { id: "gears", C: mk(giGears) },
@@ -194,11 +194,10 @@ const DETACH_ICON_LIST = [
   { id: "elf-helmet", C: mk(giElfHelm) }, { id: "knight-banner", C: mk(giKnightBanner) },
   { id: "mounted-knight", C: mk(giMountedKnight) }, { id: "crowned-skull", C: mk(giCrownedSkull) },
   { id: "visored-helm", C: mk(giVisor) }, { id: "barbute", C: mk(giBarbute) },
-  { id: "cultist", C: mk(giCultist) }, { id: "gooey-daemon", C: mk(giDaemon) },
   { id: "alien-fire", C: mk(giAlienFire) }, { id: "alien-stare", C: mk(giAlienStare) },
-  { id: "cyborg-face", C: mk(giCyborg) }, { id: "spiky-explosion", C: mk(giExplosion) },
+  { id: "spiky-explosion", C: mk(giExplosion) },
   { id: "crossed-pistols", C: mk(giPistols) }, { id: "wolf-howl", C: mk(giWolfHowl) },
-  { id: "raven", C: mk(giRaven) }, { id: "bat-mask", C: mk(giBatMask) },
+  { id: "raven", C: mk(giRaven) },
   { id: "spider-alt", C: mk(giSpider) }, { id: "hydra", C: mk(giHydra) },
   { id: "tiger-head", C: mk(giTiger) },
   { id: "mdi-skull", C: mk(miSkull) }, { id: "mdi-crosshair", C: mk(miCrosshair) },
@@ -949,7 +948,7 @@ function IconPickerModal({ onPick, onUpload, onClose }) {
   }, [onClose]);
   return (
     <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-narrow" role="dialog" aria-modal="true" aria-label="Choose an emblem" onClick={(e) => e.stopPropagation()}>
+      <div className="xr-modal xr-modal-narrow xr-modal-tall" role="dialog" aria-modal="true" aria-label="Choose an emblem" onClick={(e) => e.stopPropagation()}>
         <div className="xr-modal-head">
           <span className="xr-modal-title"><Image size={20} /> Choose an emblem</span>
           <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
@@ -958,8 +957,8 @@ function IconPickerModal({ onPick, onUpload, onClose }) {
           <button className="xr-btn xr-iconpick-upload" onClick={onUpload}><Image size={18} /> Upload your own picture</button>
           <div className="xr-iconpick-grid">
             {DETACH_ICONS.map(({ id, C }) => (
-              <button key={id} className="xr-iconpick-cell" onClick={() => onPick(id)} title={id.replace(/-/g, " ")} aria-label={id.replace(/-/g, " ")}>
-                <C size={30} />
+              <button key={id} className="xr-iconpick-cell" onClick={() => onPick(id)} aria-label="Emblem">
+                <C size={52} />
               </button>
             ))}
           </div>
@@ -987,7 +986,7 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
   const roll = () => setName(randomName(ALL_NAMES, name));
   const create = () => onCreate({ name: name.trim(), budget, description: desc.trim(), image: image || undefined, icon: icon || undefined, collection: collection.trim() || undefined });
   const current = { image, icon };
-  const suggestions = [...new Set(collections.filter(Boolean))];
+  const suggestions = [...new Set([...collections.filter(Boolean), ...BOOK_COLLECTIONS])];
   return (
     <div className="xr-modal-backdrop" onClick={onClose}>
       <div className="xr-modal xr-modal-narrow" role="dialog" aria-modal="true" aria-label="New detachment" onClick={(e) => e.stopPropagation()}>
@@ -2963,8 +2962,9 @@ const CSS = `
 .xr-coll-chip.on{background:var(--ink);border-color:var(--ink);color:var(--cream);}
 /* emblem picker */
 .xr-iconpick-upload{width:100%;justify-content:center;margin-bottom:14px;}
-.xr-iconpick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:9px;}
+.xr-iconpick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px;}
 .xr-iconpick-cell{display:flex;align-items:center;justify-content:center;aspect-ratio:1;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:11px;transition:transform .12s,border-color .12s,background .12s;}
+.xr-iconpick-cell svg{width:74%;height:74%;}
 .xr-iconpick-cell:hover{border-color:var(--brand-deep-blue);background:var(--paper-3);transform:translateY(-2px);}
 /* chosen-badge glyph rendering inside the detachment image slots */
 .xr-dicon-glyph{display:flex;align-items:center;justify-content:center;color:var(--ink);background:var(--paper-3);}
