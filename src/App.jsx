@@ -1141,7 +1141,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
 /* ================================================================== *
  * BUILDER: compact rows + detail panel
  * ================================================================== */
-const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch }) {
+const UnitRow = React.memo(function UnitRow({ u, i, count, selected, dispatch }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const taken = [
@@ -1166,6 +1166,8 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch }) {
         </span>
       </button>
       <div className="xr-urow-tools">
+        <button className="xr-urow-mv" disabled={i === 0} onClick={() => dispatch({ type: "move", key: u.key, delta: -1 })} title="Move up" aria-label="Move unit up"><Caret className="xr-mv-up" size={15} /></button>
+        <button className="xr-urow-mv" disabled={i === count - 1} onClick={() => dispatch({ type: "move", key: u.key, delta: 1 })} title="Move down" aria-label="Move unit down"><Caret className="xr-mv-dn" size={15} /></button>
         <button onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
         <button className="danger" onClick={() => { dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
       </div>
@@ -1685,6 +1687,10 @@ function AbilitiesModal({ u, dispatch, onClose }) {
           <span className="xr-modal-title"><Plus size={22} /> {t.name} abilities</span>
           <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
         </div>
+        <div className="xr-abil-searchbar">
+          <input className="xr-abil-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search abilities by name or effect" spellCheck={false} aria-label="Search abilities" />
+          {q && <button className="xr-iconbtn small" onClick={() => setQ("")} aria-label="Clear search"><XIc size={16} /></button>}
+        </div>
         {tabs.length > 1 && (
           <div className="xr-modal-tabs" role="tablist">
             {tabs.map((tb) => (
@@ -1694,10 +1700,6 @@ function AbilitiesModal({ u, dispatch, onClose }) {
             ))}
           </div>
         )}
-        <div className="xr-abil-searchbar">
-          <input className="xr-abil-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search abilities by name or effect" spellCheck={false} aria-label="Search abilities" />
-          {q && <button className="xr-iconbtn small" onClick={() => setQ("")} aria-label="Clear search"><XIc size={16} /></button>}
-        </div>
         <div className="xr-modal-body">
           {needle ? (
             <>
@@ -1963,6 +1965,11 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) downscaleImage(f, 256, (d) => { if (d) updateList({ image: d, icon: undefined }); }); e.target.value = ""; }} />
           <input className="xr-detname" value={list.name} placeholder="Name your detachment"
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
+          <button className={`xr-mastpts ${over ? "over" : pct >= 90 ? "near" : ""}`} onClick={() => setIssuesOpen((o) => !o)} title="Points and status">
+            <b>{used}</b><span>/{budget}</span>
+            {status === "ok" && <em className="xr-mastpts-s ok"><Check size={13} />{count}</em>}
+            {status === "err" && <em className="xr-mastpts-s err"><Warn size={13} />{errors.length}</em>}
+          </button>
           <div className="xr-actions">
             <button className="xr-btn small" onClick={copyList} title="Copy the roster to the clipboard as text"><CopyIc size={17} /> Copy</button>
             <button className={`xr-btn small ${shared ? "gold" : ""}`} onClick={shareLink} title="Copy a link that rebuilds this detachment (pictures are not included)">
@@ -2012,9 +2019,17 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             </button>
           ) : (
             <>
+              {roster.length > 1 && (
+                <div className="xr-ulist-file" role="group" aria-label="Order units">
+                  <span className="xr-file-l">File by</span>
+                  <button className="xr-file-btn" onClick={() => dispatch({ type: "sort", by: "cat" })} title="Group by type">Type</button>
+                  <button className="xr-file-btn" onClick={() => dispatch({ type: "sort", by: "pts" })} title="Sort by points, highest first">Points</button>
+                  <button className="xr-file-btn" onClick={() => dispatch({ type: "sort", by: "name" })} title="Sort alphabetically by name">Name</button>
+                </div>
+              )}
               <div className="xr-ulist-rows">
                 {roster.map((u, i) => (
-                  <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey} dispatch={dispatch} />
+                  <UnitRow key={u.key} u={u} i={i} count={roster.length} selected={u.key === selectedKey} dispatch={dispatch} />
                 ))}
               </div>
               <button className="xr-add-sticky" onClick={() => setAdding(true)}><Plus size={20} /> Add unit</button>
@@ -2104,7 +2119,7 @@ function PrintView({ list }) {
               const trait = opts.traits && u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
               const powers = (u.psychic || []).map((n) => PSYCHIC_POWERS.find((pp) => pp.name === n)).filter(Boolean);
               const stdRules = opts.rules ? unitSpecialRules(u, t).map((n) => ({ name: n, text: SPECIAL_RULES[n] })).filter((g) => g.text) : [];
-              const showUp = opts.upgrades && (os.length || xs.length || cs.length || trait || powers.length);
+              const showUp = !!(opts.upgrades && (os.length || xs.length || cs.length || trait || powers.length));
               const shownNames = new Set([
                 ...(showUp ? [...os.map((o) => o.name), ...xs.map((x) => x.name), ...cs.map((c) => c.name || "")] : []),
                 ...stdRules.map((g) => g.name),
@@ -2318,6 +2333,35 @@ export default function App() {
         break;
       }
       case "del": setRoster((r) => r.filter((u) => u.key !== a.key)); break;
+      case "move":
+        setRoster((r) => {
+          const i = r.findIndex((u) => u.key === a.key);
+          const j = i + a.delta;
+          if (i < 0 || j < 0 || j >= r.length) return r;
+          const next = [...r];
+          [next[i], next[j]] = [next[j], next[i]];
+          return next;
+        });
+        break;
+      case "sort":
+        setRoster((r) => {
+          const catRank = { inf: 0, foot: 0, mounted: 1, xeno: 1, beast: 2, veh: 2 };
+          const val = (u) => {
+            const t = UNIT_BY_ID[u.typeId];
+            if (a.by === "pts") return -unitPoints(u);
+            if (a.by === "name") return unitDisplayName(u, 0).toLowerCase();
+            if (a.by === "cat") return (catRank[catOf(t)] ?? 9) * 1000 - unitPoints(u);
+            return 0;
+          };
+          return [...r].map((u, idx) => ({ u, idx })).sort((x, y) => {
+            if (!!x.u.isCmd !== !!y.u.isCmd) return x.u.isCmd ? -1 : 1;
+            const vx = val(x.u), vy = val(y.u);
+            if (vx < vy) return -1;
+            if (vx > vy) return 1;
+            return x.idx - y.idx;
+          }).map((o) => o.u);
+        });
+        break;
       case "dup":
         setRoster((r) => {
           const i = r.findIndex((u) => u.key === a.key);
@@ -2630,6 +2674,15 @@ const CSS = `
 .xr-mast-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .xr-detname{flex:1;min-width:170px;font-family:var(--display);font-weight:600;font-size:22px;color:var(--ink);background:transparent;border:none;border-bottom:2px solid var(--ink-30);padding:4px 2px 6px;}
 .xr-detname::placeholder{color:var(--ink-2);opacity:.7;}
+/* compact points readout in the mast; only shown on mobile (see media query) */
+.xr-mastpts{display:none;align-items:center;gap:2px;font-family:var(--mono);font-weight:700;color:var(--ink);border:2px solid var(--ink-30);border-radius:9px;padding:4px 9px;flex:none;}
+.xr-mastpts b{font-size:18px;}
+.xr-mastpts span{font-size:13px;color:var(--ink-2);}
+.xr-mastpts.over{border-color:var(--coral-ink);}
+.xr-mastpts.over b{color:var(--coral-ink);}
+.xr-mastpts-s{display:inline-flex;align-items:center;gap:2px;font-style:normal;font-size:12.5px;margin-left:5px;}
+.xr-mastpts-s.ok{color:var(--sage);}
+.xr-mastpts-s.err{color:var(--coral-ink);}
 .xr-detname:focus{outline:none;border-bottom-color:var(--coral);}
 .xr-actions{display:flex;gap:8px;flex-wrap:wrap;}
 .xr-mast-row2{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;}
@@ -2720,7 +2773,7 @@ const CSS = `
 
 .xr-build-body{flex:1;display:grid;grid-template-columns:minmax(320px,430px) 1fr;gap:0;align-items:start;}
 .xr-ulist{display:flex;flex-direction:column;gap:10px;padding:18px clamp(12px,1.6vw,20px) 72px;}
-.xr-detail{align-self:start;min-height:320px;}
+.xr-detail{align-self:start;border-left:3px solid var(--ink);min-height:320px;}
 .xr-detail-hint{display:flex;flex-direction:column;align-items:center;gap:10px;padding:80px 20px;color:var(--ink-2);font-family:var(--display);font-size:19px;}
 .xr-detoverview{padding:20px clamp(14px,2vw,26px) 30px;display:flex;flex-direction:column;}
 .xr-detoverview-head{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
@@ -2733,7 +2786,7 @@ const CSS = `
 /* compact unit rows */
 .xr-urow{display:flex;flex-direction:row;align-items:center;gap:11px;text-align:left;border:2.5px solid var(--ink);border-left-width:7px;border-radius:10px;background:var(--paper-2);padding:11px 14px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;}
 .xr-urow-body{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
-.xr-urow-img{flex:none;width:52px;height:52px;border-radius:8px;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);}
+.xr-urow-img{flex:none;width:52px;height:52px;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);}
 .xr-urow-ic{flex:none;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);}
 .xr-urow.cat-inf .xr-urow-ic{color:var(--sage);}
 .xr-urow.cat-xeno .xr-urow-ic{color:var(--iris);}
@@ -2755,11 +2808,22 @@ const CSS = `
 .xr-urow-sub em{font-style:italic;}
 /* duplicate/delete live on the left unit card, in a reserved right gutter */
 .xr-urow-wrap{position:relative;}
-.xr-urow-wrap>.xr-urow{width:100%;padding-right:48px;}
-.xr-urow-tools{position:absolute;top:0;bottom:0;right:7px;width:34px;display:flex;flex-direction:column;justify-content:center;gap:6px;}
-.xr-urow-tools button{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s;}
+.xr-urow-wrap>.xr-urow{width:100%;padding-right:74px;}
+/* tools sit in the reserved right gutter as a compact 2x2 grid:
+   reorder (up/down) on top, duplicate/delete beneath */
+.xr-urow-tools{position:absolute;top:0;bottom:0;right:7px;width:60px;display:flex;flex-wrap:wrap;align-content:center;justify-content:flex-end;gap:5px;}
+.xr-urow-tools button{width:27px;height:27px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:7px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s,opacity .12s;}
 .xr-urow-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
 .xr-urow-tools button.danger:hover{border-color:var(--coral-ink);color:var(--coral-ink);background:#F4604C14;}
+.xr-urow-tools button:disabled{opacity:.32;cursor:default;box-shadow:none;}
+.xr-urow-tools button:disabled:hover{border-color:var(--ink-30);color:var(--ink-2);background:var(--paper);}
+.xr-mv-up{transform:rotate(180deg);}
+/* the "file by" ordering toolbar above the roster rows */
+.xr-ulist-file{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:2px 2px 4px;}
+.xr-file-l{font-family:var(--ui);font-weight:700;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);}
+.xr-file-btn{font-family:var(--ui);font-weight:600;font-size:13.5px;color:var(--ink);background:var(--paper);border:2px solid var(--ink-30);border-radius:20px;padding:4px 13px;transition:border-color .12s,background .12s,color .12s;}
+.xr-file-btn:hover{border-color:var(--ink);background:var(--paper-3);}
+.xr-file-btn:active{transform:scale(.96);}
 
 /* unit panel */
 .xr-panel{padding:16px clamp(14px,2vw,24px) 40px;animation:xr-rise var(--dur-gentle) var(--curve-decel-min);}
@@ -2775,7 +2839,7 @@ const CSS = `
 .xr-imgup.square,.xr-imgup.square .xr-imgup-thumb,.xr-imgup.square .xr-imgup-add{width:64px;height:64px;border-radius:11px;}
 .xr-imgup-add{display:flex;align-items:center;justify-content:center;border:2px dashed var(--ink-30);background:var(--paper-2);color:var(--ink-2);transition:.13s;}
 .xr-imgup-add:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
-.xr-imgup-thumb{display:block;border:2px solid var(--ink);background-size:cover;background-position:center;background-color:var(--paper-3);cursor:pointer;padding:0;}
+.xr-imgup-thumb{display:block;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);cursor:pointer;padding:0;}
 .xr-imgup-x{position:absolute;top:-7px;right:-7px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid var(--ink);background:var(--coral);color:#3a1206;transition:.12s;}
 .xr-imgup-x:hover{background:var(--coral-ink);color:#fff;}
 /* detachment picture on masthead + dashboard */
@@ -2824,7 +2888,7 @@ const CSS = `
 .xr-group{margin-top:18px;}
 .xr-group-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);padding-bottom:6px;border-bottom:2px solid var(--ink-30);margin-bottom:10px;}
 /* abilities summary in the unit panel */
-.xr-abil{margin-top:18px;border-top:2px solid var(--ink-30);padding-top:14px;}
+.xr-abil{margin-top:18px;padding-top:4px;}
 .xr-abil-bar{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
 .xr-abil-head{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
 .xr-abil-h{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.4;color:var(--ink);}
@@ -3183,9 +3247,16 @@ const CSS = `
 .xr-bub{display:inline-block;width:9px;height:9px;border:1.5px solid #1a1a1a;border-radius:50%;}
 .xr-pc-stt .xr-rng{font-size:10.5px;}
 .xr-pc-stt .xr-mod-dir{display:none;}
-.xr-pc-stt .xr-die{width:36px;font-size:12.5px;padding:1px 3px;}
-.xr-pc-stt .xr-die.free{padding-left:6px;}
+.xr-pc-stt .xr-die{width:36px;font-size:12.5px;padding:1px 3px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+/* keep each activation die tinted with its stat colour on the printed sheet
+   (screen alpha tints wash out on paper, so give print solid colour) */
+.xr-pc-stt .xr-die.k-atk{background:#f7ddd8;border-color:#c2401f;color:#5e1a0e;}
+.xr-pc-stt .xr-die.k-mov{background:#dde7d9;border-color:#42603a;color:#25391e;}
+.xr-pc-stt .xr-die.k-sho{background:#e3daee;border-color:#6A4A8C;color:#38235a;}
+.xr-pc-stt .xr-die.k-cou{background:#efe4c8;border-color:#8A6A1F;color:#523d0f;}
+.xr-pc-stt .xr-die.free{padding-left:6px;background:#f6cdbe;border-color:#c2401f;color:#3a1206;}
 .xr-pc-stt .xr-die-free{font-size:7px;right:2px;}
+.xr-printview.contrast .xr-pc-stt .xr-die{background:#fff !important;border-color:#000 !important;color:#000 !important;}
 .xr-pc-note{font-family:var(--flavor);font-style:italic;font-size:12px;line-height:1.35;color:#333;margin-top:5px;border-top:1px dotted #bbb;padding-top:4px;}
 .xr-sheet-notes{font-family:var(--body);font-size:13.5px;line-height:1.45;color:#333;margin:0 0 10px;white-space:pre-wrap;}
 .xr-pc-rules{margin-top:4px;border-top:1px solid #ccc;padding-top:3px;}
@@ -3216,8 +3287,12 @@ const CSS = `
 .xr-printview.large .xr-sheet{font-size:17px;}
 .xr-printview.large .xr-sheet-table td,.xr-printview.large .xr-sheet-table th{font-size:16.5px;padding:8px 7px;}
 .xr-printview.large .xr-sheet-unit p,.xr-printview.large .xr-sheet-gloss p{font-size:16px;}
-.xr-printview.contrast .xr-sheet{color:#000;}
+/* high-contrast: force every printed element to solid black and heavier weight */
+.xr-printview.contrast .xr-sheet,.xr-printview.contrast .xr-sheet *{color:#000 !important;}
 .xr-printview.contrast .xr-sheet-table td{border-bottom-color:#000;}
+.xr-printview.contrast .xr-pc,.xr-printview.contrast .xr-pc-head{border-color:#000;border-width:2px;}
+.xr-printview.contrast .xr-pc-stt .xr-stt-row{border-color:#000;}
+.xr-printview.contrast .xr-pc-stt .xr-stt-head{border-color:#000;}
 .xr-printview.contrast .xr-sheet-note,.xr-printview.contrast .xr-sheet-foot{color:#000;}
 
 /* ---------- play ---------- */
@@ -3300,6 +3375,7 @@ const CSS = `
   .xr-rail-nav{flex-direction:row;justify-content:space-around;height:100%;align-items:stretch;width:100%;}
   .xr-rail-btn{flex:1;max-width:96px;justify-content:center;border-radius:0;gap:2px;}
   .xr-railmuster{display:none;}
+  .xr-mastpts{display:inline-flex;}
   .xr-home,.xr-build,.xr-printview,.xr-play{padding-left:0;padding-bottom:64px;}
 }
 
