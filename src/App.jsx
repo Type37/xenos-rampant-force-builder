@@ -1944,7 +1944,7 @@ const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
           ))}
         </span>
       )}
-      <span className="xr-cat-add"><Plus size={15} /> Add <b>+{t.base}pts</b></span>
+      <span className="xr-cat-add"><Plus size={15} /> Add <b>{t.base}pts</b></span>
     </button>
   );
 });
@@ -2841,7 +2841,7 @@ const CSS = `
 .xr-mastpts-s.ok{color:var(--sage);}
 .xr-mastpts-s.err{color:var(--coral-ink);}
 .xr-detname:focus{outline:none;border-bottom-color:var(--coral);}
-.xr-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.xr-actions{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;}
 .xr-mast-row2{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;}
 .xr-budget{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .xr-budget-l{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);margin-right:2px;}
