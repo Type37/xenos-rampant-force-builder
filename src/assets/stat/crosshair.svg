@@ -1,0 +1,10 @@
+<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path fill="#1F3D2E" fill-rule="evenodd" clip-rule="evenodd" d="
+    M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0 2a10 10 0 1 1 0-20 10 10 0 0 1 0 20Z
+    M11 1h2v3h-2z
+    M11 20h2v3h-2z
+    M1 11h3v2h-3z
+    M20 11h3v2h-3z
+  "/>
+  <circle cx="12" cy="12" r="2" fill="#1F3D2E"/>
+</svg>

@@ -130,9 +130,9 @@ import icLink from "@iconify-icons/ph/link-bold";
 import icExport from "@iconify-icons/ph/export-fill";
 import icAlert from "@iconify-icons/ph/warning-circle-fill";
 /* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
-import icoAttack from "./assets/stat/attack.png";
+import icoAttack from "./assets/stat/defence.png";
 import icoMove from "./assets/stat/move.png";
-import icoShoot from "./assets/stat/shoot.png";
+import icoShoot from "./assets/stat/crosshair.svg";
 import icoCourage from "./assets/stat/courage.png";
 import icoDefence from "./assets/stat/defence.png";
 import icoArmour from "./assets/stat/armour.png";
@@ -1496,8 +1496,8 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
             title="Roll a name from the faction pool" aria-label="Roll a unit name"><Dice size={19} /></button>
         )}
         <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
-        <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })} title={COMMANDER_RULES}>
-          <Crown size={17} /> {u.isCmd ? "Commander" : "Make Commander"}
+        <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })} title={COMMANDER_RULES} aria-label={u.isCmd ? "Commander" : "Make Commander"}>
+          <Crown size={17} /> <span>{u.isCmd ? "Commander" : "Make Commander"}</span>
         </button>
       </div>
 
@@ -3545,7 +3545,12 @@ const CSS = `
   .xr-build-body{display:block;}
   .xr-musterdock{align-self:stretch;border-radius:0;border-left:none;border-right:none;justify-content:center;}
   .xr-ulist{padding-bottom:24px;}
-  .xr-detail{position:fixed;inset:0;z-index:60;background:var(--paper);border-left:none;max-height:none;overflow-y:auto;display:none;}
+  /* explicit height, not just inset:0 - a fixed box whose height is left to
+     resolve from top+bottom can end up sized to its content instead of the
+     viewport once content is tall enough, which leaves it unclipped and
+     unscrollable (fixed elements don't move with document scroll, and
+     overflow-y:auto never engages because nothing overflows the box itself) */
+  .xr-detail{position:fixed;inset:0;height:100vh;height:100dvh;z-index:60;background:var(--paper);border-left:none;max-height:none;overflow-y:auto;display:none;}
   .xr-build-body.has-sel .xr-detail{display:block;animation:xr-fade .18s ease;}
   .xr-panel-back{display:flex;}
   .xr-detail-hint{display:none;}
@@ -3554,6 +3559,15 @@ const CSS = `
   .xr-row-text{padding-left:4px;}
   .xr-tiers{padding-left:4px;}
   .xr-subs{margin-left:12px;}
+  /* the panel head packs close/picture/name/roll/pts/commander into one row;
+     at phone widths those fixed-size controls alone exceed the available
+     width, so the flexible name field gets squeezed to nothing and the
+     commander button overflows. Drop the least essential control and shrink
+     the rest so the name field actually gets room to show text. */
+  .xr-name-roll{display:none;}
+  .xr-panel-head .xr-imgup.square,.xr-panel-head .xr-imgup.square .xr-imgup-thumb,.xr-panel-head .xr-imgup.square .xr-imgup-add{width:46px;height:46px;border-radius:9px;}
+  .xr-cmd-btn{padding:8px;min-width:42px;}
+  .xr-cmd-btn span{display:none;}
   /* the rail becomes a top bar on mobile; page headers stick just below it
      instead of at the true viewport top, so the fixed bar never covers them */
   .xr-rail{top:0;bottom:auto;left:0;right:0;width:auto;height:60px;flex-direction:row;padding:0 4px;gap:0;justify-content:space-around;border-top:none;border-bottom:2px solid var(--ink-2);}
