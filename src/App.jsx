@@ -754,17 +754,19 @@ function RailMuster({ used, budget, pct, over, status, count, errors, issues, is
   const cls = over ? "over" : pct >= 90 ? "near" : "";
   return (
     <div className="xr-railmuster">
-      <div className="xr-railsize" role="group" aria-label="Game size">
-        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.min(120, budget + 6) })} title="Larger game size" aria-label="Larger game size">+</button>
-        <b className="xr-railsize-val">{budget}</b>
+      <span className="xr-railmuster-cap">Game size</span>
+      <div className="xr-railsize" role="group" aria-label="Game size in points">
         <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.max(6, budget - 6) })} title="Smaller game size" aria-label="Smaller game size">−</button>
+        <b className="xr-railsize-val" title="Game size in points">{budget}</b>
+        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.min(120, budget + 6) })} title="Larger game size" aria-label="Larger game size">+</button>
       </div>
-      <div className={`xr-railbar ${cls}`} title={`${used} of ${budget} points`}>
+      <div className={`xr-railbar ${cls}`} title={`${used} of ${budget} points spent`} aria-hidden="true">
         <div className="xr-railbar-fill" style={{ height: `${Math.min(100, pct)}%` }} />
       </div>
+      <div className={`xr-railpts ${cls}`} title="Points spent"><b>{used}</b><span>spent</span></div>
       <div className="xr-statuswrap xr-railstatuswrap">
         <button className={`xr-status xr-railstatus ${status}`} onClick={() => setIssuesOpen((o) => !o)}
-          aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : `${count} ${count === 1 ? "unit" : "units"}`}>
+          aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : `${count} ${count === 1 ? "unit" : "units"} in the detachment`}>
           {status === "ok" && <><Check size={14} /> {count}</>}
           {status === "err" && <><Warn size={14} /> {errors.length}</>}
           {status === "empty" && <>—</>}
@@ -775,7 +777,6 @@ function RailMuster({ used, budget, pct, over, status, count, errors, issues, is
           </div>
         )}
       </div>
-      <div className={`xr-railpts ${cls}`}><b>{used}</b><span>/{budget}</span></div>
     </div>
   );
 }
@@ -1153,7 +1154,7 @@ const UnitRow = React.memo(function UnitRow({ u, i, count, selected, dispatch })
       <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={() => nav(selected ? "#/build" : `#/build/${u.key}`)} aria-expanded={selected}>
         {u.image
           ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />
-          : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={26} /></span>}
+          : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={22} /></span>}
         <span className="xr-urow-body">
           <span className="xr-urow-top">
             {u.isCmd && <Crown className="xr-urow-crown" size={17} />}
@@ -2625,12 +2626,13 @@ const CSS = `
 .xr-rail-nav{display:flex;flex-direction:column;gap:6px;width:100%;align-items:center;}
 /* points muster at the foot of the rail: size stepper, a vertical fill bar, a
    status chip, and the running total pinned to the very bottom. */
-.xr-railmuster{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;padding-top:10px;}
-.xr-railsize{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.xr-railsize-btn{width:30px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:rgba(255,255,255,.85);font-family:var(--display);font-weight:700;font-size:18px;line-height:1;background:rgba(255,255,255,.12);transition:background var(--dur-fast) var(--curve-ease);}
+.xr-railmuster{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:7px;width:100%;padding-top:10px;}
+.xr-railmuster-cap{font-family:var(--ui);font-weight:700;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6);}
+.xr-railsize{display:flex;flex-direction:row;align-items:center;gap:3px;}
+.xr-railsize-btn{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:rgba(255,255,255,.85);font-family:var(--display);font-weight:700;font-size:16px;line-height:1;background:rgba(255,255,255,.12);transition:background var(--dur-fast) var(--curve-ease);}
 .xr-railsize-btn:hover{background:rgba(255,255,255,.24);color:#fff;}
-.xr-railsize-val{font-family:var(--mono);font-weight:700;font-size:16px;color:#fff;font-variant-numeric:tabular-nums;}
-.xr-railbar{position:relative;width:14px;flex:1;min-height:90px;display:flex;align-items:flex-end;border-radius:8px;background:rgba(0,0,0,.22);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
+.xr-railsize-val{min-width:24px;text-align:center;font-family:var(--mono);font-weight:700;font-size:17px;color:#fff;font-variant-numeric:tabular-nums;}
+.xr-railbar{position:relative;width:14px;flex:1;min-height:80px;display:flex;align-items:flex-end;border-radius:8px;background:rgba(0,0,0,.22);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
 .xr-railbar-fill{display:block;width:100%;background:var(--cream);border-radius:0 0 7px 7px;transition:height var(--dur-slow) var(--curve-ease);}
 .xr-railbar.near .xr-railbar-fill{background:#F0C64E;}
 .xr-railbar.over .xr-railbar-fill{background:#FFD9B0;}
@@ -2655,8 +2657,8 @@ const CSS = `
 .xr-rail .xr-rail-btn.on{background:var(--cream);color:var(--brand-deep-blue);}
 
 /* ---------- collapsible section (progressive disclosure) ---------- */
-.xr-sec{border-top:2px solid var(--ink-30);}
-.xr-sec-h{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:11px 2px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);min-height:46px;}
+.xr-sec{border-top:none;}
+.xr-sec-h{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 2px 8px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);min-height:40px;}
 .xr-sec-title{flex:1;}
 .xr-sec-count{font-family:var(--mono);font-style:normal;font-weight:700;font-size:14px;min-width:26px;height:26px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--cream);border-radius:13px;}
 .xr-sec-caret{color:var(--ink-2);transition:transform .15s;flex:none;}
@@ -2664,7 +2666,7 @@ const CSS = `
 .xr-sec-body{padding-bottom:14px;animation:xr-rise .2s cubic-bezier(.2,.8,.2,1);}
 
 /* ---------- sticky add-unit ---------- */
-.xr-ulist-rows{display:flex;flex-direction:column;gap:10px;}
+.xr-ulist-rows{display:flex;flex-direction:column;gap:7px;}
 .xr-add-sticky{position:sticky;bottom:14px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font-family:var(--body);font-weight:700;font-size:18px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:14px;border-radius:12px;box-shadow:0 3px 12px rgba(31,61,46,.22);transition:.13s;}
 .xr-add-sticky:hover{background:var(--brand-deep-blue);border-color:var(--brand-deep-blue);}
 .xr-add-sticky:active{transform:scale(.98);}
@@ -2784,10 +2786,10 @@ const CSS = `
 .xr-detoverview-hint{display:flex;align-items:center;gap:7px;margin-top:14px;font-family:var(--flavor);font-style:italic;font-size:15px;color:var(--ink-2);}
 
 /* compact unit rows */
-.xr-urow{display:flex;flex-direction:row;align-items:center;gap:11px;text-align:left;border:2.5px solid var(--ink);border-left-width:7px;border-radius:10px;background:var(--paper-2);padding:11px 14px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;}
-.xr-urow-body{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
-.xr-urow-img{flex:none;width:52px;height:52px;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);}
-.xr-urow-ic{flex:none;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);}
+.xr-urow{display:flex;flex-direction:row;align-items:center;gap:10px;text-align:left;border:2px solid var(--ink);border-left-width:6px;border-radius:9px;background:var(--paper-2);padding:7px 12px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;}
+.xr-urow-body{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;}
+.xr-urow-img{flex:none;width:40px;height:40px;border-radius:7px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);}
+.xr-urow-ic{flex:none;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);}
 .xr-urow.cat-inf .xr-urow-ic{color:var(--sage);}
 .xr-urow.cat-xeno .xr-urow-ic{color:var(--iris);}
 .xr-urow.cat-veh .xr-urow-ic{color:var(--rust);}
@@ -2801,18 +2803,18 @@ const CSS = `
 .xr-urow-top{display:flex;align-items:center;gap:8px;width:100%;}
 .xr-urow-crown{color:var(--brass);flex:none;}
 .xr-urow.sel .xr-urow-crown{color:#E8C860;}
-.xr-urow-name{font-family:var(--display);font-weight:700;font-size:18.5px;line-height:1.15;flex:1;min-width:0;}
-.xr-urow-pts{font-family:var(--mono);font-weight:700;font-size:19px;white-space:nowrap;}
-.xr-urow-pts i{font-style:normal;font-size:14px;color:var(--ink-2);margin-left:3px;}
-.xr-urow-sub{font-family:var(--ui);font-weight:500;font-size:14.5px;color:var(--ink-2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.xr-urow-name{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.15;flex:1;min-width:0;}
+.xr-urow-pts{font-family:var(--mono);font-weight:700;font-size:16px;white-space:nowrap;}
+.xr-urow-pts i{font-style:normal;font-size:12px;color:var(--ink-2);margin-left:3px;}
+.xr-urow-sub{font-family:var(--ui);font-weight:500;font-size:12.5px;color:var(--ink-2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
 .xr-urow-sub em{font-style:italic;}
 /* duplicate/delete live on the left unit card, in a reserved right gutter */
 .xr-urow-wrap{position:relative;}
-.xr-urow-wrap>.xr-urow{width:100%;padding-right:74px;}
+.xr-urow-wrap>.xr-urow{width:100%;padding-right:64px;}
 /* tools sit in the reserved right gutter as a compact 2x2 grid:
    reorder (up/down) on top, duplicate/delete beneath */
-.xr-urow-tools{position:absolute;top:0;bottom:0;right:7px;width:60px;display:flex;flex-wrap:wrap;align-content:center;justify-content:flex-end;gap:5px;}
-.xr-urow-tools button{width:27px;height:27px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:7px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s,opacity .12s;}
+.xr-urow-tools{position:absolute;top:0;bottom:0;right:6px;width:52px;display:flex;flex-wrap:wrap;align-content:center;justify-content:flex-end;gap:4px;}
+.xr-urow-tools button{width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:6px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s,opacity .12s;}
 .xr-urow-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
 .xr-urow-tools button.danger:hover{border-color:var(--coral-ink);color:var(--coral-ink);background:#F4604C14;}
 .xr-urow-tools button:disabled{opacity:.32;cursor:default;box-shadow:none;}
