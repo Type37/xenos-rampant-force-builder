@@ -7,6 +7,7 @@ import icFire from "@iconify-icons/ph/fire-fill";
 import icShield from "@iconify-icons/ph/shield-fill";
 import icArmour from "@iconify-icons/ph/shield-checkered-fill";
 import icHeart from "@iconify-icons/ph/heart-fill";
+import icGrip from "@iconify-icons/ph/dots-six-vertical-bold";
 import icInfantry from "@iconify-icons/ph/users-three-fill";
 import icAlien from "@iconify-icons/game-icons/alien-bug";
 import icTruck from "@iconify-icons/game-icons/apc";
@@ -126,6 +127,8 @@ import icGear from "@iconify-icons/ph/gear-six-fill";
 import icImage from "@iconify-icons/ph/image-square-fill";
 import icBolt from "@iconify-icons/ph/lightning-fill";
 import icLink from "@iconify-icons/ph/link-bold";
+import icExport from "@iconify-icons/ph/export-fill";
+import icAlert from "@iconify-icons/ph/warning-circle-fill";
 /* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
 import icoAttack from "./assets/stat/attack.png";
 import icoMove from "./assets/stat/move.png";
@@ -171,8 +174,9 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   Crown = mk(icCrown), Dice = mk(icDice), Printer = mk(icPrinter), CopyIc = mk(icCopy),
   Trash = mk(icTrash), Plus = mk(icPlus), XIc = mk(icX), Check = mk(icCheck),
   Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
-  House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret),
-  Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt), LinkIc = mk(icLink);
+  House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret), Grip = mk(icGrip),
+  Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt), LinkIc = mk(icLink),
+  ShareIc = mk(icExport), Alert = mk(icAlert);
 
 /* badge/emblem choices offered when starting a detachment; id is stored on the list.
    all monochrome, drawn in the ink colour, and shuffled for the picker below. */
@@ -585,33 +589,30 @@ function profFrom(prof, sp, key) {
 const adjInches = (s, d) => { const n = parseInt(s, 10); return Number.isNaN(n) ? s : `${n + d}"`; };
 const improveTgt = (s, by) => { const n = parseInt(s, 10); return Number.isNaN(n) ? s : `${Math.max(2, n - by)}+`; };
 const worsenTgt = (s, by) => { const n = parseInt(s, 10); if (Number.isNaN(n)) return s; const nn = n + by; return nn >= 6 ? "6" : `${nn}+`; };
-const STAT_MODS = {
-  "assault-doctrine": { prof: { atk: "3+" } },
-  "close-quarters": { prof: { sho: "4+ / 12\"" } },
+/* Effects uniform across every unit that can take them. A unit-specific entry
+   in UNIT_STAT_MODS below overrides these for that unit. */
+const GLOBAL_STAT_MODS = {
   "mobile": { movDelta: 4 },
   "super-heavy-armour": { prof: { arm: 5 }, movDelta: -2 },
-  "increased-squad": { prof: { atk: "5+", def: "4+", sho: "5+ / 18\"" } },
   "undisciplined": { act: { cou: "5+" } },
   "enthusiastic": { atkWorsen: 1 },
   "even-heavier": { prof: { arm: 4, atk: "3+" } },
   "veteran": { prof: { def: "5+" } },
   "artillery": { prof: { sho: "4+ / 48\"" } },
   "sniper-team": { prof: { sho: "5+ / 24\"" } },
-  "mob": { prof: { atk: "3+", def: "5+" } },
   "swarm": { prof: { atk: "3+" } },
   "young-warriors": { act: { cou: "5+" } },
   "cunning": { prof: { def: "5+" } },
+  "lesser-xeno": { prof: { def: "5+" } },
   "scythes": { prof: { atk: "5+" } },
-  "walker": { prof: { atk: "4+" }, movDelta: -2 },
   "light-armoured": { armDelta: -1 },
   "civilian": { prof: { arm: 2 } },
   "improvised-armour": { prof: { arm: 4 }, movDelta: -2 },
   "large-vehicle": { movDelta: -2 },
   "transport-15": { movDelta: -2 },
   "technical": { act: { sho: "6+" }, prof: { sho: "5+ / 18\"" } },
-  "green-crew": { prof: { sho: "5+ / 18\"" } },
   "ravenous-horde": { act: { sho: "n/a" }, prof: { atk: "7+", sho: "n/a" } },
-  "primitive-missiles": { act: { sho: "6+" }, prof: { sho: "6 / 6\"" } },
+  "primitive-missiles": { act: { sho: "6+" }, prof: { sho: "6+ / 6\"" } },
   // xeno rules
   "slow": { movDelta: -2 },
   "fanatical-discipline": { couImprove: 1 },
@@ -619,6 +620,55 @@ const STAT_MODS = {
   "unarmed": { act: { sho: "n/a" }, prof: { sho: "n/a" } },
   "boarding-shields": { defImprove: 1 },
 };
+/* The same option can change different stats on different units, so these are
+   keyed by unit id first. A mod may be a plain object, or `{ fn }` when the
+   result depends on the unit's other options (close-quarters keys off Increased
+   Squad Size; a vehicle's green crew keys off its weapon). `pri` orders
+   application so a dependent mod reads and overrides a base-setting one. */
+const UNIT_STAT_MODS = {
+  elite: {
+    "assault-doctrine": { prof: { atk: "3+" } },
+    "close-quarters": { prof: { sho: "4+ / 12\"" } },
+  },
+  heavy: {
+    "assault-doctrine": { atkImprove: 1 },
+    "increased-squad": { prof: { atk: "5+", def: "4+", sho: "5+ / 18\"" } },
+    "close-quarters": { pri: 1, fn: (ids) => ({ prof: { sho: ids.has("increased-squad") ? "5+ / 12\"" : "6+ / 12\"" } }) },
+  },
+  light: {
+    "assault-doctrine": { atkImprove: 1 },
+    "increased-squad": { prof: { atk: "5+", def: "4+", sho: "5+ / 18\"" } },
+    "close-quarters": { pri: 1, fn: (ids) => ({ prof: { sho: ids.has("increased-squad") ? "5+ / 12\"" : "6+ / 12\"" } }) },
+  },
+  berserk: {
+    "heavy-armour": { prof: { arm: 3 } },
+    "increased-squad": { prof: { atk: "3+" } },
+  },
+  support: {
+    "close-quarters": { prof: { sho: "4+ / 12\"" } },
+  },
+  primitive: {
+    "increased-squad": { prof: { atk: "4+", def: "5+" } },
+    "mob": { prof: { atk: "3+", def: "5+" } },
+  },
+  militia: {
+    "mob": { prof: { sho: "6+ / 12\"" } },
+  },
+  "fighting-vehicle": {
+    "close-quarters": { pri: 1, prof: { sho: "4+ / 12\"" } },
+    "green-crew": { pri: 2, fn: (ids) => ({ prof: { sho: ids.has("artillery") ? "5+ / 48\"" : ids.has("close-quarters") ? "5+ / 12\"" : "5+ / 18\"" } }) },
+    "walker": { prof: { atk: "4+" }, movDelta: -2 },
+  },
+  "transport-vehicle": {
+    "green-crew": { prof: { sho: "6+ / 12\"" } },
+    "walker": { prof: { atk: "4+", def: "5+" }, movDelta: -2 },
+  },
+  "softskin-vehicle": {
+    "green-crew": { act: { cou: "5+" } },
+    "walker": { prof: { atk: "4+", def: "5+" }, movDelta: -2 },
+  },
+};
+const modFor = (unitId, id) => (UNIT_STAT_MODS[unitId] && UNIT_STAT_MODS[unitId][id]) || GLOBAL_STAT_MODS[id];
 /* to-hit targets improve as the number falls (3+ beats 5+); distances, Armour
    and Strength improve as the number rises. */
 const LOWER_IS_BETTER = new Set(["act:cou", "prof:atk", "prof:def", "prof:sho"]);
@@ -631,22 +681,27 @@ function deriveStats(u, t) {
   const prof = { ...t.prof };
   const changed = new Set();
   const setBlock = (obj, block, kv) => { for (const k in kv) { if (String(obj[k]) !== String(kv[k])) { obj[k] = kv[k]; changed.add(`${block}:${k}`); } } };
-  const ids = [...Object.keys(u.options || {}).filter((k) => u.options[k]), ...Object.keys(u.xenos || {})];
-  ids.forEach((id) => {
-    const m = STAT_MODS[id];
-    if (!m) return;
+  const idList = [...Object.keys(u.options || {}).filter((k) => u.options[k]), ...Object.keys(u.xenos || {})];
+  const idSet = new Set(idList);
+  const resolved = idList
+    .map((id) => ({ id, m: modFor(t.id, id) }))
+    .filter((x) => x.m)
+    .sort((a, b) => (a.m.pri || 0) - (b.m.pri || 0));
+  resolved.forEach(({ m }) => {
+    if (m.fn) m = m.fn(idSet);
     if (m.act) setBlock(act, "act", m.act);
     if (m.prof) setBlock(prof, "prof", m.prof);
     if (m.movDelta) { prof.mov = adjInches(prof.mov, m.movDelta); changed.add("prof:mov"); }
     if (m.armDelta != null) { prof.arm = Number(prof.arm) + m.armDelta; changed.add("prof:arm"); }
     if (m.couImprove) { act.cou = improveTgt(act.cou, m.couImprove); changed.add("act:cou"); }
     if (m.couWorsen) { act.cou = worsenTgt(act.cou, m.couWorsen); changed.add("act:cou"); }
+    if (m.atkImprove) { prof.atk = improveTgt(prof.atk, m.atkImprove); changed.add("prof:atk"); }
     if (m.atkWorsen) { prof.atk = worsenTgt(prof.atk, m.atkWorsen); changed.add("prof:atk"); }
     if (m.defImprove) { prof.def = improveTgt(prof.def, m.defImprove); changed.add("prof:def"); }
   });
-  if (ids.includes("xeno-ranged")) {
+  if (idSet.has("xeno-ranged")) {
     setBlock(act, "act", { sho: "6+" });
-    setBlock(prof, "prof", { sho: ids.includes("xr-cqd") ? "5+ / 12\"" : "5+ / 18\"" });
+    setBlock(prof, "prof", { sho: idSet.has("xr-cqd") ? "5+ / 12\"" : "5+ / 18\"" });
   }
   const dirs = {};
   changed.forEach((k) => {
@@ -684,7 +739,19 @@ function StatTable({ t, sp, u, hint = true, spBubbles = false }) {
             <span className={`xr-stt-cell ${modV ? "mod " + (dirV || "") : ""}`} title={modV ? tip(dirV) : undefined}>
               {v
                 ? (spBubbles && row.key === "sp"
-                    ? <span className="xr-stt-bubbles" aria-label={`${v.main} Strength Points`}>{Array.from({ length: Math.max(0, Number(v.main) || 0) }, (_, bi) => <i key={bi} className="xr-bub" aria-hidden="true" />)}</span>
+                    ? (() => {
+                        const n = Math.max(0, Number(v.main) || 0);
+                        const halfIdx = n >= 2 ? Math.ceil(n / 2) - 1 : -1;
+                        return (
+                          <span className="xr-stt-bubbles" aria-label={`${v.main} Strength Points, half strength below ${Math.ceil(n / 2)}`}>
+                            <b className="xr-bub-num">{v.main}</b>
+                            {Array.from({ length: n }, (_, bi) => (
+                              <i key={bi} className={`xr-bub ${bi === halfIdx ? "half" : ""}`}
+                                title={bi === halfIdx ? "Half strength: at or below here the unit is battered" : undefined} aria-hidden="true" />
+                            ))}
+                          </span>
+                        );
+                      })()
                     : <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range} range</i>}</>)
                 : <span className="xr-dash">-</span>}
               {modV && <span className={`xr-mod-dir ${dirV || "neutral"}`} aria-hidden="true">{dirV === "up" ? "▲" : dirV === "down" ? "▼" : "●"}</span>}
@@ -768,7 +835,7 @@ function RailMuster({ used, budget, pct, over, status, count, errors, issues, is
         <button className={`xr-status xr-railstatus ${status}`} onClick={() => setIssuesOpen((o) => !o)}
           aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : `${count} ${count === 1 ? "unit" : "units"} in the detachment`}>
           {status === "ok" && <><Check size={14} /> {count}</>}
-          {status === "err" && <><Warn size={14} /> {errors.length}</>}
+          {status === "err" && <><Alert size={14} /> {errors.length}</>}
           {status === "empty" && <>—</>}
         </button>
         {issues.length > 0 && (
@@ -1142,7 +1209,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
 /* ================================================================== *
  * BUILDER: compact rows + detail panel
  * ================================================================== */
-const UnitRow = React.memo(function UnitRow({ u, i, count, selected, dispatch }) {
+const UnitRow = React.memo(function UnitRow({ u, i, count, selected, dispatch, dragging, rowStyle, onDragDown, onDragMove, onDragUp, onDragCancel }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const taken = [
@@ -1150,7 +1217,7 @@ const UnitRow = React.memo(function UnitRow({ u, i, count, selected, dispatch })
     ...XENO_RULES.filter((x) => x.id in u.xenos).map((x) => xenoLabel(x, u)),
   ];
   return (
-    <div className="xr-urow-wrap">
+    <div className={`xr-urow-wrap ${dragging ? "dragging" : ""}`} style={rowStyle}>
       <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={() => nav(selected ? "#/build" : `#/build/${u.key}`)} aria-expanded={selected}>
         {u.image
           ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />
@@ -1167,8 +1234,12 @@ const UnitRow = React.memo(function UnitRow({ u, i, count, selected, dispatch })
         </span>
       </button>
       <div className="xr-urow-tools">
-        <button className="xr-urow-mv" disabled={i === 0} onClick={() => dispatch({ type: "move", key: u.key, delta: -1 })} title="Move up" aria-label="Move unit up"><Caret className="xr-mv-up" size={15} /></button>
-        <button className="xr-urow-mv" disabled={i === count - 1} onClick={() => dispatch({ type: "move", key: u.key, delta: 1 })} title="Move down" aria-label="Move unit down"><Caret className="xr-mv-dn" size={15} /></button>
+        <button className="xr-urow-drag" data-key={u.key} data-index={i} title="Drag to reorder" aria-label={`Reorder ${unitDisplayName(u, i)}, currently position ${i + 1} of ${count}`}
+          onPointerDown={onDragDown} onPointerMove={onDragMove} onPointerUp={onDragUp} onPointerCancel={onDragCancel}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowUp") { e.preventDefault(); dispatch({ type: "move", key: u.key, delta: -1 }); }
+            if (e.key === "ArrowDown") { e.preventDefault(); dispatch({ type: "move", key: u.key, delta: 1 }); }
+          }}><Grip size={16} /></button>
         <button onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
         <button className="danger" onClick={() => { dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
       </div>
@@ -1922,6 +1993,30 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const [shared, setShared] = useState(false);
   const [emblemOpen, setEmblemOpen] = useState(false);
   const emblemFileRef = useRef(null);
+  /* drag-to-reorder: rows shift live via CSS transform while dragging, and the
+     actual roster order is only committed once, on pointer-up. */
+  const [drag, setDrag] = useState(null); // { key, index, startY, y, rowH, pointerId }
+  const dragTarget = drag ? Math.max(0, Math.min(roster.length - 1, drag.index + Math.round((drag.y - drag.startY) / drag.rowH))) : null;
+  const beginDrag = useCallback((e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    const btn = e.currentTarget;
+    const wrap = btn.closest(".xr-urow-wrap");
+    if (!wrap) return;
+    btn.setPointerCapture(e.pointerId);
+    setDrag({ key: btn.dataset.key, index: Number(btn.dataset.index), startY: e.clientY, y: e.clientY, rowH: wrap.offsetHeight, pointerId: e.pointerId });
+  }, []);
+  const moveDrag = useCallback((e) => {
+    setDrag((d) => (d && e.pointerId === d.pointerId) ? { ...d, y: e.clientY } : d);
+  }, []);
+  const finishDrag = useCallback((e) => {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const toIndex = Math.max(0, Math.min(roster.length - 1, drag.index + Math.round((drag.y - drag.startY) / drag.rowH)));
+    if (toIndex !== drag.index) dispatch({ type: "reorder", key: drag.key, toIndex });
+    setDrag(null);
+  }, [drag, roster.length, dispatch]);
+  const cancelDrag = useCallback((e) => {
+    setDrag((d) => (d && e.pointerId === d.pointerId) ? null : d);
+  }, []);
   const { issues, used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const errors = issues.filter((i) => i.lvl === "err");
   const status = errors.length ? "err" : count === 0 ? "empty" : "ok";
@@ -1969,17 +2064,18 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
           <button className={`xr-mastpts ${over ? "over" : pct >= 90 ? "near" : ""}`} onClick={() => setIssuesOpen((o) => !o)} title="Points and status">
             <b>{used}</b><span>/{budget}</span>
             {status === "ok" && <em className="xr-mastpts-s ok"><Check size={13} />{count}</em>}
-            {status === "err" && <em className="xr-mastpts-s err"><Warn size={13} />{errors.length}</em>}
+            {status === "err" && <em className="xr-mastpts-s err"><Alert size={13} />{errors.length}</em>}
           </button>
           <div className="xr-actions">
-            <button className="xr-btn small" onClick={copyList} title="Copy the roster to the clipboard as text"><CopyIc size={17} /> Copy</button>
-            <button className={`xr-btn small ${shared ? "gold" : ""}`} onClick={shareLink} title="Copy a link that rebuilds this detachment (pictures are not included)">
-              {shared ? <><Check size={17} /> Link copied</> : <><LinkIc size={17} /> Share</>}
+            <button className="xr-btn small xr-btn-icon" onClick={copyList} title="Copy roster to clipboard as text" aria-label="Copy roster"><CopyIc size={18} /></button>
+            <button className={`xr-btn small xr-btn-icon ${shared ? "gold" : ""}`} onClick={shareLink}
+              title="Copy a link that rebuilds this detachment (pictures are not included)" aria-label={shared ? "Link copied" : "Share link"}>
+              {shared ? <Check size={18} /> : <ShareIc size={18} />}
             </button>
-            <button className="xr-btn small" onClick={() => nav("#/print")} title="Open the print sheet"><Printer size={17} /> Print</button>
+            <button className="xr-btn small xr-btn-icon" onClick={() => nav("#/print")} title="Open the print sheet" aria-label="Print sheet"><Printer size={18} /></button>
             <div className="xr-settingswrap">
-              <button className={`xr-btn small ${list.freeplay ? "gold" : ""}`} onClick={() => setSettingsOpen((o) => !o)}
-                title="Detachment settings" aria-expanded={settingsOpen}><Gear size={17} /> Settings</button>
+              <button className={`xr-btn small xr-btn-icon ${list.freeplay ? "gold" : ""}`} onClick={() => setSettingsOpen((o) => !o)}
+                title="Detachment settings" aria-label="Detachment settings" aria-expanded={settingsOpen}><Gear size={18} /></button>
               {settingsOpen && (
                 <>
                   <button className="xr-settings-scrim" aria-label="Close settings" onClick={() => setSettingsOpen(false)} />
@@ -2029,9 +2125,21 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                 </div>
               )}
               <div className="xr-ulist-rows">
-                {roster.map((u, i) => (
-                  <UnitRow key={u.key} u={u} i={i} count={roster.length} selected={u.key === selectedKey} dispatch={dispatch} />
-                ))}
+                {roster.map((u, i) => {
+                  const isDragged = drag && u.key === drag.key;
+                  let rowStyle;
+                  if (isDragged) {
+                    rowStyle = { transform: `translateY(${drag.y - drag.startY}px)` };
+                  } else if (drag) {
+                    if (drag.index < dragTarget && i > drag.index && i <= dragTarget) rowStyle = { transform: `translateY(${-drag.rowH}px)` };
+                    else if (drag.index > dragTarget && i >= dragTarget && i < drag.index) rowStyle = { transform: `translateY(${drag.rowH}px)` };
+                  }
+                  return (
+                    <UnitRow key={u.key} u={u} i={i} count={roster.length} selected={u.key === selectedKey} dispatch={dispatch}
+                      dragging={isDragged} rowStyle={rowStyle}
+                      onDragDown={beginDrag} onDragMove={moveDrag} onDragUp={finishDrag} onDragCancel={cancelDrag} />
+                  );
+                })}
               </div>
               <button className="xr-add-sticky" onClick={() => setAdding(true)}><Plus size={20} /> Add unit</button>
             </>
@@ -2080,6 +2188,26 @@ function PrintView({ list }) {
   const { used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const tog = (k) => setOpts((o) => ({ ...o, [k]: !o[k] }));
 
+  /* special rules carried by two or more units are defined once in an Abilities
+     Reference at the end; each unit then lists only the name. This is the main
+     way the sheet stays short when many units share Firefight, Go To Ground, etc. */
+  const refRules = useMemo(() => {
+    if (!opts.rules) return { shared: new Set(), list: [] };
+    const count = new Map(), body = new Map();
+    roster.forEach((u) => {
+      const t = UNIT_BY_ID[u.typeId];
+      unitSpecialRules(u, t).forEach((n) => {
+        const text = SPECIAL_RULES[n];
+        if (!text) return;
+        count.set(n, (count.get(n) || 0) + 1);
+        if (!body.has(n)) body.set(n, typeof text === "string" ? text : ruleBodyText(text));
+      });
+    });
+    const shared = new Set([...count].filter(([, c]) => c >= 2).map(([n]) => n));
+    const listOut = [...shared].sort((a, b) => a.localeCompare(b)).map((n) => ({ name: n, text: body.get(n) }));
+    return { shared, list: listOut };
+  }, [roster, opts.rules]);
+
   return (
     <div className={`xr-printview ${opts.contrast ? "contrast" : ""} ${opts.large ? "large" : ""}`}>
       <RailNav view="print" />
@@ -2120,6 +2248,8 @@ function PrintView({ list }) {
               const trait = opts.traits && u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
               const powers = (u.psychic || []).map((n) => PSYCHIC_POWERS.find((pp) => pp.name === n)).filter(Boolean);
               const stdRules = opts.rules ? unitSpecialRules(u, t).map((n) => ({ name: n, text: SPECIAL_RULES[n] })).filter((g) => g.text) : [];
+              const uniqueStd = stdRules.filter((g) => !refRules.shared.has(g.name));
+              const sharedStd = stdRules.filter((g) => refRules.shared.has(g.name));
               const showUp = !!(opts.upgrades && (os.length || xs.length || cs.length || trait || powers.length));
               const shownNames = new Set([
                 ...(showUp ? [...os.map((o) => o.name), ...xs.map((x) => x.name), ...cs.map((c) => c.name || "")] : []),
@@ -2144,14 +2274,28 @@ function PrintView({ list }) {
                       {showUp && powers.map((pw) => <p key={pw.name}><b>Psychic power, {pw.name}</b> ({pw.difficulty}): {pw.effect}</p>)}
                       {showUp && cs.map((c) => <p key={c.id}><b>{c.name}</b> ({costLabel(c.cost)}){c.text ? `: ${c.text}` : ""}</p>)}
                       {showUp && trait && <p><b>Commander trait, {trait.name}:</b> {trait.rule}</p>}
-                      {stdRules.map((g) => <p key={`sr-${g.name}`} className="xr-pc-std"><b>{g.name}.</b> {typeof g.text === "string" ? g.text : ruleBodyText(g.text)}</p>)}
-                      {nested.map((g) => <p key={`nx-${g.name}`} className="xr-pc-std xr-pc-nested"><b>{g.name}.</b> {g.text}</p>)}
+                      {uniqueStd.map((g) => <p key={`sr-${g.name}`} className="xr-pc-std"><b>{g.name}.</b> {typeof g.text === "string" ? g.text : ruleBodyText(g.text)}</p>)}
+                      {nested.filter((g) => !refRules.shared.has(g.name)).map((g) => <p key={`nx-${g.name}`} className="xr-pc-std xr-pc-nested"><b>{g.name}.</b> {g.text}</p>)}
+                      {sharedStd.length > 0 && (
+                        <p className="xr-pc-ref">{sharedStd.map((g) => g.name).join(", ")} <i>see reference</i></p>
+                      )}
                     </div>
                   )}
                   {u.notes && u.notes.trim() && <p className="xr-pc-note">{u.notes.trim()}</p>}
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {refRules.list.length > 0 && (
+          <div className="xr-sheet-ref">
+            <h2 className="xr-sheet-ref-h">Abilities Reference</h2>
+            <div className="xr-sheet-ref-grid">
+              {refRules.list.map((g) => (
+                <p key={`ref-${g.name}`} className="xr-sheet-ref-item"><b>{g.name}.</b> {g.text}</p>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -2258,7 +2402,7 @@ function PlayView({ list }) {
 function ErrorScreen({ error }) {
   return (
     <div className="xr-errscreen" role="alert">
-      <span className="xr-errscreen-badge"><Warn size={44} /></span>
+      <span className="xr-errscreen-badge"><Alert size={44} /></span>
       <h1 className="xr-errscreen-h">Something went sideways.</h1>
       <p className="xr-errscreen-p">The builder hit an error and stopped this view. Your saved detachments are safe in this browser.</p>
       {error && error.message && <pre className="xr-errscreen-detail">{String(error.message)}</pre>}
@@ -2341,6 +2485,16 @@ export default function App() {
           if (i < 0 || j < 0 || j >= r.length) return r;
           const next = [...r];
           [next[i], next[j]] = [next[j], next[i]];
+          return next;
+        });
+        break;
+      case "reorder":
+        setRoster((r) => {
+          const from = r.findIndex((u) => u.key === a.key);
+          if (from < 0 || from === a.toIndex) return r;
+          const next = [...r];
+          const [moved] = next.splice(from, 1);
+          next.splice(a.toIndex, 0, moved);
           return next;
         });
         break;
@@ -2535,6 +2689,7 @@ const CSS = `
 .xr-btn.danger:hover{background:var(--coral);border-color:var(--coral-ink);color:#fff;}
 .xr-btn.small{min-height:42px;padding:8px 13px;font-size:15.5px;}
 .xr-btn.small.icon{padding:8px 10px;}
+.xr-btn.small.xr-btn-icon{padding:8px;min-width:42px;width:42px;justify-content:center;}
 .xr-btn.gold{background:var(--brass);border-color:var(--brass);color:var(--cream);}
 .xr-btn.xr-manage{background:var(--brand-deep);border-color:transparent;color:#fff;box-shadow:var(--shadow4);}
 .xr-btn.xr-manage:hover{background:var(--brand-deep);border-color:transparent;filter:brightness(1.08);}
@@ -2808,18 +2963,23 @@ const CSS = `
 .xr-urow-pts i{font-style:normal;font-size:12px;color:var(--ink-2);margin-left:3px;}
 .xr-urow-sub{font-family:var(--ui);font-weight:500;font-size:12.5px;color:var(--ink-2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
 .xr-urow-sub em{font-style:italic;}
-/* duplicate/delete live on the left unit card, in a reserved right gutter */
-.xr-urow-wrap{position:relative;}
+/* duplicate/delete live on the left unit card, in a reserved right gutter.
+   dragging is instant (no transition, tracks the pointer 1:1); other rows
+   glide out of the way with a short transition to open a gap. */
+.xr-urow-wrap{position:relative;transition:transform 150ms ease;}
+.xr-urow-wrap.dragging{transition:none;z-index:20;}
 .xr-urow-wrap>.xr-urow{width:100%;padding-right:64px;}
-/* tools sit in the reserved right gutter as a compact 2x2 grid:
-   reorder (up/down) on top, duplicate/delete beneath */
+/* tools sit in the reserved right gutter as a compact wrapped grid:
+   drag handle, duplicate and delete */
 .xr-urow-tools{position:absolute;top:0;bottom:0;right:6px;width:52px;display:flex;flex-wrap:wrap;align-content:center;justify-content:flex-end;gap:4px;}
 .xr-urow-tools button{width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:6px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s,opacity .12s;}
 .xr-urow-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
 .xr-urow-tools button.danger:hover{border-color:var(--coral-ink);color:var(--coral-ink);background:#F4604C14;}
 .xr-urow-tools button:disabled{opacity:.32;cursor:default;box-shadow:none;}
 .xr-urow-tools button:disabled:hover{border-color:var(--ink-30);color:var(--ink-2);background:var(--paper);}
-.xr-mv-up{transform:rotate(180deg);}
+.xr-urow-drag{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;}
+.xr-urow-drag:active{cursor:grabbing;}
+.dragging .xr-urow-drag{cursor:grabbing;}
 /* the "file by" ordering toolbar above the roster rows */
 .xr-ulist-file{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:2px 2px 4px;}
 .xr-file-l{font-family:var(--ui);font-weight:700;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);}
@@ -3105,9 +3265,13 @@ const CSS = `
 /* smooth sliding tabs (add-unit categories) */
 .xr-stabs{position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);margin:12px clamp(14px,3vw,20px);padding:4px;background:var(--paper-3);border-radius:11px;border:2px solid var(--ink-30);}
 .xr-stabs-ind{position:absolute;top:4px;bottom:4px;left:calc(4px + var(--i) * (100% - 8px) / var(--n));width:calc((100% - 8px)/var(--n));border-radius:8px;background:var(--brand-deep);box-shadow:var(--shadow4);transition:left var(--dur-gentle) var(--curve-ease-max);}
-.xr-stab{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;font-family:var(--ui);font-weight:600;font-size:16px;color:var(--ink-2);border-radius:8px;transition:color var(--dur-fast) var(--curve-ease);}
+.xr-stabs .xr-stab{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:0;padding:0 4px;font-family:var(--ui);font-weight:600;font-size:16px;color:var(--ink-2);border-radius:8px;transition:color var(--dur-fast) var(--curve-ease);}
 .xr-stab:hover:not(.on){color:var(--ink);}
 .xr-stab.on{color:#fff;}
+.xr-stabs .xr-stab span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.xr-stabs .xr-stab svg{flex:none;}
+@media(max-width:480px){.xr-stabs .xr-stab{gap:5px;font-size:14px;}.xr-stabs .xr-stab svg{width:16px;height:16px;}}
+@media(max-width:400px){.xr-stabs .xr-stab{flex-direction:column;gap:2px;font-size:12px;line-height:1.1;}}
 .xr-modal-tab{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:16.5px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:8px 15px;border-radius:9px;min-height:44px;transition:.12s;}
 .xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
 .xr-modal-tab.on{color:var(--cream);background:var(--ink);border-color:var(--ink);}
@@ -3246,7 +3410,13 @@ const CSS = `
 .xr-pc-stt .xr-stt-cell b{font-size:13px;}
 /* strength points as bubbles on the print sheet */
 .xr-stt-bubbles{display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px;}
+.xr-bub-num{font-family:var(--mono);font-weight:700;font-size:13px;line-height:1;margin-right:5px;color:#1a1a1a;}
 .xr-bub{display:inline-block;width:9px;height:9px;border:1.5px solid #1a1a1a;border-radius:50%;}
+.xr-bub.half{width:11px;height:11px;border-width:2.5px;background:#f6cdbe;-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:0 0 0 1.5px #fff, 0 0 0 3px #c2401f;margin:0 3px;}
+.xr-printview.contrast .xr-bub.half{background:#fff;box-shadow:0 0 0 1.5px #fff,0 0 0 3px #000;border-color:#000;}
+.xr-printview.large .xr-bub-num{font-size:16px;}
+.xr-printview.large .xr-bub{width:11px;height:11px;}
+.xr-printview.large .xr-bub.half{width:13px;height:13px;}
 .xr-pc-stt .xr-rng{font-size:10.5px;}
 .xr-pc-stt .xr-mod-dir{display:none;}
 .xr-pc-stt .xr-die{width:36px;font-size:12.5px;padding:1px 3px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
@@ -3266,6 +3436,19 @@ const CSS = `
 .xr-pc-rules p b{font-weight:700;}
 .xr-pc-std b{font-weight:700;}
 .xr-pc-nested{color:#555;padding-left:8px;border-left:2px solid #ddd;}
+.xr-pc-ref{font-family:var(--body);font-size:9.5px;line-height:1.28;color:#444;margin-top:2px;}
+.xr-pc-ref i{font-family:var(--flavor);font-style:italic;color:#777;}
+.xr-printview.contrast .xr-pc-ref,.xr-printview.contrast .xr-pc-ref i{color:#000;}
+.xr-printview.large .xr-pc-ref{font-size:14px;}
+.xr-sheet-ref{margin-top:12px;border-top:2px solid #1a1a1a;padding-top:7px;break-inside:avoid;}
+.xr-sheet-ref-h{font-family:var(--display);font-weight:700;font-size:16px;margin-bottom:5px;}
+.xr-sheet-ref-grid{column-count:2;column-gap:24px;}
+.xr-sheet-ref-item{font-family:var(--body);font-size:10.5px;line-height:1.3;margin-bottom:3px;break-inside:avoid;}
+.xr-sheet-ref-item b{font-weight:700;}
+.xr-printview.contrast .xr-sheet-ref,.xr-printview.contrast .xr-sheet-ref-h{border-color:#000;}
+.xr-printview.large .xr-sheet-ref-h{font-size:20px;}
+.xr-printview.large .xr-sheet-ref-item{font-size:14px;}
+@media(max-width:720px){.xr-sheet-ref-grid{column-count:1;}}
 .xr-printview.contrast .xr-pc-std{color:#000;}
 .xr-printview.contrast .xr-pc-nested{color:#000;border-left-color:#000;}
 .xr-printview.large .xr-pc-name{font-size:18px;}
