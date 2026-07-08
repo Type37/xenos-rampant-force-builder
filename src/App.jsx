@@ -3543,8 +3543,7 @@ const CSS = `
 /* ---------- mobile ---------- */
 @media(max-width:880px){
   .xr-build-body{display:block;}
-  /* the dock sticks above the bottom nav bar on mobile, spanning the width */
-  .xr-musterdock{align-self:stretch;bottom:60px;border-radius:0;border-left:none;border-right:none;justify-content:center;}
+  .xr-musterdock{align-self:stretch;border-radius:0;border-left:none;border-right:none;justify-content:center;}
   .xr-ulist{padding-bottom:24px;}
   .xr-detail{position:fixed;inset:0;z-index:60;background:var(--paper);border-left:none;max-height:none;overflow-y:auto;display:none;}
   .xr-build-body.has-sel .xr-detail{display:block;animation:xr-fade .18s ease;}
@@ -3555,13 +3554,16 @@ const CSS = `
   .xr-row-text{padding-left:4px;}
   .xr-tiers{padding-left:4px;}
   .xr-subs{margin-left:12px;}
-  .xr-rail{top:auto;bottom:0;left:0;right:0;width:auto;height:60px;flex-direction:row;padding:0 4px;gap:0;justify-content:space-around;border-top:2px solid var(--ink-2);}
+  /* the rail becomes a top bar on mobile; page headers stick just below it
+     instead of at the true viewport top, so the fixed bar never covers them */
+  .xr-rail{top:0;bottom:auto;left:0;right:0;width:auto;height:60px;flex-direction:row;padding:0 4px;gap:0;justify-content:space-around;border-top:none;border-bottom:2px solid var(--ink-2);}
   .xr-rail-logo{display:none;}
   .xr-rail-nav{flex-direction:row;justify-content:space-around;height:100%;align-items:stretch;width:100%;}
   .xr-rail-btn{flex:1;max-width:96px;justify-content:center;border-radius:0;gap:2px;}
   .xr-railmuster{display:none;}
   .xr-mastpts{display:inline-flex;}
-  .xr-home,.xr-build,.xr-printview,.xr-play{padding-left:0;padding-bottom:64px;}
+  .xr-home,.xr-build,.xr-printview,.xr-play{padding-left:0;padding-top:60px;padding-bottom:0;}
+  .xr-mast,.xr-print-chrome,.xr-play-mast{top:60px;}
 }
 
 /* ---------- @media print ---------- */
