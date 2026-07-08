@@ -644,6 +644,10 @@ function deriveStats(u, t) {
     if (m.atkWorsen) { prof.atk = worsenTgt(prof.atk, m.atkWorsen); changed.add("prof:atk"); }
     if (m.defImprove) { prof.def = improveTgt(prof.def, m.defImprove); changed.add("prof:def"); }
   });
+  if (ids.includes("xeno-ranged")) {
+    setBlock(act, "act", { sho: "6+" });
+    setBlock(prof, "prof", { sho: ids.includes("xr-cqd") ? "5+ / 12\"" : "5+ / 18\"" });
+  }
   const dirs = {};
   changed.forEach((k) => {
     const [block, key] = k.split(":");
@@ -717,7 +721,7 @@ function SiteFooter() {
 }
 
 /* persistent nav rail: groups the view controls in one place (left on desktop, bottom on mobile) */
-function RailNav({ view }) {
+function RailNav({ view, bottom }) {
   const items = [
     { v: "home", Icon: House, label: "Lists", hash: "#/" },
     { v: "build", Icon: Edit, label: "Build", hash: "#/build" },
@@ -733,12 +737,46 @@ function RailNav({ view }) {
             <it.Icon size={22} /><span>{it.label}</span>
           </button>
         ))}
+        <button className="xr-rail-btn" title="Quick rules reference"
+          onClick={() => window.dispatchEvent(new CustomEvent("xr-open-rules"))}>
+          <Book size={22} /><span>Rules</span>
+        </button>
       </div>
-      <button className="xr-rail-btn xr-rail-rules" title="Quick rules reference"
-        onClick={() => window.dispatchEvent(new CustomEvent("xr-open-rules"))}>
-        <Book size={22} /><span>Rules</span>
-      </button>
+      {bottom}
     </nav>
+  );
+}
+
+/* the points muster, living at the foot of the nav rail: game-size stepper, a
+   vertical fill bar, a compact legality status, and the points total at the very
+   bottom. */
+function RailMuster({ used, budget, pct, over, status, count, errors, issues, issuesOpen, setIssuesOpen, updateList }) {
+  const cls = over ? "over" : pct >= 90 ? "near" : "";
+  return (
+    <div className="xr-railmuster">
+      <div className="xr-railsize" role="group" aria-label="Game size">
+        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.min(120, budget + 6) })} title="Larger game size" aria-label="Larger game size">+</button>
+        <b className="xr-railsize-val">{budget}</b>
+        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.max(6, budget - 6) })} title="Smaller game size" aria-label="Smaller game size">−</button>
+      </div>
+      <div className={`xr-railbar ${cls}`} title={`${used} of ${budget} points`}>
+        <div className="xr-railbar-fill" style={{ height: `${Math.min(100, pct)}%` }} />
+      </div>
+      <div className="xr-statuswrap xr-railstatuswrap">
+        <button className={`xr-status xr-railstatus ${status}`} onClick={() => setIssuesOpen((o) => !o)}
+          aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : `${count} ${count === 1 ? "unit" : "units"}`}>
+          {status === "ok" && <><Check size={14} /> {count}</>}
+          {status === "err" && <><Warn size={14} /> {errors.length}</>}
+          {status === "empty" && <>—</>}
+        </button>
+        {issues.length > 0 && (
+          <div className={`xr-issue-pop xr-railpop ${issuesOpen ? "open" : ""}`} role="region" aria-label="Issues">
+            {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
+          </div>
+        )}
+      </div>
+      <div className={`xr-railpts ${cls}`}><b>{used}</b><span>/{budget}</span></div>
+    </div>
   );
 }
 
@@ -1913,7 +1951,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
 
   return (
     <div className="xr-build">
-      <RailNav view="build" />
+      <RailNav view="build" bottom={<RailMuster used={used} budget={budget} pct={pct} over={over} status={status} count={count} errors={errors} issues={issues} issuesOpen={issuesOpen} setIssuesOpen={setIssuesOpen} updateList={updateList} />} />
       <header className="xr-mast">
         <div className="xr-mast-row">
           <button className="xr-mast-emblem" onClick={() => setEmblemOpen(true)} title="Choose an emblem or upload a picture" aria-label="Choose an emblem or upload a picture">
@@ -2012,31 +2050,6 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
       {cmdOpen && sel && sel.isCmd && <CommanderModal u={sel} dispatch={dispatch} onClose={() => setCmdOpen(false)} />}
       {emblemOpen && <IconPickerModal onPick={(id) => { updateList({ icon: id, image: undefined }); setEmblemOpen(false); }} onUpload={() => { setEmblemOpen(false); emblemFileRef.current && emblemFileRef.current.click(); }} onClose={() => setEmblemOpen(false)} />}
 
-      {/* points, game-size stepper and unit count: sticks to the bottom while you
-          scroll, then settles just above the footer at the end of the page */}
-      <div className={`xr-musterdock ${over ? "over" : pct >= 90 ? "near" : ""}`}>
-        <span className="xr-muster-read"><b>{used}</b><span>/</span></span>
-        <div className="xr-sizestep" role="group" aria-label="Game size">
-          <button className="xr-sizestep-btn" onClick={() => updateList({ budget: Math.max(6, budget - 6) })} title="Smaller game size" aria-label="Smaller game size"><span>−</span></button>
-          <b className="xr-sizestep-val">{budget}{budget === 24 && <em className="xr-size-default">default</em>}</b>
-          <button className="xr-sizestep-btn" onClick={() => updateList({ budget: Math.min(120, budget + 6) })} title="Larger game size" aria-label="Larger game size"><span>+</span></button>
-        </div>
-        <span className="xr-muster-read xr-muster-pts"><span>pts</span></span>
-        <span className="xr-muster-track"><span className="xr-muster-fill" style={{ width: `${pct}%` }} /></span>
-        <div className="xr-statuswrap">
-          <button className={`xr-status ${status}`} onClick={() => setIssuesOpen((o) => !o)}
-            aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : undefined}>
-            {status === "ok" && <><Check size={16} /> {count} {count === 1 ? "unit" : "units"}</>}
-            {status === "err" && <><Warn size={16} /> {errors.length} {errors.length === 1 ? "issue" : "issues"}</>}
-            {status === "empty" && <>Empty</>}
-          </button>
-          {issues.length > 0 && (
-            <div className={`xr-issue-pop up ${issuesOpen ? "open" : ""}`} role="region" aria-label="Issues">
-              {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
-            </div>
-          )}
-        </div>
-      </div>
       <SiteFooter />
     </div>
   );
@@ -2566,7 +2579,26 @@ const CSS = `
 .xr-rail{position:fixed;left:0;top:0;bottom:0;width:76px;z-index:40;background:linear-gradient(180deg,#137a45,#116f89);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:16px;}
 .xr-rail-logo{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#E8C860;}
 .xr-rail-nav{display:flex;flex-direction:column;gap:6px;width:100%;align-items:center;}
-.xr-rail-rules{margin-top:auto;}
+/* points muster at the foot of the rail: size stepper, a vertical fill bar, a
+   status chip, and the running total pinned to the very bottom. */
+.xr-railmuster{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;padding-top:10px;}
+.xr-railsize{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.xr-railsize-btn{width:30px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:rgba(255,255,255,.85);font-family:var(--display);font-weight:700;font-size:18px;line-height:1;background:rgba(255,255,255,.12);transition:background var(--dur-fast) var(--curve-ease);}
+.xr-railsize-btn:hover{background:rgba(255,255,255,.24);color:#fff;}
+.xr-railsize-val{font-family:var(--mono);font-weight:700;font-size:16px;color:#fff;font-variant-numeric:tabular-nums;}
+.xr-railbar{position:relative;width:14px;flex:1;min-height:90px;display:flex;align-items:flex-end;border-radius:8px;background:rgba(0,0,0,.22);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
+.xr-railbar-fill{display:block;width:100%;background:var(--cream);border-radius:0 0 7px 7px;transition:height var(--dur-slow) var(--curve-ease);}
+.xr-railbar.near .xr-railbar-fill{background:#F0C64E;}
+.xr-railbar.over .xr-railbar-fill{background:#FFD9B0;}
+.xr-railstatuswrap{position:relative;}
+.xr-railstatus{padding:4px 8px;font-size:13px;border-width:2px;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff;}
+.xr-railstatus.ok{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.4);color:#fff;}
+.xr-railstatus.err{background:#fff;border-color:#fff;color:var(--coral-ink);}
+.xr-railpop{position:absolute;left:calc(100% + 8px);bottom:0;top:auto;}
+.xr-railpts{display:flex;flex-direction:column;align-items:center;line-height:1;font-family:var(--mono);font-variant-numeric:tabular-nums;color:#fff;}
+.xr-railpts b{font-size:22px;font-weight:700;}
+.xr-railpts span{font-size:12px;color:rgba(255,255,255,.75);margin-top:1px;}
+.xr-railpts.over b{color:#FFD9B0;}
 /* rules reference modal */
 .xr-rref-cols{columns:2;column-gap:30px;}
 .xr-rref{break-inside:avoid;margin-bottom:16px;}
@@ -2688,7 +2720,7 @@ const CSS = `
 
 .xr-build-body{flex:1;display:grid;grid-template-columns:minmax(320px,430px) 1fr;gap:0;align-items:start;}
 .xr-ulist{display:flex;flex-direction:column;gap:10px;padding:18px clamp(12px,1.6vw,20px) 72px;}
-.xr-detail{align-self:start;border-left:3px solid var(--ink);min-height:320px;}
+.xr-detail{align-self:start;min-height:320px;}
 .xr-detail-hint{display:flex;flex-direction:column;align-items:center;gap:10px;padding:80px 20px;color:var(--ink-2);font-family:var(--display);font-size:19px;}
 .xr-detoverview{padding:20px clamp(14px,2vw,26px) 30px;display:flex;flex-direction:column;}
 .xr-detoverview-head{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
@@ -3265,8 +3297,9 @@ const CSS = `
   .xr-subs{margin-left:12px;}
   .xr-rail{top:auto;bottom:0;left:0;right:0;width:auto;height:60px;flex-direction:row;padding:0 4px;gap:0;justify-content:space-around;border-top:2px solid var(--ink-2);}
   .xr-rail-logo{display:none;}
-  .xr-rail-nav{flex-direction:row;justify-content:space-around;height:100%;align-items:stretch;}
+  .xr-rail-nav{flex-direction:row;justify-content:space-around;height:100%;align-items:stretch;width:100%;}
   .xr-rail-btn{flex:1;max-width:96px;justify-content:center;border-radius:0;gap:2px;}
+  .xr-railmuster{display:none;}
   .xr-home,.xr-build,.xr-printview,.xr-play{padding-left:0;padding-bottom:64px;}
 }
 
