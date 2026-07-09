@@ -7,7 +7,7 @@ import icFire from "@iconify-icons/ph/fire-fill";
 import icShield from "@iconify-icons/ph/shield-fill";
 import icArmour from "@iconify-icons/ph/shield-checkered-fill";
 import icHeart from "@iconify-icons/ph/heart-fill";
-import icGrip from "@iconify-icons/ph/dots-six-vertical-bold";
+
 import icInfantry from "@iconify-icons/ph/users-three-fill";
 import icAlien from "@iconify-icons/game-icons/alien-bug";
 import icTruck from "@iconify-icons/game-icons/apc";
@@ -174,7 +174,7 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   Crown = mk(icCrown), Dice = mk(icDice), Printer = mk(icPrinter), CopyIc = mk(icCopy),
   Trash = mk(icTrash), Plus = mk(icPlus), XIc = mk(icX), Check = mk(icCheck),
   Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
-  House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret), Grip = mk(icGrip),
+  House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret),
   Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt), LinkIc = mk(icLink),
   ShareIc = mk(icExport), Alert = mk(icAlert);
 
@@ -1209,7 +1209,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
 /* ================================================================== *
  * BUILDER: compact rows + detail panel
  * ================================================================== */
-const UnitRow = React.memo(function UnitRow({ u, i, count, selected, dispatch, dragging, rowStyle, onDragDown, onDragMove, onDragUp, onDragCancel }) {
+const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging, rowStyle, onDragDown, onDragMove, onDragUp, onDragCancel }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const taken = [
@@ -1218,7 +1218,15 @@ const UnitRow = React.memo(function UnitRow({ u, i, count, selected, dispatch, d
   ];
   return (
     <div className={`xr-urow-wrap ${dragging ? "dragging" : ""}`} style={rowStyle}>
-      <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`} onClick={() => nav(selected ? "#/build" : `#/build/${u.key}`)} aria-expanded={selected}>
+      <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`}
+        data-key={u.key} data-index={i}
+        onPointerDown={onDragDown} onPointerMove={onDragMove} onPointerUp={onDragUp} onPointerCancel={onDragCancel}
+        onClick={() => nav(selected ? "#/build" : `#/build/${u.key}`)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowUp") { e.preventDefault(); dispatch({ type: "move", key: u.key, delta: -1 }); }
+          if (e.key === "ArrowDown") { e.preventDefault(); dispatch({ type: "move", key: u.key, delta: 1 }); }
+        }}
+        aria-expanded={selected}>
         {u.image
           ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />
           : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={22} /></span>}
@@ -1234,12 +1242,6 @@ const UnitRow = React.memo(function UnitRow({ u, i, count, selected, dispatch, d
         </span>
       </button>
       <div className="xr-urow-tools">
-        <button className="xr-urow-drag" data-key={u.key} data-index={i} title="Drag to reorder" aria-label={`Reorder ${unitDisplayName(u, i)}, currently position ${i + 1} of ${count}`}
-          onPointerDown={onDragDown} onPointerMove={onDragMove} onPointerUp={onDragUp} onPointerCancel={onDragCancel}
-          onKeyDown={(e) => {
-            if (e.key === "ArrowUp") { e.preventDefault(); dispatch({ type: "move", key: u.key, delta: -1 }); }
-            if (e.key === "ArrowDown") { e.preventDefault(); dispatch({ type: "move", key: u.key, delta: 1 }); }
-          }}><Grip size={16} /></button>
         <button onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
         <button className="danger" onClick={() => { dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
       </div>
@@ -1995,23 +1997,30 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const emblemFileRef = useRef(null);
   /* drag-to-reorder: rows shift live via CSS transform while dragging, and the
      actual roster order is only committed once, on pointer-up. */
-  const [drag, setDrag] = useState(null); // { key, index, startY, y, rowH, pointerId }
-  const dragTarget = drag ? Math.max(0, Math.min(roster.length - 1, drag.index + Math.round((drag.y - drag.startY) / drag.rowH))) : null;
+  const [drag, setDrag] = useState(null); // { key, index, startY, y, rowH, pointerId, moved }
+  const dragTarget = drag && drag.moved ? Math.max(0, Math.min(roster.length - 1, drag.index + Math.round((drag.y - drag.startY) / drag.rowH))) : null;
   const beginDrag = useCallback((e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     const btn = e.currentTarget;
     const wrap = btn.closest(".xr-urow-wrap");
     if (!wrap) return;
     btn.setPointerCapture(e.pointerId);
-    setDrag({ key: btn.dataset.key, index: Number(btn.dataset.index), startY: e.clientY, y: e.clientY, rowH: wrap.offsetHeight, pointerId: e.pointerId });
+    setDrag({ key: btn.dataset.key, index: Number(btn.dataset.index), startY: e.clientY, y: e.clientY, rowH: wrap.offsetHeight, pointerId: e.pointerId, moved: false });
   }, []);
   const moveDrag = useCallback((e) => {
-    setDrag((d) => (d && e.pointerId === d.pointerId) ? { ...d, y: e.clientY } : d);
+    setDrag((d) => {
+      if (!d || e.pointerId !== d.pointerId) return d;
+      const moved = d.moved || Math.abs(e.clientY - d.startY) > 4;
+      return { ...d, y: e.clientY, moved };
+    });
   }, []);
   const finishDrag = useCallback((e) => {
     if (!drag || e.pointerId !== drag.pointerId) return;
-    const toIndex = Math.max(0, Math.min(roster.length - 1, drag.index + Math.round((drag.y - drag.startY) / drag.rowH)));
-    if (toIndex !== drag.index) dispatch({ type: "reorder", key: drag.key, toIndex });
+    if (drag.moved) {
+      e.preventDefault();
+      const toIndex = Math.max(0, Math.min(roster.length - 1, drag.index + Math.round((drag.y - drag.startY) / drag.rowH)));
+      if (toIndex !== drag.index) dispatch({ type: "reorder", key: drag.key, toIndex });
+    }
     setDrag(null);
   }, [drag, roster.length, dispatch]);
   const cancelDrag = useCallback((e) => {
@@ -2126,16 +2135,16 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
               )}
               <div className="xr-ulist-rows">
                 {roster.map((u, i) => {
-                  const isDragged = drag && u.key === drag.key;
+                  const isDragged = drag && drag.moved && u.key === drag.key;
                   let rowStyle;
                   if (isDragged) {
                     rowStyle = { transform: `translateY(${drag.y - drag.startY}px)` };
-                  } else if (drag) {
+                  } else if (drag && drag.moved) {
                     if (drag.index < dragTarget && i > drag.index && i <= dragTarget) rowStyle = { transform: `translateY(${-drag.rowH}px)` };
                     else if (drag.index > dragTarget && i >= dragTarget && i < drag.index) rowStyle = { transform: `translateY(${drag.rowH}px)` };
                   }
                   return (
-                    <UnitRow key={u.key} u={u} i={i} count={roster.length} selected={u.key === selectedKey} dispatch={dispatch}
+                    <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey} dispatch={dispatch}
                       dragging={isDragged} rowStyle={rowStyle}
                       onDragDown={beginDrag} onDragMove={moveDrag} onDragUp={finishDrag} onDragCancel={cancelDrag} />
                   );
@@ -2941,7 +2950,7 @@ const CSS = `
 .xr-detoverview-hint{display:flex;align-items:center;gap:7px;margin-top:14px;font-family:var(--flavor);font-style:italic;font-size:15px;color:var(--ink-2);}
 
 /* compact unit rows */
-.xr-urow{display:flex;flex-direction:row;align-items:center;gap:10px;text-align:left;border:2px solid var(--ink);border-left-width:6px;border-radius:9px;background:var(--paper-2);padding:7px 12px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;}
+.xr-urow{display:flex;flex-direction:row;align-items:center;gap:10px;text-align:left;border:2px solid var(--ink);border-left-width:6px;border-radius:9px;background:var(--paper-2);padding:7px 12px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;touch-action:none;-webkit-user-select:none;user-select:none;}
 .xr-urow-body{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;}
 .xr-urow-img{flex:none;width:40px;height:40px;border-radius:7px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);}
 .xr-urow-ic{flex:none;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);}
@@ -2968,18 +2977,16 @@ const CSS = `
    glide out of the way with a short transition to open a gap. */
 .xr-urow-wrap{position:relative;transition:transform 150ms ease;}
 .xr-urow-wrap.dragging{transition:none;z-index:20;}
-.xr-urow-wrap>.xr-urow{width:100%;padding-right:64px;}
-/* tools sit in the reserved right gutter as a compact wrapped grid:
-   drag handle, duplicate and delete */
-.xr-urow-tools{position:absolute;top:0;bottom:0;right:6px;width:52px;display:flex;flex-wrap:wrap;align-content:center;justify-content:flex-end;gap:4px;}
+.xr-urow-wrap>.xr-urow{width:100%;padding-right:64px;cursor:grab;}
+.xr-urow-wrap.dragging>.xr-urow{cursor:grabbing;transform:none;}
+/* tools: duplicate and delete, sitting in the reserved right gutter */
+.xr-urow-tools{position:absolute;top:0;bottom:0;right:6px;width:52px;display:flex;align-items:center;justify-content:flex-end;gap:4px;}
 .xr-urow-tools button{width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:6px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s,opacity .12s;}
 .xr-urow-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
 .xr-urow-tools button.danger:hover{border-color:var(--coral-ink);color:var(--coral-ink);background:#F4604C14;}
 .xr-urow-tools button:disabled{opacity:.32;cursor:default;box-shadow:none;}
 .xr-urow-tools button:disabled:hover{border-color:var(--ink-30);color:var(--ink-2);background:var(--paper);}
-.xr-urow-drag{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;}
-.xr-urow-drag:active{cursor:grabbing;}
-.dragging .xr-urow-drag{cursor:grabbing;}
+
 /* the "file by" ordering toolbar above the roster rows */
 .xr-ulist-file{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:2px 2px 4px;}
 .xr-file-l{font-family:var(--ui);font-weight:700;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);}
