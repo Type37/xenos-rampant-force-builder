@@ -514,6 +514,63 @@ function parseHash() {
 }
 const nav = (h) => { window.location.hash = h; };
 
+/* ---- transient toast notifications ----
+   fire from anywhere with toast("Copied", "ok"); a single <Toaster/> mounted in
+   the app shell listens on the window and renders an aria-live stack. tones:
+   "ok" (green check), "err" (coral alert), "info" (link). */
+let _toastSeq = 0;
+const toast = (msg, tone = "ok", action = null) => {
+  window.dispatchEvent(new CustomEvent("xr-toast", { detail: { id: ++_toastSeq, msg, tone, action } }));
+};
+/* copy text with a toast. tries the async clipboard first, then falls back to a
+   hidden-textarea execCommand for older mobile Safari or when the API is blocked */
+function legacyCopy(text) {
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.top = "0"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch { return false; }
+}
+async function copyText(text, okMsg, errMsg = "Could not copy") {
+  try {
+    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
+    else if (!legacyCopy(text)) throw new Error("copy failed");
+    if (okMsg) toast(okMsg, "ok");
+    return true;
+  } catch {
+    if (legacyCopy(text)) { if (okMsg) toast(okMsg, "ok"); return true; }
+    if (errMsg) toast(errMsg, "err");
+    return false;
+  }
+}
+function Toaster() {
+  const [items, setItems] = useState([]);
+  const dismiss = (id) => setItems((xs) => xs.filter((x) => x.id !== id));
+  useEffect(() => {
+    const onToast = (e) => {
+      const t = e.detail;
+      setItems((xs) => [...xs.slice(-3), t]);
+      window.setTimeout(() => setItems((xs) => xs.filter((x) => x.id !== t.id)), t.action ? 5200 : 2800);
+    };
+    window.addEventListener("xr-toast", onToast);
+    return () => window.removeEventListener("xr-toast", onToast);
+  }, []);
+  return (
+    <div className="xr-toaster" role="status" aria-live="polite" aria-atomic="false">
+      {items.map((t) => (
+        <div key={t.id} className={`xr-toast tone-${t.tone}`}>
+          {t.tone === "err" ? <Alert size={18} /> : t.tone === "info" ? <LinkIc size={18} /> : <Check size={18} />}
+          <span>{t.msg}</span>
+          {t.action && <button className="xr-toast-act" onClick={() => { t.action.fn(); dismiss(t.id); }}>{t.action.label}</button>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* read an image file, downscale it to fit maxPx, hand back a compact JPEG data URL.
    keeps localStorage small: full-res photos would blow the quota. */
 function drawDownscaled(source, w, h, cb) {
@@ -1149,7 +1206,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
           {l.description && <span className="xr-list-desc">{l.description}</span>}
         </button>
         <div className="xr-list-tools">
-          <button onClick={() => onDup(l.id)} aria-label="Duplicate" title="Duplicate"><CopyIc size={19} /></button>
+          <button onClick={() => { onDup(l.id); toast("Detachment duplicated"); }} aria-label="Duplicate" title="Duplicate"><CopyIc size={19} /></button>
           <button onClick={() => onDel(l.id)} aria-label="Delete" title="Delete"><Trash size={19} /></button>
         </div>
       </div>
@@ -1242,8 +1299,8 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging
         </span>
       </button>
       <div className="xr-urow-tools">
-        <button onClick={() => dispatch({ type: "dup", key: u.key })} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
-        <button className="danger" onClick={() => { dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
+        <button onClick={() => { dispatch({ type: "dup", key: u.key }); toast("Unit duplicated"); }} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
+        <button className="danger" onClick={() => { const removed = u, at = i; dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); toast(`${unitDisplayName(removed, at)} removed`, "ok", { label: "Undo", fn: () => dispatch({ type: "insertAt", unit: removed, index: at }) }); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
       </div>
     </div>
   );
@@ -1992,7 +2049,8 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const [abilOpen, setAbilOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [shared, setShared] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shorting, setShorting] = useState(false);
   const [emblemOpen, setEmblemOpen] = useState(false);
   const emblemFileRef = useRef(null);
   /* drag-to-reorder: rows shift live via CSS transform while dragging, and the
@@ -2046,14 +2104,33 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
       const trait = u.isCmd && typeof u.traitIndex === "number" ? COMMANDER_TABLES[u.traitTable || "aggressive"].traits[u.traitIndex] : null;
       if (trait) lines.push(`- Trait: ${trait.name}`);
     });
-    navigator.clipboard?.writeText(lines.join("\n"));
+    copyText(lines.join("\n"), "Roster copied as text", "Could not copy the roster");
   };
 
+  const shareUrl = () => `${window.location.origin}${window.location.pathname}#/s/${encodeShare(list)}`;
   const shareLink = () => {
-    const url = `${window.location.origin}${window.location.pathname}#/s/${encodeShare(list)}`;
-    navigator.clipboard?.writeText(url);
-    setShared(true);
-    window.setTimeout(() => setShared(false), 2200);
+    copyText(shareUrl(), "Share link copied. It rebuilds this detachment in any browser.", "Could not copy the link");
+    setShareOpen(false);
+  };
+  const shortLink = async () => {
+    const url = shareUrl();
+    setShorting(true);
+    let short = null;
+    try {
+      const res = await fetch("https://tinyurl.com/api-create.php?url=" + encodeURIComponent(url));
+      const body = (await res.text()).trim();
+      if (res.ok && /^https?:\/\//.test(body)) short = body;
+    } catch { /* offline or blocked: fall back to the full link below */ }
+    setShorting(false);
+    if (short) {
+      const bare = short.replace(/^https?:\/\//, "");
+      const ok = await copyText(short, "Short link copied: " + bare, null);
+      if (!ok) toast("Short link: " + bare, "info");
+      setShareOpen(false);
+    } else {
+      const ok = await copyText(url, "Shortener unavailable. Copied the full link instead.", null);
+      if (!ok) toast("Could not reach the shortener. Use Copy link instead.", "err");
+    }
   };
 
   return (
@@ -2070,21 +2147,50 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) downscaleImage(f, 256, (d) => { if (d) updateList({ image: d, icon: undefined }); }); e.target.value = ""; }} />
           <input className="xr-detname" value={list.name} placeholder="Name your detachment"
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
-          <button className={`xr-mastpts ${over ? "over" : pct >= 90 ? "near" : ""}`} onClick={() => setIssuesOpen((o) => !o)} title="Points and status">
-            <b>{used}</b><span>/{budget}</span>
-            {status === "ok" && <em className="xr-mastpts-s ok"><Check size={13} />{count}</em>}
-            {status === "err" && <em className="xr-mastpts-s err"><Alert size={13} />{errors.length}</em>}
-          </button>
-          <div className="xr-actions">
-            <button className="xr-btn small xr-btn-icon" onClick={copyList} title="Copy roster to clipboard as text" aria-label="Copy roster"><CopyIc size={18} /></button>
-            <button className={`xr-btn small xr-btn-icon ${shared ? "gold" : ""}`} onClick={shareLink}
-              title="Copy a link that rebuilds this detachment (pictures are not included)" aria-label={shared ? "Link copied" : "Share link"}>
-              {shared ? <Check size={18} /> : <ShareIc size={18} />}
+          <div className="xr-mastptswrap">
+            <button className={`xr-mastpts ${over ? "over" : pct >= 90 ? "near" : ""}`} onClick={() => setIssuesOpen((o) => !o)}
+              aria-expanded={issuesOpen} title="Points and status">
+              <b>{used}</b><span>/{budget}</span>
+              {status === "ok" && <em className="xr-mastpts-s ok"><Check size={13} />{count}</em>}
+              {status === "err" && <em className="xr-mastpts-s err"><Alert size={13} />{errors.length}</em>}
             </button>
-            <button className="xr-btn small xr-btn-icon" onClick={() => nav("#/print")} title="Open the print sheet" aria-label="Print sheet"><Printer size={18} /></button>
+            {issuesOpen && (
+              <>
+                <button className="xr-settings-scrim" aria-label="Close" onClick={() => setIssuesOpen(false)} />
+                <div className="xr-issue-pop xr-mastpop open" role="region" aria-label="Detachment status">
+                  {issues.length > 0 ? (
+                    <>
+                      <span className="xr-mastpop-h"><Alert size={15} /> {issues.length} {issues.length === 1 ? "issue" : "issues"} to fix</span>
+                      {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
+                    </>
+                  ) : (
+                    <span className="xr-mastpop-ok"><Check size={15} /> Looks good. {count} {count === 1 ? "unit" : "units"}, {used}/{budget} points.</span>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+          <div className="xr-actions">
+            <button className="xr-btn small xr-act" onClick={copyList} title="Copy the roster to the clipboard as plain text" aria-label="Copy roster as text"><CopyIc size={18} /><span>Copy</span></button>
+            <div className="xr-sharewrap">
+              <button className="xr-btn small xr-act" onClick={() => setShareOpen((o) => !o)}
+                title="Share this detachment as a link" aria-label="Share link" aria-expanded={shareOpen}><ShareIc size={18} /><span>Share</span></button>
+              {shareOpen && (
+                <>
+                  <button className="xr-settings-scrim" aria-label="Close share menu" onClick={() => setShareOpen(false)} />
+                  <div className="xr-settings-pop xr-share-pop" role="dialog" aria-label="Share this detachment">
+                    <p className="xr-share-note">A share link rebuilds this whole detachment in anyone's browser. Everything travels inside the link, so it keeps working offline. Pictures are left out to keep it short.</p>
+                    <button className="xr-btn small block" onClick={shareLink}><LinkIc size={16} /> Copy link</button>
+                    <button className="xr-btn small block" onClick={shortLink} disabled={shorting}><Bolt size={16} /> {shorting ? "Shortening…" : "Copy short link"}</button>
+                    <p className="xr-share-sub">The short link sends your link to TinyURL to shrink it, so it needs a connection. The plain link always works.</p>
+                  </div>
+                </>
+              )}
+            </div>
+            <button className="xr-btn small xr-act" onClick={() => nav("#/print")} title="Open the print sheet" aria-label="Print sheet"><Printer size={18} /><span>Print</span></button>
             <div className="xr-settingswrap">
-              <button className={`xr-btn small xr-btn-icon ${list.freeplay ? "gold" : ""}`} onClick={() => setSettingsOpen((o) => !o)}
-                title="Detachment settings" aria-label="Detachment settings" aria-expanded={settingsOpen}><Gear size={18} /></button>
+              <button className={`xr-btn small xr-act ${list.freeplay ? "gold" : ""}`} onClick={() => setSettingsOpen((o) => !o)}
+                title="Detachment settings" aria-label="Detachment settings" aria-expanded={settingsOpen}><Gear size={18} /><span>Settings</span></button>
               {settingsOpen && (
                 <>
                   <button className="xr-settings-scrim" aria-label="Close settings" onClick={() => setSettingsOpen(false)} />
@@ -2178,7 +2284,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
         </div>
       </div>
 
-      {adding && <AddUnitModal onAdd={(id) => { dispatch({ type: "add", typeId: id }); setAdding(false); }} onClose={() => setAdding(false)} />}
+      {adding && <AddUnitModal onAdd={(id) => { dispatch({ type: "add", typeId: id }); setAdding(false); toast(`${UNIT_BY_ID[id]?.name || "Unit"} added`); }} onClose={() => setAdding(false)} />}
       {abilOpen && sel && <AbilitiesModal u={sel} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
       {cmdOpen && sel && sel.isCmd && <CommanderModal u={sel} dispatch={dispatch} onClose={() => setCmdOpen(false)} />}
       {emblemOpen && <IconPickerModal onPick={(id) => { updateList({ icon: id, image: undefined }); setEmblemOpen(false); }} onUpload={() => { setEmblemOpen(false); emblemFileRef.current && emblemFileRef.current.click(); }} onClose={() => setEmblemOpen(false)} />}
@@ -2193,7 +2299,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
  * ================================================================== */
 function PrintView({ list }) {
   const { roster, budget } = list;
-  const [opts, setOpts] = useState({ stats: true, upgrades: true, rules: true, traits: true, contrast: false, large: false });
+  const [opts, setOpts] = useState({ stats: true, upgrades: true, rules: true, traits: true, contrast: false, large: false, compact: false });
   const { used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
   const tog = (k) => setOpts((o) => ({ ...o, [k]: !o[k] }));
 
@@ -2218,7 +2324,7 @@ function PrintView({ list }) {
   }, [roster, opts.rules]);
 
   return (
-    <div className={`xr-printview ${opts.contrast ? "contrast" : ""} ${opts.large ? "large" : ""}`}>
+    <div className={`xr-printview ${opts.contrast ? "contrast" : ""} ${opts.large ? "large" : ""} ${opts.compact ? "compact" : ""}`}>
       <RailNav view="print" />
       <div className="xr-print-chrome">
         <button className="xr-iconbtn" onClick={() => nav("#/build")} aria-label="Back to builder"><Back size={20} /></button>
@@ -2231,6 +2337,7 @@ function PrintView({ list }) {
             </label>
           ))}
           <span className="xr-print-optlabel">Readability</span>
+          <label className="xr-print-check"><input type="checkbox" checked={opts.compact} onChange={() => tog("compact")} /> Compact (3 cols)</label>
           <label className="xr-print-check"><input type="checkbox" checked={opts.contrast} onChange={() => tog("contrast")} /> High contrast</label>
           <label className="xr-print-check"><input type="checkbox" checked={opts.large} onChange={() => tog("large")} /> Larger type</label>
           <button className="xr-btn primary" onClick={() => window.print()}><Printer size={18} /> Print</button>
@@ -2286,7 +2393,7 @@ function PrintView({ list }) {
                       {uniqueStd.map((g) => <p key={`sr-${g.name}`} className="xr-pc-std"><b>{g.name}.</b> {typeof g.text === "string" ? g.text : ruleBodyText(g.text)}</p>)}
                       {nested.filter((g) => !refRules.shared.has(g.name)).map((g) => <p key={`nx-${g.name}`} className="xr-pc-std xr-pc-nested"><b>{g.name}.</b> {g.text}</p>)}
                       {sharedStd.length > 0 && (
-                        <p className="xr-pc-ref">{sharedStd.map((g) => g.name).join(", ")} <i>see reference</i></p>
+                        <p className="xr-pc-ref"><b>{sharedStd.map((g) => g.name).join(", ")}</b> <i>see reference</i></p>
                       )}
                     </div>
                   )}
@@ -2487,6 +2594,7 @@ export default function App() {
         break;
       }
       case "del": setRoster((r) => r.filter((u) => u.key !== a.key)); break;
+      case "insertAt": setRoster((r) => { const next = r.filter((u) => u.key !== a.unit.key); next.splice(Math.min(a.index, next.length), 0, a.unit); return next; }); break;
       case "move":
         setRoster((r) => {
           const i = r.findIndex((u) => u.key === a.key);
@@ -2622,6 +2730,7 @@ export default function App() {
     if (!window.confirm(`Delete ${l?.name || "this detachment"}? This cannot be undone.`)) return;
     setLists((ls) => { const next = { ...ls }; delete next[id]; return next; });
     if (currentId === id) setCurrentId(null);
+    toast(`${l?.name || "Detachment"} deleted`);
   };
 
   /* guard: build/print/play need a current list */
@@ -2641,6 +2750,7 @@ export default function App() {
         {route.view === "play" && <PlayView list={current} />}
       </ErrorBoundary>
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
+      <Toaster />
     </div>
   );
 }
@@ -2699,6 +2809,13 @@ const CSS = `
 .xr-btn.small{min-height:42px;padding:8px 13px;font-size:15.5px;}
 .xr-btn.small.icon{padding:8px 10px;}
 .xr-btn.small.xr-btn-icon{padding:8px;min-width:42px;width:42px;justify-content:center;}
+/* mast action buttons: icon + label (label shrinks to a tiny caption on mobile) */
+.xr-btn.small.xr-act{gap:6px;}
+.xr-sharewrap{position:relative;}
+.xr-share-pop{width:min(320px,88vw);gap:10px;}
+.xr-share-note{font-family:var(--body);font-size:14px;line-height:1.42;color:var(--ink);margin:0;}
+.xr-share-sub{font-family:var(--body);font-size:12.5px;line-height:1.4;color:var(--ink-2);margin:0;}
+.xr-share-pop .xr-btn{width:100%;justify-content:center;}
 .xr-btn.gold{background:var(--brass);border-color:var(--brass);color:var(--cream);}
 .xr-btn.xr-manage{background:var(--brand-deep);border-color:transparent;color:#fff;box-shadow:var(--shadow4);}
 .xr-btn.xr-manage:hover{background:var(--brand-deep);border-color:transparent;filter:brightness(1.08);}
@@ -2849,6 +2966,13 @@ const CSS = `
 .xr-mastpts-s{display:inline-flex;align-items:center;gap:2px;font-style:normal;font-size:12.5px;margin-left:5px;}
 .xr-mastpts-s.ok{color:var(--sage);}
 .xr-mastpts-s.err{color:var(--coral-ink);}
+/* the whole points-badge wrapper is mobile only; the desktop rail muster owns
+   the status popover, so gating the wrapper here avoids a double popover */
+.xr-mastptswrap{display:none;position:relative;}
+.xr-mastpop{left:auto;right:0;z-index:60;}
+.xr-mastpop-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;font-size:15px;color:var(--coral-ink);}
+.xr-mastpop-ok{display:flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:15px;color:var(--sage);line-height:1.4;}
+.xr-mastpop-ok svg,.xr-mastpop-h svg{flex:none;}
 .xr-detname:focus{outline:none;border-bottom-color:var(--coral);}
 .xr-actions{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;}
 .xr-mast-row2{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;}
@@ -3443,11 +3567,12 @@ const CSS = `
 .xr-pc-rules p b{font-weight:700;}
 .xr-pc-std b{font-weight:700;}
 .xr-pc-nested{color:#555;padding-left:8px;border-left:2px solid #ddd;}
-.xr-pc-ref{font-family:var(--body);font-size:9.5px;line-height:1.28;color:#444;margin-top:2px;}
-.xr-pc-ref i{font-family:var(--flavor);font-style:italic;color:#777;}
+.xr-pc-rules .xr-pc-ref{font-size:13px;line-height:1.35;color:#1a1a1a;margin-top:4px;}
+.xr-pc-rules .xr-pc-ref b{font-weight:800;font-size:13px;}
+.xr-pc-rules .xr-pc-ref i{font-family:var(--flavor);font-style:italic;color:#777;}
 .xr-printview.contrast .xr-pc-ref,.xr-printview.contrast .xr-pc-ref i{color:#000;}
-.xr-printview.large .xr-pc-ref{font-size:14px;}
-.xr-sheet-ref{margin-top:12px;border-top:2px solid #1a1a1a;padding-top:7px;break-inside:avoid;}
+.xr-printview.large .xr-pc-rules .xr-pc-ref{font-size:14px;}
+.xr-sheet-ref{margin-top:12px;padding-top:7px;}
 .xr-sheet-ref-h{font-family:var(--display);font-weight:700;font-size:16px;margin-bottom:5px;}
 .xr-sheet-ref-grid{column-count:2;column-gap:24px;}
 .xr-sheet-ref-item{font-family:var(--body);font-size:10.5px;line-height:1.3;margin-bottom:3px;break-inside:avoid;}
@@ -3486,6 +3611,38 @@ const CSS = `
 .xr-printview.contrast .xr-pc-stt .xr-stt-row{border-color:#000;}
 .xr-printview.contrast .xr-pc-stt .xr-stt-head{border-color:#000;}
 .xr-printview.contrast .xr-sheet-note,.xr-printview.contrast .xr-sheet-foot{color:#000;}
+/* compact: 3-column card grid with slightly tighter sizing */
+.xr-printview.compact .xr-sheet-cards{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:5px;}
+.xr-printview.compact .xr-pc{padding:4px 8px 5px;}
+.xr-printview.compact .xr-pc-head{padding-bottom:2px;margin-bottom:2px;}
+.xr-printview.compact .xr-pc-name{font-size:13px;}
+.xr-printview.compact .xr-pc-type{font-size:11px;}
+.xr-printview.compact .xr-pc-stt .xr-stt-head,.xr-printview.compact .xr-pc-stt .xr-stt-row{grid-template-columns:minmax(0,1.4fr) 36px minmax(0,1fr);gap:1px 5px;}
+.xr-printview.compact .xr-pc-stt .xr-die{width:30px;font-size:11px;padding:1px 2px;}
+.xr-printview.compact .xr-pc-stt .xr-die-free{font-size:6px;right:1px;}
+.xr-printview.compact .xr-pc-stt .xr-stt-stat{font-size:10px;gap:4px;}
+.xr-printview.compact .xr-pc-stt .xr-stt-ic{width:12px;height:12px;}
+.xr-printview.compact .xr-pc-stt .xr-stt-cell b{font-size:11px;}
+.xr-printview.compact .xr-pc-stt .xr-rng{font-size:9px;}
+.xr-printview.compact .xr-pc-rules p{font-size:8.5px;line-height:1.22;}
+.xr-printview.compact .xr-pc-rules .xr-pc-ref{font-size:11px;line-height:1.3;}
+.xr-printview.compact .xr-pc-note{font-size:10.5px;}
+.xr-printview.compact .xr-bub{width:8px;height:8px;}
+.xr-printview.compact .xr-bub-num{font-size:11px;}
+
+/* ---------- toasts ---------- */
+.xr-toaster{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;width:max-content;max-width:calc(100vw - 24px);}
+.xr-toast{display:flex;align-items:center;gap:9px;background:var(--ink);color:var(--cream);font-family:var(--body);font-size:15px;font-weight:600;line-height:1.3;padding:11px 16px;border-radius:12px;box-shadow:0 10px 30px rgba(31,61,46,.34);animation:xr-toast-in .22s ease-out;max-width:100%;}
+.xr-toast span{overflow-wrap:anywhere;}
+.xr-toast svg{flex:none;}
+.xr-toast-act{pointer-events:auto;flex:none;margin-left:6px;background:transparent;border:1.5px solid var(--cream);color:var(--cream);font-family:var(--body);font-weight:700;font-size:14px;padding:5px 12px;min-height:36px;border-radius:8px;cursor:pointer;transition:background .12s,color .12s;}
+.xr-toast-act:hover{background:var(--cream);color:var(--ink);}
+.xr-toast.tone-ok svg{color:#8FD08A;}
+.xr-toast.tone-err{background:var(--coral-ink);}
+.xr-toast.tone-err svg{color:#FFE1DA;}
+.xr-toast.tone-info svg{color:#F4C95D;}
+@keyframes xr-toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@media(prefers-reduced-motion:reduce){.xr-toast{animation:none;}}
 
 /* ---------- play ---------- */
 .xr-play{display:flex;flex-direction:column;min-height:100vh;padding-left:76px;}
@@ -3573,8 +3730,22 @@ const CSS = `
      the rest so the name field actually gets room to show text. */
   .xr-name-roll{display:none;}
   .xr-panel-head .xr-imgup.square,.xr-panel-head .xr-imgup.square .xr-imgup-thumb,.xr-panel-head .xr-imgup.square .xr-imgup-add{width:46px;height:46px;border-radius:9px;}
-  .xr-cmd-btn{padding:8px;min-width:42px;}
-  .xr-cmd-btn span{display:none;}
+  /* icon buttons stay labelled on mobile, but with a very small caption so the
+     icon reads as the primary target (per the "bring the text back, tiny" ask) */
+  .xr-cmd-btn{flex-direction:column;gap:2px;padding:6px 8px;min-width:48px;min-height:44px;white-space:normal;}
+  .xr-cmd-btn span{display:block;font-size:9.5px;font-weight:700;line-height:1.05;text-align:center;letter-spacing:.01em;text-transform:uppercase;}
+  .xr-act{flex-direction:column;gap:2px;padding:5px 8px;min-width:48px;min-height:44px;}
+  .xr-act span{display:block;font-size:9.5px;font-weight:700;line-height:1;letter-spacing:.02em;text-transform:uppercase;}
+  .xr-actions{gap:6px;}
+  /* add-unit picker: a fixed 292px card column was wider than the phone modal,
+     so cards overflowed and the mini stat rows got crushed. One full-width
+     column fixes both and gives the act/stat grids real room */
+  .xr-pick-grid{grid-template-columns:1fr;gap:12px;}
+  .xr-modal-body{padding:14px 14px 20px;}
+  /* the per-unit duplicate/remove buttons were 24px squares, too small to tap
+     reliably on a phone; give them a proper target without dominating the row */
+  .xr-urow-tools{width:82px;gap:7px;right:8px;}
+  .xr-urow-tools button{width:34px;height:40px;}
   /* the rail becomes a top bar on mobile; page headers stick just below it
      instead of at the true viewport top, so the fixed bar never covers them */
   .xr-rail{top:0;bottom:auto;left:0;right:0;width:auto;height:60px;flex-direction:row;padding:0 4px;gap:0;justify-content:space-around;border-top:none;border-bottom:2px solid var(--ink-2);}
@@ -3582,9 +3753,18 @@ const CSS = `
   .xr-rail-nav{flex-direction:row;justify-content:space-around;height:100%;align-items:stretch;width:100%;}
   .xr-rail-btn{flex:1;max-width:96px;justify-content:center;border-radius:0;gap:2px;}
   .xr-railmuster{display:none;}
+  .xr-mastptswrap{display:block;}
   .xr-mastpts{display:inline-flex;}
   .xr-home,.xr-build,.xr-printview,.xr-play{padding-left:0;padding-top:60px;padding-bottom:0;}
   .xr-mast,.xr-print-chrome,.xr-play-mast{top:60px;}
+  /* play mast was wrapping into a tall stack that ate the screen; keep the title
+     row compact and drop the turn controls onto their own full-width line */
+  .xr-play-mast{gap:8px 10px;padding:10px clamp(12px,3vw,20px);}
+  .xr-play-h{font-size:18px;min-width:0;}
+  .xr-play-turn{font-size:15px;}
+  .xr-play-turn b{font-size:19px;}
+  .xr-play-mast .xr-actions{flex:1 1 100%;margin-left:0;gap:8px;}
+  .xr-play-mast .xr-actions .xr-btn{flex:1;min-height:42px;padding:8px 10px;font-size:15px;}
 }
 
 /* ---------- @media print ---------- */
@@ -3594,6 +3774,7 @@ const CSS = `
   .xr-printview{background:#fff;padding-left:0;}
   .xr-sheet{box-shadow:none;margin:0;width:auto;max-width:none;padding:0;background-image:none;}
   .xr-sheet-cards{grid-template-columns:1fr 1fr;gap:6px;}
+  .xr-printview.compact .xr-sheet-cards{grid-template-columns:1fr 1fr 1fr;gap:5px;}
   .xr-pc{break-inside:avoid;}
   @page{size:A4;margin:11mm;}
 }
