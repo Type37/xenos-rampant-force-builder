@@ -3183,6 +3183,14 @@ const CSS = `
 /* abilities summary in the unit panel */
 .xr-abil{margin-top:18px;padding-top:4px;}
 .xr-abil-bar{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+/* buy-abilities dialog search: was a bare, unstyled input with no CSS rule at
+   all, so it rendered at the browser default height (~21px), well under the
+   44px minimum tap target on any viewport */
+.xr-abil-searchbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.xr-abil-search{flex:1;min-width:0;height:44px;font-family:var(--body);font-size:15.5px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:10px;padding:0 14px;transition:border-color .12s,background .12s;}
+.xr-abil-search::placeholder{color:var(--ink-2);opacity:.75;}
+.xr-abil-search:hover{border-color:var(--ink);}
+.xr-abil-search:focus{outline:none;border-color:var(--coral);background:var(--paper);}
 .xr-abil-head{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
 .xr-abil-h{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.4;color:var(--ink);}
 .xr-abil-list{display:flex;flex-direction:column;gap:7px;}
@@ -3488,8 +3496,14 @@ const CSS = `
 .xr-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:6px 10px;flex-wrap:wrap;border-bottom:1.5px solid #1a1a1a;padding-bottom:3px;margin-bottom:7px;}
 .xr-sheet-emblem{flex:none;width:22px;height:22px;color:#1a1a1a;background:transparent;}
 .xr-sheet-emblem.xr-dicon-glyph{background:transparent;}
-.xr-sheet-title{flex:1;min-width:0;font-family:var(--display);font-weight:700;font-size:17px;line-height:1.1;}
-.xr-sheet-meta{font-family:var(--ui);font-weight:500;font-size:11px;color:#555;}
+/* meta ("Xenos Rampant · N/24 pts · N units") never shrank below its own text
+   width (default min-width:auto on a flex item), so all the squeeze landed on
+   the title instead and long detachment names overflowed their box. Giving
+   meta flex-basis:100% always drops it to its own full-width line below the
+   title/emblem, so the title keeps the whole row and never has to compete
+   for space; overflow-wrap is a backstop for a single very long name. */
+.xr-sheet-title{flex:1;min-width:0;font-family:var(--display);font-weight:700;font-size:17px;line-height:1.1;overflow-wrap:break-word;}
+.xr-sheet-meta{flex:1 0 100%;font-family:var(--ui);font-weight:500;font-size:11px;color:#555;}
 .xr-sheet-natl{font-family:var(--flavor);font-style:italic;font-size:13.5px;line-height:1.4;margin:0 0 8px;padding:6px 10px;border-left:4px solid #8A6A1F;background:#8A6A1F14;}
 .xr-sheet-natl b{font-style:normal;}
 .xr-sheet-natl b{color:#6b5218;}
@@ -3730,6 +3744,14 @@ const CSS = `
      the rest so the name field actually gets room to show text. */
   .xr-name-roll{display:none;}
   .xr-panel-head .xr-imgup.square,.xr-panel-head .xr-imgup.square .xr-imgup-thumb,.xr-panel-head .xr-imgup.square .xr-imgup-add{width:46px;height:46px;border-radius:9px;}
+  /* even with the roll button gone and the avatar shrunk, back+avatar+pts+the
+     commander button still don't leave the name field enough room to show a
+     name at all. Let the row wrap instead of continuing to squeeze the name
+     field towards zero width: give it a floor width and push the commander
+     button (the least urgent control) onto its own line when space is tight. */
+  .xr-panel-head{flex-wrap:wrap;}
+  .xr-panel-id{flex:1 1 140px;min-width:140px;}
+  .xr-cmd-btn{margin-left:auto;}
   /* icon buttons stay labelled on mobile, but with a very small caption so the
      icon reads as the primary target (per the "bring the text back, tiny" ask) */
   .xr-cmd-btn{flex-direction:column;gap:2px;padding:6px 8px;min-width:48px;min-height:44px;white-space:normal;}
@@ -3742,6 +3764,11 @@ const CSS = `
      column fixes both and gives the act/stat grids real room */
   .xr-pick-grid{grid-template-columns:1fr;gap:12px;}
   .xr-modal-body{padding:14px 14px 20px;}
+  /* print preview: the base rule's minmax(310px,1fr) columns are wider than
+     the sheet's own content box on a phone screen (the @media print override
+     only applies to the physical page, not this on-screen preview), so cards
+     overflowed the sheet horizontally */
+  .xr-sheet-cards{grid-template-columns:1fr;}
   /* the per-unit duplicate/remove buttons were 24px squares, too small to tap
      reliably on a phone; give them a proper target without dominating the row */
   .xr-urow-tools{width:82px;gap:7px;right:8px;}
