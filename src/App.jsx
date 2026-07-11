@@ -129,6 +129,7 @@ import icBolt from "@iconify-icons/ph/lightning-fill";
 import icLink from "@iconify-icons/ph/link-bold";
 import icExport from "@iconify-icons/ph/export-fill";
 import icAlert from "@iconify-icons/ph/warning-circle-fill";
+import icGrip from "@iconify-icons/ph/dots-six-vertical";
 /* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
 import icoAttack from "./assets/stat/defence.png";
 import icoMove from "./assets/stat/move.png";
@@ -176,7 +177,7 @@ const Sword = mk(icSword), Move = mk(icMove), Shoot = mk(icShoot), Fire = mk(icF
   Warn = mk(icWarn), Play = mk(icPlay), Back = mk(icBack), Reset = mk(icReset),
   House = mk(icHouse), Edit = mk(icEdit), Caret = mk(icCaret),
   Book = mk(icBook), Gear = mk(icGear), Image = mk(icImage), Bolt = mk(icBolt), LinkIc = mk(icLink),
-  ShareIc = mk(icExport), Alert = mk(icAlert);
+  ShareIc = mk(icExport), Alert = mk(icAlert), Grip = mk(icGrip);
 
 /* badge/emblem choices offered when starting a detachment; id is stored on the list.
    all monochrome, drawn in the ink colour, and shuffled for the picker below. */
@@ -1299,6 +1300,7 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging
         </span>
       </button>
       <div className="xr-urow-tools">
+        <span className="xr-drag-handle" aria-hidden="true" title="Drag to reorder"><Grip size={14} /></span>
         <button onClick={() => { dispatch({ type: "dup", key: u.key }); toast("Unit duplicated"); }} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
         <button className="danger" onClick={() => { const removed = u, at = i; dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); toast(`${unitDisplayName(removed, at)} removed`, "ok", { label: "Undo", fn: () => dispatch({ type: "insertAt", unit: removed, index: at }) }); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
       </div>
@@ -2053,12 +2055,19 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const [shorting, setShorting] = useState(false);
   const [emblemOpen, setEmblemOpen] = useState(false);
   const emblemFileRef = useRef(null);
+  useEffect(() => {
+    if (!settingsOpen && !shareOpen && !issuesOpen) return;
+    const onKey = (e) => { if (e.key !== "Escape") return; setSettingsOpen(false); setShareOpen(false); setIssuesOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [settingsOpen, shareOpen, issuesOpen]);
   /* drag-to-reorder: rows shift live via CSS transform while dragging, and the
      actual roster order is only committed once, on pointer-up. */
   const [drag, setDrag] = useState(null); // { key, index, startY, y, rowH, pointerId, moved }
   const dragTarget = drag && drag.moved ? Math.max(0, Math.min(roster.length - 1, drag.index + Math.round((drag.y - drag.startY) / drag.rowH))) : null;
   const beginDrag = useCallback((e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.pointerType === "touch" && !e.target.closest(".xr-drag-handle")) return;
     const btn = e.currentTarget;
     const wrap = btn.closest(".xr-urow-wrap");
     if (!wrap) return;
@@ -2489,7 +2498,7 @@ function PlayView({ list }) {
                   return (
                     <button key={pi} className={`xr-pip ${lost ? "lost" : ""}`}
                       aria-label={lost ? "Restore strength point" : "Mark strength point lost"}
-                      onClick={() => patch(u.key, { dmg: lost ? sp - pi - 1 : sp - pi })}>
+                      onClick={() => patch(u.key, { dmg: lost ? Math.max(0, s.dmg - 1) : Math.min(sp, s.dmg + 1) })}>
                       <Heart size={17} />
                     </button>
                   );
@@ -3074,7 +3083,7 @@ const CSS = `
 .xr-detoverview-hint{display:flex;align-items:center;gap:7px;margin-top:14px;font-family:var(--flavor);font-style:italic;font-size:15px;color:var(--ink-2);}
 
 /* compact unit rows */
-.xr-urow{display:flex;flex-direction:row;align-items:center;gap:10px;text-align:left;border:2px solid var(--ink);border-left-width:6px;border-radius:9px;background:var(--paper-2);padding:7px 12px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;touch-action:none;-webkit-user-select:none;user-select:none;}
+.xr-urow{display:flex;flex-direction:row;align-items:center;gap:10px;text-align:left;border:2px solid var(--ink);border-left-width:6px;border-radius:9px;background:var(--paper-2);padding:7px 12px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;touch-action:pan-y;-webkit-user-select:none;user-select:none;}
 .xr-urow-body{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;}
 .xr-urow-img{flex:none;width:40px;height:40px;border-radius:7px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);}
 .xr-urow-ic{flex:none;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);}
@@ -3101,10 +3110,13 @@ const CSS = `
    glide out of the way with a short transition to open a gap. */
 .xr-urow-wrap{position:relative;transition:transform 150ms ease;}
 .xr-urow-wrap.dragging{transition:none;z-index:20;}
-.xr-urow-wrap>.xr-urow{width:100%;padding-right:64px;cursor:grab;}
+.xr-urow-wrap>.xr-urow{width:100%;padding-right:90px;cursor:grab;}
 .xr-urow-wrap.dragging>.xr-urow{cursor:grabbing;transform:none;}
-/* tools: duplicate and delete, sitting in the reserved right gutter */
-.xr-urow-tools{position:absolute;top:0;bottom:0;right:6px;width:52px;display:flex;align-items:center;justify-content:flex-end;gap:4px;}
+/* tools: drag handle, duplicate, and delete, sitting in the reserved right gutter */
+.xr-urow-tools{position:absolute;top:0;bottom:0;right:6px;width:78px;display:flex;align-items:center;justify-content:flex-end;gap:4px;}
+.xr-drag-handle{flex:none;width:18px;align-self:stretch;display:flex;align-items:center;justify-content:center;color:var(--ink-2);touch-action:none;cursor:grab;opacity:.5;transition:opacity .12s,color .12s;}
+.xr-drag-handle:hover{opacity:1;color:var(--ink);}
+.xr-urow-wrap.dragging .xr-drag-handle{cursor:grabbing;}
 .xr-urow-tools button{width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:6px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s,opacity .12s;}
 .xr-urow-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
 .xr-urow-tools button.danger:hover{border-color:var(--coral-ink);color:var(--coral-ink);background:#F4604C14;}
@@ -3771,8 +3783,10 @@ const CSS = `
   .xr-sheet-cards{grid-template-columns:1fr;}
   /* the per-unit duplicate/remove buttons were 24px squares, too small to tap
      reliably on a phone; give them a proper target without dominating the row */
-  .xr-urow-tools{width:82px;gap:7px;right:8px;}
+  .xr-urow-tools{width:114px;gap:7px;right:8px;}
   .xr-urow-tools button{width:34px;height:40px;}
+  .xr-drag-handle{width:28px;opacity:.8;}
+  .xr-urow-wrap>.xr-urow{padding-right:130px;}
   /* the rail becomes a top bar on mobile; page headers stick just below it
      instead of at the true viewport top, so the fixed bar never covers them */
   .xr-rail{top:0;bottom:auto;left:0;right:0;width:auto;height:60px;flex-direction:row;padding:0 4px;gap:0;justify-content:space-around;border-top:none;border-bottom:2px solid var(--ink-2);}
@@ -3792,6 +3806,9 @@ const CSS = `
   .xr-play-turn b{font-size:19px;}
   .xr-play-mast .xr-actions{flex:1 1 100%;margin-left:0;gap:8px;}
   .xr-play-mast .xr-actions .xr-btn{flex:1;min-height:42px;padding:8px 10px;font-size:15px;}
+  /* name field placeholder was clipped at phone width; smaller font lets the full
+     hint text breathe alongside the emblem button and points readout */
+  .xr-detname{font-size:17px;}
 }
 
 /* ---------- @media print ---------- */
