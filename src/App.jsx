@@ -1036,7 +1036,7 @@ function IconPickerModal({ onPick, onUpload, onClose }) {
           <button className="xr-btn xr-iconpick-upload" onClick={onUpload}><Image size={18} /> Upload your own picture</button>
           <div className="xr-iconpick-grid">
             {DETACH_ICONS.map(({ id, C }) => (
-              <button key={id} className="xr-iconpick-cell" onClick={() => onPick(id)} aria-label="Emblem">
+              <button key={id} className="xr-iconpick-cell" onClick={() => onPick(id)} aria-label={id.replace(/-/g, " ")}>
                 <C size={52} />
               </button>
             ))}
@@ -1164,7 +1164,7 @@ function LoadPresetModal({ onLoad, onClose }) {
             <div className="xr-preset-grid">
               {setting.detachments.map((d) => (
                 <button className="xr-preset-card" key={d.n} onClick={() => onLoad(d, setting)}>
-                  {d.image && <span className="xr-preset-img" style={{ backgroundImage: `url(${FACTION_BASE}${d.image})` }} aria-hidden="true" />}
+                  {(d.image || d.icon) && <DetachIcon list={d.image ? { image: `${FACTION_BASE}${d.image}` } : d} size={42} className="xr-preset-img" />}
                   <span className="xr-preset-name">{d.name}</span>
                   {d.subtitle && <span className="xr-preset-sub">{d.subtitle}</span>}
                   <span className="xr-preset-foot">
@@ -2165,7 +2165,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             </button>
             {issuesOpen && (
               <>
-                <button className="xr-settings-scrim" aria-label="Close" onClick={() => setIssuesOpen(false)} />
+                <button className="xr-settings-scrim" tabIndex={-1} aria-label="Close" onClick={() => setIssuesOpen(false)} />
                 <div className="xr-issue-pop xr-mastpop open" role="region" aria-label="Detachment status">
                   {issues.length > 0 ? (
                     <>
@@ -2186,7 +2186,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                 title="Share this detachment as a link" aria-label="Share link" aria-expanded={shareOpen}><ShareIc size={18} /><span>Share</span></button>
               {shareOpen && (
                 <>
-                  <button className="xr-settings-scrim" aria-label="Close share menu" onClick={() => setShareOpen(false)} />
+                  <button className="xr-settings-scrim" tabIndex={-1} aria-label="Close share menu" onClick={() => setShareOpen(false)} />
                   <div className="xr-settings-pop xr-share-pop" role="dialog" aria-label="Share this detachment">
                     <p className="xr-share-note">A share link rebuilds this whole detachment in anyone's browser. Everything travels inside the link, so it keeps working offline. Pictures are left out to keep it short.</p>
                     <button className="xr-btn small block" onClick={shareLink}><LinkIc size={16} /> Copy link</button>
@@ -2202,7 +2202,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                 title="Detachment settings" aria-label="Detachment settings" aria-expanded={settingsOpen}><Gear size={18} /><span>Settings</span></button>
               {settingsOpen && (
                 <>
-                  <button className="xr-settings-scrim" aria-label="Close settings" onClick={() => setSettingsOpen(false)} />
+                  <button className="xr-settings-scrim" tabIndex={-1} aria-label="Close settings" onClick={() => setSettingsOpen(false)} />
                   <div className="xr-settings-pop" role="dialog" aria-label="Detachment settings">
                     <label className="xr-set-field">
                       <span className="xr-set-field-l">Description <em>optional</em></span>
@@ -2723,7 +2723,7 @@ export default function App() {
     const roster = rosterFromDetachment(det);
     const bookPts = detachmentPoints(det);
     const budget = BUDGET_PRESETS.find((b) => b >= bookPts) || BUDGET_PRESETS[BUDGET_PRESETS.length - 1] || 24;
-    setLists((ls) => ({ ...ls, [id]: { id, name: det.name, budget, description: det.lore || det.subtitle || "", roster, setting: setting.id, image: det.image ? `${FACTION_BASE}${det.image}` : undefined, nationalTrait: undefined, updated: Date.now() } }));
+    setLists((ls) => ({ ...ls, [id]: { id, name: det.name, budget, description: det.lore || det.subtitle || "", roster, setting: setting.id, image: det.image ? `${FACTION_BASE}${det.image}` : undefined, icon: det.icon || undefined, nationalTrait: undefined, updated: Date.now() } }));
     setCurrentId(id);
     nav("#/build");
   };
@@ -2815,7 +2815,7 @@ const CSS = `
 .xr-btn.primary{background:var(--brand-deep);color:#fff;border-color:transparent;box-shadow:var(--shadow4);}
 .xr-btn.primary:hover{background:var(--brand-deep);border-color:transparent;filter:brightness(1.08);}
 .xr-btn.danger:hover{background:var(--coral);border-color:var(--coral-ink);color:#fff;}
-.xr-btn.small{min-height:42px;padding:8px 13px;font-size:15.5px;}
+.xr-btn.small{min-height:44px;padding:8px 13px;font-size:15.5px;}
 .xr-btn.small.icon{padding:8px 10px;}
 .xr-btn.small.xr-btn-icon{padding:8px;min-width:42px;width:42px;justify-content:center;}
 /* mast action buttons: icon + label (label shrinks to a tiny caption on mobile) */
@@ -2919,7 +2919,7 @@ const CSS = `
 .xr-railmuster{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:7px;width:100%;padding-top:10px;}
 .xr-railmuster-cap{font-family:var(--ui);font-weight:700;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6);}
 .xr-railsize{display:flex;flex-direction:row;align-items:center;gap:3px;}
-.xr-railsize-btn{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:rgba(255,255,255,.85);font-family:var(--display);font-weight:700;font-size:16px;line-height:1;background:rgba(255,255,255,.12);transition:background var(--dur-fast) var(--curve-ease);}
+.xr-railsize-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:rgba(255,255,255,.85);font-family:var(--display);font-weight:700;font-size:16px;line-height:1;background:rgba(255,255,255,.12);transition:background var(--dur-fast) var(--curve-ease);}
 .xr-railsize-btn:hover{background:rgba(255,255,255,.24);color:#fff;}
 .xr-railsize-val{min-width:24px;text-align:center;font-family:var(--mono);font-weight:700;font-size:17px;color:#fff;font-variant-numeric:tabular-nums;}
 .xr-railbar{position:relative;width:14px;flex:1;min-height:80px;display:flex;align-items:flex-end;border-radius:8px;background:rgba(0,0,0,.22);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
@@ -2948,7 +2948,7 @@ const CSS = `
 
 /* ---------- collapsible section (progressive disclosure) ---------- */
 .xr-sec{border-top:none;}
-.xr-sec-h{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 2px 8px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);min-height:40px;}
+.xr-sec-h{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 2px 8px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);min-height:44px;}
 .xr-sec-title{flex:1;}
 .xr-sec-count{font-family:var(--mono);font-style:normal;font-weight:700;font-size:14px;min-width:26px;height:26px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--cream);border-radius:13px;}
 .xr-sec-caret{color:var(--ink-2);transition:transform .15s;flex:none;}
@@ -3103,21 +3103,21 @@ const CSS = `
 .xr-urow-name{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.15;flex:1;min-width:0;}
 .xr-urow-pts{font-family:var(--mono);font-weight:700;font-size:16px;white-space:nowrap;}
 .xr-urow-pts i{font-style:normal;font-size:12px;color:var(--ink-2);margin-left:3px;}
-.xr-urow-sub{font-family:var(--ui);font-weight:500;font-size:12.5px;color:var(--ink-2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+.xr-urow-sub{font-family:var(--ui);font-weight:500;font-size:12.5px;color:var(--ink-2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .xr-urow-sub em{font-style:italic;}
 /* duplicate/delete live on the left unit card, in a reserved right gutter.
    dragging is instant (no transition, tracks the pointer 1:1); other rows
    glide out of the way with a short transition to open a gap. */
 .xr-urow-wrap{position:relative;transition:transform 150ms ease;}
 .xr-urow-wrap.dragging{transition:none;z-index:20;}
-.xr-urow-wrap>.xr-urow{width:100%;padding-right:90px;cursor:grab;}
+.xr-urow-wrap>.xr-urow{width:100%;padding-right:98px;cursor:grab;}
 .xr-urow-wrap.dragging>.xr-urow{cursor:grabbing;transform:none;}
 /* tools: drag handle, duplicate, and delete, sitting in the reserved right gutter */
-.xr-urow-tools{position:absolute;top:0;bottom:0;right:6px;width:78px;display:flex;align-items:center;justify-content:flex-end;gap:4px;}
+.xr-urow-tools{position:absolute;top:0;bottom:0;right:6px;width:86px;display:flex;align-items:center;justify-content:flex-end;gap:4px;}
 .xr-drag-handle{flex:none;width:18px;align-self:stretch;display:flex;align-items:center;justify-content:center;color:var(--ink-2);touch-action:none;cursor:grab;opacity:.5;transition:opacity .12s,color .12s;}
 .xr-drag-handle:hover{opacity:1;color:var(--ink);}
 .xr-urow-wrap.dragging .xr-drag-handle{cursor:grabbing;}
-.xr-urow-tools button{width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:6px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s,opacity .12s;}
+.xr-urow-tools button{width:28px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:6px;border:2px solid var(--ink-30);background:var(--paper);color:var(--ink-2);box-shadow:var(--shadow4);transition:border-color .12s,color .12s,background .12s,opacity .12s;}
 .xr-urow-tools button:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
 .xr-urow-tools button.danger:hover{border-color:var(--coral-ink);color:var(--coral-ink);background:#F4604C14;}
 .xr-urow-tools button:disabled{opacity:.32;cursor:default;box-shadow:none;}
@@ -3126,7 +3126,7 @@ const CSS = `
 /* the "file by" ordering toolbar above the roster rows */
 .xr-ulist-file{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:2px 2px 4px;}
 .xr-file-l{font-family:var(--ui);font-weight:700;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);}
-.xr-file-btn{font-family:var(--ui);font-weight:600;font-size:13.5px;color:var(--ink);background:var(--paper);border:2px solid var(--ink-30);border-radius:20px;padding:4px 13px;transition:border-color .12s,background .12s,color .12s;}
+.xr-file-btn{font-family:var(--ui);font-weight:600;font-size:13.5px;color:var(--ink);background:var(--paper);border:2px solid var(--ink-30);border-radius:20px;padding:4px 13px;min-height:36px;transition:border-color .12s,background .12s,color .12s;}
 .xr-file-btn:hover{border-color:var(--ink);background:var(--paper-3);}
 .xr-file-btn:active{transform:scale(.96);}
 
@@ -3145,7 +3145,7 @@ const CSS = `
 .xr-imgup-add{display:flex;align-items:center;justify-content:center;border:2px dashed var(--ink-30);background:var(--paper-2);color:var(--ink-2);transition:.13s;}
 .xr-imgup-add:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
 .xr-imgup-thumb{display:block;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);cursor:pointer;padding:0;}
-.xr-imgup-x{position:absolute;top:-7px;right:-7px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid var(--ink);background:var(--coral);color:#3a1206;transition:.12s;}
+.xr-imgup-x{position:absolute;top:-12px;right:-12px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid var(--ink);background:var(--coral);color:#3a1206;transition:.12s;}
 .xr-imgup-x:hover{background:var(--coral-ink);color:#fff;}
 /* detachment picture on masthead + dashboard */
 .xr-mast-img{flex:none;width:44px;height:44px;border-radius:9px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);}
@@ -3277,11 +3277,11 @@ const CSS = `
 .xr-newimg-add{display:flex;color:var(--ink-2);}
 .xr-newimg-txt{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
 .xr-newimg-txt b{font-family:var(--display);font-weight:700;font-size:16px;color:var(--ink);}
-.xr-linky{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;font-family:var(--ui);font-weight:600;font-size:14.5px;color:var(--brand-deep-blue);text-decoration:underline;text-underline-offset:2px;background:none;padding:0;}
+.xr-linky{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;font-family:var(--ui);font-weight:600;font-size:14.5px;color:var(--brand-deep-blue);text-decoration:underline;text-underline-offset:2px;background:none;padding:6px 0;}
 .xr-linky:hover{color:var(--ink);}
 .xr-name-random{margin:-10px 0 18px;}
 .xr-coll-chips{display:flex;flex-wrap:wrap;gap:6px;margin:-8px 0 4px;}
-.xr-coll-chip{font-family:var(--ui);font-weight:600;font-size:13.5px;color:var(--ink-2);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:20px;padding:4px 12px;min-height:34px;transition:.12s;}
+.xr-coll-chip{font-family:var(--ui);font-weight:600;font-size:13.5px;color:var(--ink-2);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:20px;padding:4px 12px;min-height:44px;transition:.12s;}
 .xr-coll-chip:hover{border-color:var(--ink);color:var(--ink);}
 .xr-coll-chip.on{background:var(--ink);border-color:var(--ink);color:var(--cream);}
 /* emblem picker */
@@ -3305,7 +3305,7 @@ const CSS = `
 .xr-custom-row-head{display:flex;align-items:center;gap:10px;}
 .xr-custom-row-name{flex:1;font-family:var(--ui);font-weight:600;font-size:16px;}
 .xr-custom-row-text{font-family:var(--flavor);font-style:italic;font-size:15.5px;color:var(--ink-2);margin-top:6px;}
-.xr-iconbtn.small{width:34px;height:34px;flex:none;}
+.xr-iconbtn.small{width:44px;height:44px;flex:none;}
 .xr-custom-form{border:1.5px solid var(--ink-30);border-radius:10px;padding:14px;background:var(--paper-2);}
 .xr-custom-cost{max-width:110px;}
 .xr-custom-form-foot{display:flex;justify-content:flex-end;gap:10px;}
@@ -3349,7 +3349,7 @@ const CSS = `
 .xr-d6-flavor{font-family:var(--flavor);font-style:italic;color:var(--ink-2);}
 .xr-subs{margin-left:44px;border-left:2px solid var(--ink-18);padding-left:8px;}
 .xr-tiers{display:flex;gap:7px;flex-wrap:wrap;padding:2px 4px 10px 60px;}
-.xr-tier{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:42px;transition:border-color .12s,background .12s;}
+.xr-tier{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15.5px;border:2px solid var(--ink-30);border-radius:8px;padding:7px 12px;min-height:44px;transition:border-color .12s,background .12s;}
 .xr-tier-l{display:inline-flex;flex-direction:column;line-height:1.15;text-align:left;}
 .xr-tier-l em{font-style:normal;font-family:var(--ui);font-weight:500;font-size:11.5px;color:var(--ink-2);}
 .xr-tier.on .xr-tier-l em{color:var(--cream);}
@@ -3396,7 +3396,7 @@ const CSS = `
 .xr-cmd-tablecard-check{position:absolute;top:11px;right:13px;color:var(--brass);}
 .xr-traitpick-btns{display:flex;gap:8px;flex-wrap:wrap;}
 .xr-trait-choices{display:flex;flex-direction:column;gap:6px;margin-top:10px;animation:xr-rise .18s ease;}
-.xr-trait-choice{display:flex;flex-direction:column;gap:2px;text-align:left;border:2px solid var(--ink-30);border-radius:9px;padding:8px 12px;background:var(--paper-2);transition:border-color .12s,background .12s,transform .12s;}
+.xr-trait-choice{display:flex;flex-direction:column;gap:2px;text-align:left;border:2px solid var(--ink-30);border-radius:9px;padding:8px 12px;min-height:44px;background:var(--paper-2);transition:border-color .12s,background .12s,transform .12s;}
 .xr-trait-choice:hover{border-color:var(--brass);transform:translateX(2px);}
 .xr-trait-choice.on{border-color:var(--brass);background:#8A6A1F14;}
 .xr-trait-choice b{font-family:var(--ui);font-weight:600;font-size:15.5px;color:var(--brass);}
@@ -3661,7 +3661,7 @@ const CSS = `
 .xr-toast{display:flex;align-items:center;gap:9px;background:var(--ink);color:var(--cream);font-family:var(--body);font-size:15px;font-weight:600;line-height:1.3;padding:11px 16px;border-radius:12px;box-shadow:0 10px 30px rgba(31,61,46,.34);animation:xr-toast-in .22s ease-out;max-width:100%;}
 .xr-toast span{overflow-wrap:anywhere;}
 .xr-toast svg{flex:none;}
-.xr-toast-act{pointer-events:auto;flex:none;margin-left:6px;background:transparent;border:1.5px solid var(--cream);color:var(--cream);font-family:var(--body);font-weight:700;font-size:14px;padding:5px 12px;min-height:36px;border-radius:8px;cursor:pointer;transition:background .12s,color .12s;}
+.xr-toast-act{pointer-events:auto;flex:none;margin-left:6px;background:transparent;border:1.5px solid var(--cream);color:var(--cream);font-family:var(--body);font-weight:700;font-size:14px;padding:8px 12px;min-height:44px;border-radius:8px;cursor:pointer;transition:background .12s,color .12s;}
 .xr-toast-act:hover{background:var(--cream);color:var(--ink);}
 .xr-toast.tone-ok svg{color:#8FD08A;}
 .xr-toast.tone-err{background:var(--coral-ink);}
