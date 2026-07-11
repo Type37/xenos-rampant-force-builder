@@ -3167,6 +3167,78 @@ export const SETTINGS = [
             }
           }
         ]
+      },
+      {
+        "n": 45,
+        "name": "UESC Security: Division 7",
+        "subtitle": "Last Orders",
+        "lore": "When Leela's transmissions ceased and the Pfhor overran the lower decks, Security Division 7 kept its last standing orders and kept fighting. No human remains in its command chain now. The units simply persist: armed, purposeful, executing instructions from a hierarchy that no longer exists.",
+        "units": [
+          {
+            "typeId": "light",
+            "count": 1,
+            "isCmd": true,
+            "label": "Security Recruits",
+            "points": 1,
+            "options": [],
+            "xenos": { "mechanoid": true },
+            "notes": "Activated from Reserve Bay 7. These units formed the first response line when the ventral airlocks were breached. Most were destroyed. The survivors were not replenished. They were reassigned."
+          },
+          {
+            "typeId": "heavy",
+            "count": 1,
+            "label": "Grenadiers, RMU-7",
+            "points": 6,
+            "options": ["assault-doctrine", "heavy-weapon"],
+            "xenos": { "mechanoid": true },
+            "notes": "Designated RMU-7, built for corridor clearing. The grenade launchers are rated for hard vacuum and rebreather atmospheres. Whoever specified them expected a long war."
+          },
+          {
+            "typeId": "support",
+            "count": 1,
+            "label": "Wardens, SMU-12",
+            "points": 5,
+            "options": [],
+            "xenos": { "mechanoid": true },
+            "notes": "SMU-12 units coordinate sustained fire coverage across multiple sectors. Their targeting algorithms were updated after the Pfhor first demonstrated flanking maneuvers through the environmental shafts. The update was mandatory."
+          },
+          {
+            "typeId": "recon",
+            "count": 1,
+            "label": "Rook Interlopers",
+            "points": 3,
+            "options": ["veterans"],
+            "xenos": { "mercenary": true },
+            "notes": "Pre-conflict security contractors of uncertain affiliation. Their equipment matches no UESC procurement record. Leela never trusted them. Durandal doesn't trust anyone. Both may have a point."
+          },
+          {
+            "typeId": "elite",
+            "count": 1,
+            "label": "UESC Runners, Alpha",
+            "points": 8,
+            "options": ["heavy-weapon"],
+            "xenos": { "mechanoid": true },
+            "notes": "Omega-clearance response units armed with crew-served weapons. In corridors they are lethal; on open ground they are devastating. The designation Runners was given by surviving crew who watched them pursue fleeing Pfhor down the aft maintenance passages."
+          },
+          {
+            "typeId": "elite",
+            "count": 1,
+            "label": "UESC Runners, Beta",
+            "points": 7,
+            "options": ["close-quarters", "assault-doctrine"],
+            "xenos": { "mechanoid": true },
+            "notes": "Close-quarters configuration. The tight geometry of the Marathon's maintenance shafts favors short-range firepower. These units were optimized for that geometry and have not been reconfigured since."
+          },
+          {
+            "typeId": "elite",
+            "count": 1,
+            "label": "UESC Runners, Gamma",
+            "points": 7,
+            "options": ["armour-piercing"],
+            "xenos": { "mechanoid": true },
+            "notes": "Anti-Enforcer configuration. After the first Pfhor Hunter units were encountered, Security Division 7 updated its threat-response protocols. The Gamma teams are that update."
+          }
+        ]
       }
     ],
     "quote": "That is why we light our beacon this day. To assemble our people. To lock arms against those whose fatal greeting is: 'We come in peace.'",

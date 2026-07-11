@@ -3311,7 +3311,7 @@ const CSS = `
 .xr-custom-form-foot{display:flex;justify-content:flex-end;gap:10px;}
 .xr-chips{display:flex;flex-direction:column;gap:6px;}
 .xr-chipwrap{display:flex;flex-direction:column;}
-.xr-chip{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 10px 6px 12px;min-height:38px;transition:.12s;}
+.xr-chip{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 10px 6px 12px;min-height:44px;transition:.12s;}
 .xr-chip:hover{border-color:var(--ink);background:var(--paper-2);}
 .xr-chip-caret{color:var(--ink-2);transition:transform .15s;}
 .xr-chip:hover .xr-chip-caret{color:var(--ink);}
@@ -3694,7 +3694,7 @@ const CSS = `
 .xr-pcard-die .xr-die{width:56px;font-size:21px;padding:6px 4px;}
 .xr-pcard-die i{font-style:normal;font-size:13.5px;font-weight:600;color:var(--ink-2);}
 .xr-pcard-sp{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
-.xr-pip{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:var(--coral-ink);transition:.12s;}
+.xr-pip{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:var(--coral-ink);transition:.12s;}
 .xr-pip:hover{background:var(--paper-3);}
 .xr-pip.lost{color:var(--ink-30);}
 .xr-pcard-spread{margin-left:auto;font-family:var(--mono);font-size:16px;color:var(--ink-2);}
@@ -3784,7 +3784,7 @@ const CSS = `
   /* the per-unit duplicate/remove buttons were 24px squares, too small to tap
      reliably on a phone; give them a proper target without dominating the row */
   .xr-urow-tools{width:114px;gap:7px;right:8px;}
-  .xr-urow-tools button{width:34px;height:40px;}
+  .xr-urow-tools button{width:34px;height:44px;}
   .xr-drag-handle{width:28px;opacity:.8;}
   .xr-urow-wrap>.xr-urow{padding-right:130px;}
   /* the rail becomes a top bar on mobile; page headers stick just below it
@@ -3795,7 +3795,7 @@ const CSS = `
   .xr-rail-btn{flex:1;max-width:96px;justify-content:center;border-radius:0;gap:2px;}
   .xr-railmuster{display:none;}
   .xr-mastptswrap{display:block;}
-  .xr-mastpts{display:inline-flex;}
+  .xr-mastpts{display:inline-flex;min-height:44px;}
   .xr-home,.xr-build,.xr-printview,.xr-play{padding-left:0;padding-top:60px;padding-bottom:0;}
   .xr-mast,.xr-print-chrome,.xr-play-mast{top:60px;}
   /* play mast was wrapping into a tall stack that ate the screen; keep the title
@@ -3805,10 +3805,13 @@ const CSS = `
   .xr-play-turn{font-size:15px;}
   .xr-play-turn b{font-size:19px;}
   .xr-play-mast .xr-actions{flex:1 1 100%;margin-left:0;gap:8px;}
-  .xr-play-mast .xr-actions .xr-btn{flex:1;min-height:42px;padding:8px 10px;font-size:15px;}
+  .xr-play-mast .xr-actions .xr-btn{flex:1;min-height:44px;padding:8px 10px;font-size:15px;}
   /* name field placeholder was clipped at phone width; smaller font lets the full
      hint text breathe alongside the emblem button and points readout */
-  .xr-detname{font-size:17px;}
+  .xr-detname{font-size:17px;min-height:44px;}
+  .xr-file-btn{min-height:44px;}
+  .xr-btn.small.xr-manage{min-height:44px;}
+  .xr-sharewrap .xr-settings-pop{position:fixed;top:64px;right:10px;left:10px;width:auto;}
 }
 
 /* ---------- @media print ---------- */
