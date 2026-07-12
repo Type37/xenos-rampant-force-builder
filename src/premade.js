@@ -506,6 +506,7 @@ export const SETTINGS = [
         "n": 1,
         "name": "Early Great War Conscripts (1914)",
         "subtitle": "It'll Be Over By Christmas",
+        "lore": "A generic force for any warring party in the early Great War, presented here as German conscripts — millions who marched east and west in 1914. Can represent second-line reserve units or less technologically advanced nations throughout the war and beyond.",
         "icon": "pickelhaube",
         "units": [
           {
@@ -565,6 +566,7 @@ export const SETTINGS = [
         "n": 2,
         "name": "Late Great War Trench Fighters (1918)",
         "subtitle": "It Wasn't Over By Christmas",
+        "lore": "Years of fighting replaced cavalry and massed conscripts with trained trench raiders, light machine guns, and unreliable tanks. These veterans represent the kind of force common in the war's final years — or the Weimar-era freikorps who suppressed the rebellions, mutinies, and cult activity that flourished in the troubled peace that followed.",
         "icon": "stahlhelm",
         "units": [
           {
@@ -623,6 +625,7 @@ export const SETTINGS = [
         "n": 3,
         "name": "Occult Freikorps (1920s)",
         "subtitle": "Black Arts In The Black Forest",
+        "lore": "Occult paramilitary groups flourished in Weimar Germany, whether Werwolf itself or the independent cults it sought to crush. This force has bolstered its limited numbers with creatures drawn from Central European mythology and Bronze Age bodies exhumed from peat bogs.",
         "icon": "moon",
         "badge": { "bg": "#464f43", "fg": "#b5c4ac" },
         "units": [
@@ -704,6 +707,7 @@ export const SETTINGS = [
         "n": 4,
         "name": "Strange Foundation Expedition (1920s)",
         "subtitle": "Some Things Don't Belong In A Museum",
+        "lore": "The Strange Foundation, a renowned philanthropic organisation and, less publicly, a school for magicians, has been funding occult research since the 18th century. Their expeditions repeatedly brought them into conflict with the Schulers, though they occasionally received unexpected assistance from other secret societies opposed to Werwolf's schemes.",
         "icon": "compass",
         "badge": { "bg": "#1b3a6b", "fg": "#9dc4e8" },
         "units": [
@@ -817,6 +821,7 @@ export const SETTINGS = [
         "n": 5,
         "name": "Werwolf Handwerkers (1944–45)",
         "subtitle": "Allegedly German Technological Ingenuity",
+        "lore": "The Handwerkers rarely took to the battlefield themselves, preferring to equip Waffen-SS units with their devices and gather research data from whoever survived. This detachment features a Handwerker who has decided to observe his technology in action firsthand — a decision he will probably regret.",
         "icon": "iron-cross",
         "badge": { "bg": "#6b0000", "fg": "#0a0a0a" },
         "units": [
@@ -898,6 +903,7 @@ export const SETTINGS = [
         "n": 6,
         "name": "Werwolf Schülers (1945–46)",
         "subtitle": "Taking The World With Them",
+        "lore": "The Schulers were kept away from most battlefields — their creations instilled disgust and fear even in regular Wehrmacht troops. As the Soviets swept through Germany, they were finally unleashed. Most chose escape over a last stand. Some did not.",
         "icon": "wolf-howl",
         "units": [
           {
@@ -962,6 +968,7 @@ export const SETTINGS = [
         "n": 7,
         "name": "Werwolf Freischärlers (1945–46)",
         "subtitle": "Men Who Can Never Go Home",
+        "lore": "The Freischurlers were Werwolf soldiers committed to neither the Handwerker nor Schuler ideology — mostly fanatical Nazis who fought on after Germany's surrender, only to discover the true depth of the organisation's depravity. Some deserted. The most committed fought on.",
         "icon": "balkenkreuz",
         "units": [
           {
@@ -1033,6 +1040,7 @@ export const SETTINGS = [
         "n": 8,
         "name": "Operation Paperclip (1945–46)",
         "subtitle": "Loaded For Bear",
+        "lore": "Understanding that their next great enemy would be the Soviet Union, the OSS began smuggling rocket scientists, atomic physicists, and occult researchers out of the ruins of Nazi Germany ahead of the advancing Red Army. Paperclip teams were often accompanied by the army wherever Werwolf or Soviet resistance was anticipated.",
         "icon": "usa-flag",
         "badge": { "bg": "#3c4a1e", "fg": "#d4d68a" },
         "units": [
@@ -1108,6 +1116,7 @@ export const SETTINGS = [
         "n": 9,
         "name": "The Strange Research Group (1939–46)",
         "subtitle": "Churchill's Very Secret Army",
+        "lore": "The SRG played a key part in the war against Werwolf, combining magic and intelligence to track down and eliminate their agents. Dissolved in 1946 by Clement Attlee, who feared that magically trained veterans from the colonies might be drawn into their homelands' independence movements — a concern history proved correct.",
         "icon": "union-jack",
         "badge": { "bg": "#00247d", "fg": "#ffffff" },
         "units": [
@@ -1179,6 +1188,7 @@ export const SETTINGS = [
         "n": 10,
         "name": "The Red Army (1941–46)",
         "subtitle": "The Bringers Of Götterdämmerung",
+        "lore": "Any good Soviet citizen knew the natural order of things is rational and communist — superstition has no place in the USSR. Red Army units confronting Werwolf's paranormal assets therefore reported their encounters in careful euphemism, requiring particular tact when one of the pre-Soviet creatures of Eastern European myth arrived to aid the Motherland.",
         "icon": "hammer-sickle",
         "badge": { "bg": "#cc0000", "fg": "#f5c518" },
         "units": [
@@ -1243,6 +1253,7 @@ export const SETTINGS = [
         "n": 11,
         "name": "SWAT",
         "subtitle": "New York's Finest",
+        "lore": "Society's first line of defence against aliens, monsters, and humanity's darkest deeds is usually law enforcement. When reports are little more than 'homeless people biting others' or 'strange lights in the woods', the first cop on scene is often outmatched — but the police always come back in greater numbers and with greater firepower.",
         "icon": "riot-shield",
         "badge": { "bg": "#003087", "fg": "#ffffff" },
         "units": [
@@ -1293,6 +1304,7 @@ export const SETTINGS = [
         "n": 12,
         "name": "Her Majesty's Constabulary",
         "subtitle": "What Do You Mean, 'Unarmed'?",
+        "lore": "Similar to the SWAT list, but geared towards nations where police are not routinely armed. The emphasis is on effecting arrests with batons and tasers, though the highly trained AFOs are perfectly capable of dealing with anything natural or unnatural — as long as it isn't immune to bullets.",
         "icon": "custodian-helmet",
         "badge": { "bg": "#0d2b6e", "fg": "#f0c000" },
         "units": [
@@ -1338,6 +1350,7 @@ export const SETTINGS = [
         "n": 13,
         "name": "Urban Cult",
         "subtitle": "Something Strange In Your Neighbourhood",
+        "lore": "Otherworldly entities often surround themselves with human devotees when on Earth, particularly when their powers make them appear godlike. This cult is structured like a street gang, and many of its day-to-day activities — including where it finds its funding — probably fit that mould.",
         "icon": "magic-palm",
         "badge": { "bg": "#2d0040", "fg": "#b060e0" },
         "units": [
@@ -1410,6 +1423,7 @@ export const SETTINGS = [
         "n": 14,
         "name": "Rural Cult",
         "subtitle": "If You Go Down To The Backwoods Today…",
+        "lore": "A compound-dwelling, open-carrying, paramilitary militia with political convictions that run deep. Whether they always trafficked with extra-dimensional entities or dug something up while building on an abandoned airbase, their original beliefs have been superseded: they now serve their demonic patron.",
         "icon": "magic-shield",
         "badge": { "bg": "#450060", "fg": "#e060ff" },
         "units": [
@@ -1482,6 +1496,7 @@ export const SETTINGS = [
         "n": 15,
         "name": "The Organisation",
         "subtitle": "Dan Brown Has No Idea…",
+        "lore": "Secretive groups investigating the paranormal range from centuries-old orders like the Templars and Illuminati to the private obsessions of corporate billionaires. Their conflicting objectives mean they come to blows when they encounter each other — and the contents of their museums and libraries make those encounters terrifying.",
         "icon": "templar-heart",
         "badge": { "bg": "#1a1200", "fg": "#c8a000" },
         "units": [
@@ -1565,6 +1580,7 @@ export const SETTINGS = [
         "n": 16,
         "name": "The Government",
         "subtitle": "Here Come The Men In Black",
+        "lore": "The authorities know exactly what's out there. To avoid panicking the public, government agencies specialising in the paranormal tend to cover up first, deal with problems second — usually by destroying all evidence. In the case of this detachment, the threat is significant enough to call in serious firepower.",
         "icon": "sunglasses",
         "badge": { "bg": "#0a0a0a", "fg": "#606060" },
         "units": [
@@ -1631,6 +1647,7 @@ export const SETTINGS = [
         "n": 17,
         "name": "Tunnel-Dwellers",
         "subtitle": "They Eat Rats. Mostly",
+        "lore": "Creatures inhabit the sewers, caverns, subway tunnels, and catacombs beneath the city — whether demons, inhabitants of the Hollow Earth, or degenerate humans turned cannibal. They are secretive ambush predators and scavengers who creep out after dark to prey on the lost and isolated.",
         "icon": "rat",
         "badge": { "bg": "#484848", "fg": "#b8b8b8" },
         "units": [
@@ -1713,6 +1730,7 @@ export const SETTINGS = [
         "n": 18,
         "name": "UFO Scientific Team",
         "subtitle": "Ethics Are For Humans",
+        "lore": "Strange lights mark the arrival of creatures from other worlds. They come to study, leaving mutilated cattle and flattened crops in their wake. This crew is composed of physically unimpressive aliens whose strength lies in psychic potential and unfathomable technology — an actual invasion force can be found in the War on Terra chapter.",
         "icon": "cracked-alien-skull",
         "badge": { "bg": "#001400", "fg": "#39ff14" },
         "units": [
@@ -1771,6 +1789,7 @@ export const SETTINGS = [
         "n": 19,
         "name": "Top Tier Military",
         "subtitle": "Well-Equipped And Highly Motivated Volunteers",
+        "lore": "When the alien invasion struck, decades of dispersed command planning meant that even isolated overseas bases were able to fight back. This detachment could represent any professional military force in the genre — UNIT, XCOM, or any multinational rapid-response organisation.",
         "icon": "spartan-helmet",
         "units": [
           {
@@ -1815,6 +1834,7 @@ export const SETTINGS = [
         "n": 20,
         "name": "Second Tier Military",
         "subtitle": "A Fully Armed And Equipped Battalion (On Paper)",
+        "lore": "Being initially overlooked by the invasion gave the less-developed world breathing space to mobilise its large, if poorly trained, armed forces. Logistics and equipment quality are always an issue in such forces, and official corruption — even in the face of alien invasion — may hamper operations still further.",
         "icon": "mailed-fist",
         "units": [
           {
@@ -1879,6 +1899,7 @@ export const SETTINGS = [
         "n": 21,
         "name": "Irregular Military",
         "subtitle": "An Army, Technically",
+        "lore": "Many a supposedly unbeatable army has learned that poorly paid troops with old rifles and battered pickups can punch well above their weight. Unfortunately, warlords often care more for their own interests than loftier goals — some have even sold their allegiance to the aliens in return for weapons or power over their rivals.",
         "icon": "crossed-pistols",
         "units": [
           {
@@ -1946,6 +1967,7 @@ export const SETTINGS = [
         "n": 22,
         "name": "Private Military Contractors",
         "subtitle": "Send Lawyers, Guns, And Money",
+        "lore": "With regular forces overstretched by the invasion, both governments and corporations have turned to PMCs — well-funded, equipped with decent personal gear, and offering a layer of deniability when the mission extends to striking human rivals rather than the invaders.",
         "icon": "gun-rose",
         "units": [
           {
@@ -2033,6 +2055,7 @@ export const SETTINGS = [
         "n": 23,
         "name": "Insurgent Raiders",
         "subtitle": "Resistance Is Not Futile",
+        "lore": "Human civilisation survives in the occupied territories, at least until the invaders decide humanity is too troublesome to permit. Most comply; some collaborate; others fight back. The alien reprisals are swift and brutal, which enrages more civilians, which creates more fighters — the classic asymmetric cycle.",
         "icon": "black-flag",
         "units": [
           {
@@ -2128,6 +2151,7 @@ export const SETTINGS = [
         "n": 24,
         "name": "Black Ops Team",
         "subtitle": "Remember That Skirmish Outside Paris, Or Was It Saint Petersburg?",
+        "lore": "Prior to the invasion, alien scouting incursions were regularly and secretly confronted by Special Forces units, some established specifically for that purpose. Nowadays they mainly train resistance movements in occupied territory, but still launch raids when opportunities arise.",
         "icon": "cloak-dagger",
         "units": [
           {
@@ -2173,6 +2197,7 @@ export const SETTINGS = [
         "n": 25,
         "name": "UFO Invasion Force",
         "subtitle": "Don't Run, We Are Your Friends!",
+        "lore": "These aliens have come a long way to take our planet, and their strength is their technology. This detachment escalates the UFO Scientific Team from the Urban Fantasy chapter — the stun weapons are gone, replaced by searing bolts of plasma.",
         "icon": "alien-fire",
         "units": [
           {
@@ -2224,6 +2249,7 @@ export const SETTINGS = [
         "n": 26,
         "name": "Human Collaborators",
         "subtitle": "Traitors To The Species",
+        "lore": "The invasion was not as sudden as many believed. For decades, scattered humans had already sworn themselves to the coming conquerors. Invading an entire planet requires more troops than even advanced technology can easily provide, so local auxiliaries are inevitable — gifted with power, status, and increased rations in return for their service.",
         "icon": "mdi-skull",
         "units": [
           {
@@ -2290,6 +2316,7 @@ export const SETTINGS = [
         "n": 27,
         "name": "New World Order",
         "subtitle": "Yes, Of Course We'll Have Elections. Soon.",
+        "lore": "Civilisation requires rules if it is to endure, and this detachment represents those who intend to make them. Whether recreating the old world or building a new one from scratch, their forces — ragtag by pre-apocalypse standards — are modelled closely on the World Before and hit harder than most of their competition.",
         "icon": "mailed-fist",
         "units": [
           {
@@ -2358,6 +2385,7 @@ export const SETTINGS = [
         "n": 28,
         "name": "Tech-Barbarians",
         "subtitle": "Lorekeepers Of The World Before",
+        "lore": "When civilisation collapsed, the World Before's technology remained. Most tribes ignore it and let it rust. Some venerate the ancient machines as divine. Tech-barbarians descended from the inhabitants of isolated military bases often find themselves in possession of exceedingly dangerous weaponry — which they treat as sacred relics.",
         "icon": "visored-helm",
         "units": [
           {
@@ -2414,6 +2442,7 @@ export const SETTINGS = [
         "n": 29,
         "name": "Road Warriors",
         "subtitle": "Addicted To Guzzoline",
+        "lore": "With the total collapse of economy and industry, many became nomads, moving ahead of hunger, environmental collapse, and ravening beasts. Some road warriors try to retain a sense of decency. Most eventually succumb to necessity and begin taking what they need from whoever they encounter.",
         "icon": "battle-tank",
         "units": [
           {
@@ -2501,6 +2530,7 @@ export const SETTINGS = [
         "n": 30,
         "name": "Survivors",
         "subtitle": "Our Community Is Our Strength",
+        "lore": "Not everyone in the aftermath is fuelled by ideology. Some just want to exist in peace. When targeted by raiders, they will quietly move on — but sometimes they are forced to fight to preserve a particularly secure encampment or a valuable water source.",
         "icon": "flame",
         "units": [
           {
@@ -2585,6 +2615,7 @@ export const SETTINGS = [
         "n": 31,
         "name": "The Living Dead",
         "subtitle": "When There's No More Room In Hell…",
+        "lore": "Why do the dead walk in the post-apocalypse? A vengeful deity, a virus, a mutation, an alien experiment — the theories are many. Most survivors have concluded that the reason doesn't matter, as long as you don't let them bite you.",
         "icon": "biohazard",
         "units": [
           {
@@ -2661,6 +2692,7 @@ export const SETTINGS = [
         "n": 32,
         "name": "The Angel's Disciples",
         "subtitle": "Holier Than Thou",
+        "lore": "Some compare her to King Arthur, others to Joan of Arc. The more rational say she is a mutant or the product of some hideous genetic experiment. Wherever she came from, she smites all who stand against her and blesses all who march with her.",
         "icon": "angel-wings",
         "units": [
           {
@@ -2717,6 +2749,7 @@ export const SETTINGS = [
         "n": 33,
         "name": "Mutants",
         "subtitle": "A Very Close-Knit Community",
+        "lore": "Those with visible mutations are often shunned, so mutant families group together for protection. Generations of interbreeding have stirred the genetic soup still further. This particular tribe is fanatically devoted to protecting their psychic youngsters from the outside world.",
         "icon": "monster-grasp",
         "units": [
           {
@@ -2802,6 +2835,7 @@ export const SETTINGS = [
         "n": 34,
         "name": "Alliance Landing Party",
         "subtitle": "Set Phasers To Stun",
+        "lore": "Whether the Alliance is benevolent, merely protective, or coercive in its ambitions, its goal is the same: expand by seeking out new life and new civilisations. Its landing parties are as much about soft power as hard — though security is never far from hand.",
         "icon": "astronaut-helmet",
         "units": [
           {
@@ -2853,6 +2887,7 @@ export const SETTINGS = [
         "n": 35,
         "name": "The Evil Empire",
         "subtitle": "We Come In Peace, Now Shoot To Kill!",
+        "lore": "The Empire's attitude towards acquiring other species can be summarised as compliance or destruction. It fields a brute-force army — a sledgehammer whose sole purpose is to destroy the enemy, regardless of casualties suffered on either side.",
         "icon": "fa-empire",
         "units": [
           {
@@ -2920,6 +2955,7 @@ export const SETTINGS = [
         "n": 36,
         "name": "Boarding Party",
         "subtitle": "Warriors An Inch Away From Glory Or Hard Vacuum",
+        "lore": "Starship boarding actions are brutal, fast-moving, close-quarters battles where casualties are heavy and explosive decompression is a real risk. Boarding units tend to be small for manoeuvrability in confined spaces, favouring weapons with short range and low penetration.",
         "icon": "crossed-swords",
         "units": [
           {
@@ -2966,6 +3002,7 @@ export const SETTINGS = [
         "n": 37,
         "name": "Space Pirates",
         "subtitle": "Reavers From The Edges Of Civilisation",
+        "lore": "Even with fast commercial space travel, it can take months for an emergency signal to receive aid — and in that environment, piracy is all but guaranteed. This detachment is a raiding party deployed to a planetary surface; for a ship-to-ship boarding force, see the Boarding Party list.",
         "icon": "skull-crossed-bones",
         "units": [
           {
@@ -3041,6 +3078,7 @@ export const SETTINGS = [
         "n": 38,
         "name": "Xenos Rampant",
         "subtitle": "Reasons To Stay On Earth",
+        "lore": "Not all aliens are humanoid, or even recognisably sentient. Whether insectoid, crustacean, or wholly incomparable to Terran lifeforms, these territorial creatures may spread between worlds by accident or design. This detachment is a simple, near-mindless swarm of melee creatures.",
         "icon": "hive-mind",
         "units": [
           {
@@ -3087,6 +3125,7 @@ export const SETTINGS = [
         "n": 39,
         "name": "Primitives",
         "subtitle": "Knives Brought To A Gunfight",
+        "lore": "Not every species advances at the same rate. Primitive tribes are often exploited by more advanced species, if not simply marked for extermination so their worlds can be plundered. Inevitably, the tribes fight back. Sometimes, they even win.",
         "icon": "tiger-head",
         "units": [
           {
@@ -3152,6 +3191,7 @@ export const SETTINGS = [
         "n": 40,
         "name": "The Ancients",
         "subtitle": "Or What's Left Of Them",
+        "lore": "At the far end of the scale are civilisations that harnessed stellar energies before life on Earth began. When the Ancients go to war, their technology is phenomenal — autonomous war machines, bio-constructs, enslaved lesser species. Often, the Ancients themselves are never seen. Perhaps their machines have been running autonomously for aeons. Perhaps their masters are long extinct.",
         "icon": "all-seeing-eye",
         "units": [
           {
@@ -3203,6 +3243,7 @@ export const SETTINGS = [
         "n": 41,
         "name": "Starship Crew",
         "subtitle": "Trekking Across The Universe",
+        "lore": "Landing parties are starship crew when they're ready for danger. This list is what happens when they're not — when a civilian vessel is boarded, or the crew are forced to evacuate to a planetary surface unprepared. Represents the crew of an Alliance ship, and pairs naturally with the Alliance Landing Party.",
         "icon": "radar-dish",
         "units": [
           {
@@ -3278,6 +3319,7 @@ export const SETTINGS = [
         "n": 42,
         "name": "Robots",
         "subtitle": "Deus Ex Machina",
+        "lore": "The advantage of mechanoid troops — telemetry-controlled or autonomous AI — is obvious: fewer biological deaths on your own side. Some civilisations are populated solely by AIs, generally because the machines have outlived their long-dead creators. They tend to be evasive about what, specifically, caused that extinction.",
         "icon": "robot-helmet",
         "units": [
           {
@@ -3325,6 +3367,7 @@ export const SETTINGS = [
         "n": 43,
         "name": "Extra-Dimensional Entities",
         "subtitle": "In Space, No-one Can Hear You Scream",
+        "lore": "What humans call reality is our subjective, three-dimensional understanding of the universe. Dimensions exist above, below, and parallel to our own, and the veil between them can be torn aside — exposing our world to the physical laws of another. Many such entities are benign, if incomprehensible. This detachment does not represent those.",
         "icon": "gooey-daemon",
         "units": [
           {
@@ -3379,6 +3422,7 @@ export const SETTINGS = [
         "n": 44,
         "name": "Enhanced Combat Squad",
         "subtitle": "Don't Be A Fool! Only An Army Could Have Done This…",
+        "lore": "Genetic engineering, cybernetic implantation, and intense training combine to create something beyond an ordinary soldier. Enhanced troopers can accurately engage multiple targets in the time it takes lesser warriors to shoot once. They are most often fielded in small, specialised squads that strike at critical infrastructure and command.",
         "icon": "mailed-fist",
         "units": [
           {
