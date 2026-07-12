@@ -1777,6 +1777,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Special Forces Operators",
+            "notes": "The best-trained soldiers money can produce, with kit that cost more than a small country's defence budget. They know it. You can tell.",
             "points": 7,
             "options": [
               "fire-support"
@@ -1789,6 +1790,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 2,
             "label": "Infantry Fire Team",
+            "notes": "Professionals who've been to every war of the last decade. They move well, shoot first, and don't ask questions about the objective.",
             "points": 5,
             "options": [
               "heavy-weapon",
@@ -1800,6 +1802,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Guided Missile Team",
+            "notes": "The last line of argument when the target is armoured, elevated, or otherwise unwilling to cooperate. They have never missed a vehicle they wanted to stop.",
             "points": 7,
             "options": [
               "anti-tank"
@@ -1818,6 +1821,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 1,
             "label": "Elite Republican Guard",
+            "notes": "Elite is doing some work in that title. They're the best of what's available. That's a lower bar than it sounds.",
             "points": 2,
             "options": [],
             "xenos": {}
@@ -1826,6 +1830,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 2,
             "label": "Conscripts",
+            "notes": "Pressed into service by a government that ran out of volunteers. Numerous. Enthusiasm is another matter.",
             "points": 4,
             "options": [
               "increased-squad",
@@ -1848,6 +1853,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 1,
             "label": "Private Military Contractors",
+            "notes": "Hired for the gap between what the army can officially do and what this particular operation requires. They ask no questions that aren't about the rate.",
             "points": 3,
             "options": [
               "heavy-weapon"
@@ -1860,6 +1866,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Ex-Soviet Tank",
+            "notes": "Old hardware maintained by people who've forgotten how some of the systems work. It still fires. It still moves. For now.",
             "points": 5,
             "options": [
               "green-crew"
@@ -1878,6 +1885,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 1,
             "label": "Warlord and Foreign Bodyguards",
+            "notes": "The Warlord holds territory through personality and the implied threat of the bodyguards. The bodyguards are held by their paycheck.",
             "points": 3,
             "options": [],
             "xenos": {
@@ -1888,6 +1896,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 4,
             "label": "Untrained Fighters Lacking Trigger Discipline",
+            "notes": "They have weapons. The weapons work. Everything after that is in the hands of whatever god watches over bystanders.",
             "points": 1,
             "options": [
               "increased-squad",
@@ -1900,6 +1909,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Foreign-trained Fighters with RPGs",
+            "notes": "Somewhere along the way, someone taught them properly. The RPGs help. A little discipline goes a long way.",
             "points": 4,
             "options": [
               "armour-piercing",
@@ -1911,6 +1921,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 2,
             "label": "Technical with MG",
+            "notes": "A pickup truck with a machine gun bolted to the bed. The simplest possible weapons platform. Historically very effective.",
             "points": 3,
             "options": [
               "technical"
@@ -1921,6 +1932,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 1,
             "label": "Technical with Recoilless Rifle",
+            "notes": "A step up from the MG technical, with a weapon that can stop armour at range. The driver treats every pothole as a personal affront.",
             "points": 5,
             "options": [
               "technical",
@@ -1940,6 +1952,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "PMC Commander",
+            "notes": "Runs the operation, takes the contract, and stays far enough back to maintain plausible deniability. Very well paid.",
             "points": 2,
             "options": [
               "assault-doctrine"
@@ -1952,6 +1965,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 2,
             "label": "Private Military Contractors",
+            "notes": "Ex-soldiers working for money instead of ideology. Reliable, professional, and completely loyal until the contract changes.",
             "points": 4,
             "options": [
               "assault-doctrine",
@@ -1965,6 +1979,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "PMC Mortar Team",
+            "notes": "Indirect fire for clients who want the capability without the paperwork of a state military. Available at scale, billed by the round.",
             "points": 5,
             "options": [
               "indirect-fire"
@@ -1977,6 +1992,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "PMC Snipers",
+            "notes": "Precision assets. The contract specifies the targets; the snipers handle the methodology. Both parties prefer it that way.",
             "points": 4,
             "options": [
               "sniper-team",
@@ -1990,6 +2006,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Ex-Special Forces PMCs",
+            "notes": "They left the military for the private sector because the money is better. Their skills are exactly what they were.",
             "points": 2,
             "options": [],
             "xenos": {
@@ -2001,6 +2018,7 @@ export const SETTINGS = [
             "typeId": "transport-vehicle",
             "count": 1,
             "label": "APC, One Careful Owner",
+            "notes": "Surplus military hardware acquired through channels that don't invite scrutiny. It runs, which is the main criterion.",
             "points": 2,
             "options": [
               "green-crew"
@@ -2021,6 +2039,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Veteran Insurgent Cell",
+            "notes": "They've been doing this long enough that the government stopped putting a price on their heads and started trying to recruit them.",
             "points": 2,
             "options": [],
             "xenos": {}
@@ -2029,6 +2048,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 3,
             "label": "Insurgent Cells",
+            "notes": "The backbone of the resistance — small, distributed, and harder to destroy than a conventional force because there is no centre to target.",
             "points": 1,
             "options": [
               "green"
@@ -2039,6 +2059,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Insurgent Cell with RPGs",
+            "notes": "The answer to armour, to fortified positions, and to the argument that insurgencies can't punch above their weight.",
             "points": 3,
             "options": [
               "guerrillas",
@@ -2050,6 +2071,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 2,
             "label": "Zealot Cells",
+            "notes": "Motivated by something beyond the politics. They don't negotiate. They don't defect. They make the veteran cells nervous.",
             "points": 2,
             "options": [],
             "xenos": {}
@@ -2058,6 +2080,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 1,
             "label": "Armed Mob",
+            "notes": "Not soldiers. Not insurgents in any organised sense. People with anger and weapons, which has always been sufficient.",
             "points": 2,
             "options": [
               "mob"
@@ -2068,6 +2091,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Insurgents Riding Off-road Motorbikes",
+            "notes": "Fast, quiet, and gone before the response arrives. They carry messages, weapons, and fighters. The roads are optional.",
             "points": 2,
             "options": [
               "mobile"
@@ -2078,6 +2102,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Home-made Mortars",
+            "notes": "Welded from pipe and fired by calculation and luck in roughly equal measure. They hit more often than the enemy would like.",
             "points": 4,
             "options": [
               "indirect-fire"
@@ -2090,6 +2115,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 1,
             "label": "Vehicle-borne IED",
+            "notes": "The logical extreme of asymmetric warfare — take one cheap vehicle, fill it with consequences, and point it at the problem.",
             "points": 4,
             "options": [],
             "xenos": {
@@ -2108,6 +2134,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Breach Team",
+            "notes": "The first ones through the door, before the situation is confirmed stable. They don't announce themselves.",
             "points": 9,
             "options": [
               "assault-doctrine",
@@ -2119,6 +2146,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Weapons Team",
+            "notes": "The firepower option for objectives that need a statement rather than a quiet resolution. Very good at statements.",
             "points": 8,
             "options": [
               "anti-tank",
@@ -2130,6 +2158,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Spotter Team",
+            "notes": "They find things, call in things, and remain invisible while doing both. The mission's success relies on them and everyone pretends otherwise.",
             "points": 7,
             "options": [
               "fire-support"
@@ -2150,6 +2179,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Elders",
+            "notes": "The commanders of the invasion, communicating in frequencies human instruments can't detect. They've been patient for a very long time.",
             "points": 8,
             "options": [
               "close-quarters"
@@ -2164,6 +2194,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Alien War Machine",
+            "notes": "Something between a vehicle and a weapons system, operating on principles no terrestrial engineer has reverse-engineered yet. Not for lack of trying.",
             "points": 12,
             "options": [
               "veteran-crew",
@@ -2178,6 +2209,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Grey Warriors",
+            "notes": "The combat arm of the invasion, silent and fast, operating on shared tactical awareness that makes individual command irrelevant.",
             "points": 4,
             "options": [
               "armour-piercing"
@@ -2198,6 +2230,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Ex-Handwerker Envoy",
+            "notes": "A human who made first contact and came back changed. Whether the knowledge they carry is a gift or an infection is an open question.",
             "points": 11,
             "options": [
               "super-heavy-armour",
@@ -2211,6 +2244,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 2,
             "label": "Collaborators",
+            "notes": "People who looked at what was coming and chose the winning side early. They tell themselves it was pragmatism.",
             "points": 5,
             "options": [
               "armour-piercing"
@@ -2224,6 +2258,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Rewarded Collaborators",
+            "notes": "Those whose early cooperation earned them something. What the aliens gave them, and what it cost, isn't something they discuss.",
             "points": 3,
             "options": [
               "close-quarters"
@@ -2261,6 +2296,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Troopers in Salvaged Power Armour",
+            "notes": "The armour predates the collapse. The troopers maintain it with parts cannibalized from whatever they can find. It works better than it has any right to.",
             "points": 5,
             "options": [],
             "xenos": {
@@ -2271,6 +2307,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 2,
             "label": "Armoured Troopers",
+            "notes": "The Order's rank and file — disciplined, equipped, and absolutely clear about who they're working for.",
             "points": 4,
             "options": [
               "increased-squad"
@@ -2281,6 +2318,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Flame Troopers",
+            "notes": "Deployed for clearing operations. The Order doesn't discuss what gets cleared.",
             "points": 3,
             "options": [
               "close-quarters",
@@ -2295,6 +2333,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Wasteland Rangers",
+            "notes": "Long-range scouts operating outside the Order's territory. They see the full extent of what was lost. They don't tell the others.",
             "points": 4,
             "options": [
               "veterans"
@@ -2305,6 +2344,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Restored Main Battle Tank",
+            "notes": "A pre-collapse armoured vehicle running again on jury-rigged systems. It's the Order's largest single bargaining chip, and they know it.",
             "points": 4,
             "options": [],
             "xenos": {
@@ -2324,6 +2364,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Those Worthy of the Arsenal",
+            "notes": "Warriors who've passed the trials and earned the right to bear pre-collapse weapons. They maintain them as sacred objects. They also use them.",
             "points": 5,
             "options": [],
             "xenos": {}
@@ -2332,6 +2373,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 2,
             "label": "Those Not Yet Worthy",
+            "notes": "Fighting to prove themselves, armed with whatever they've scavenged. The path to the Arsenal runs through combat. Most of them know that.",
             "points": 2,
             "options": [
               "increased-squad"
@@ -2342,6 +2384,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "The Blessed Type IV Fire Support Autonomous Combat Unit",
+            "notes": "A pre-collapse weapons platform that still functions. The Tech-Barbarians carry out rituals before activating it. They haven't worked out that the rituals don't help. The Type IV runs regardless.",
             "points": 10,
             "options": [
               "walker"
@@ -2355,6 +2398,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 1,
             "label": "The Beloved Heralds of Mutually Assured Destruction",
+            "notes": "Missiles that the Tech-Barbarians have learned to launch but not to target with precision. The blast radius doesn't require precision.",
             "points": 5,
             "options": [
               "mobile"
@@ -2376,6 +2420,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "The Warrior of the Wastes",
+            "notes": "The leader, driving something rebuilt from three different vehicles. They know every road in the waste. They've paved some of them with former enemies.",
             "points": 4,
             "options": [
               "veteran"
@@ -2386,6 +2431,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 1,
             "label": "The Warrior's Chariot",
+            "notes": "Custom-built and battle-scarred. It's faster than it looks and armoured better than it should be.",
             "points": 4,
             "options": [
               "improvised-armour",
@@ -2397,6 +2443,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "High Jackers",
+            "notes": "Their specialty is acquisition — specifically, taking other people's vehicles at speed. They're very skilled at this.",
             "points": 4,
             "options": [
               "demolitions"
@@ -2407,6 +2454,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Gun Bunnies",
+            "notes": "Riders without vehicles of their own, hitching wherever they can to get close enough to work. Useful in a fight. Marginally less so on the road.",
             "points": 1,
             "options": [],
             "xenos": {}
@@ -2415,6 +2463,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 1,
             "label": "Asphalt Vandals",
+            "notes": "They destroy roads, bridges, and infrastructure for fun and tactical advantage. The distinction between the two doesn't concern them.",
             "points": 3,
             "options": [
               "primitive-missiles"
@@ -2425,6 +2474,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 3,
             "label": "Custom Rides",
+            "notes": "Every vehicle in the column is different and every driver built their own. Optimised for the driver's style. They don't share parts.",
             "points": 2,
             "options": [
               "civilian",
@@ -2436,6 +2486,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 1,
             "label": "Terrors on Two Wheels",
+            "notes": "Motorcycle outriders who run ahead of the column to scout and harass. Fast, loud, and deliberately so.",
             "points": 2,
             "options": [
               "mobile",
@@ -2456,6 +2507,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 1,
             "label": "Police or Army Veterans",
+            "notes": "People who knew how the old world worked and have adapted that knowledge to the new one. They train the others, set the watch, and remember what was lost.",
             "points": 4,
             "options": [
               "heavy-weapon"
@@ -2466,6 +2518,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Sentries",
+            "notes": "The perimeter watch — rotated constantly, armed with whatever the community can spare, and responsible for everything outside the wire.",
             "points": 3,
             "options": [
               "increased-squad"
@@ -2476,6 +2529,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Scavenging Party",
+            "notes": "They go out into the ruins to find what the community needs. Every run is a calculation of what's worth risking. They've gotten good at the math.",
             "points": 2,
             "options": [],
             "xenos": {}
@@ -2484,6 +2538,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 1,
             "label": "Non-combatants",
+            "notes": "Children, elders, injured, people who can't fight but can do everything else. The community exists to protect them.",
             "points": 1,
             "options": [],
             "xenos": {}
@@ -2492,6 +2547,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 2,
             "label": "RV, Coach or Truck",
+            "notes": "The community's largest vehicle — a mobile refuge, supply carrier, and last resort. If it goes, the community follows or disperses.",
             "points": 5,
             "options": [
               "improvised-armour",
@@ -2503,6 +2559,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 2,
             "label": "Scavenged Car",
+            "notes": "Barely running, but running. Used for scouting, extraction, and anything that needs getting somewhere fast.",
             "points": 1,
             "options": [
               "civilian",
@@ -2515,6 +2572,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Outriders on Horses or Bikes",
+            "notes": "The community's mobile arm — ranging ahead, carrying messages, and keeping watch on approaches from a distance.",
             "points": 2,
             "options": [
               "mobile"
@@ -2533,6 +2591,7 @@ export const SETTINGS = [
             "typeId": "greater-xeno",
             "count": 1,
             "label": "The Monstrous Dead",
+            "notes": "Whatever this thing was before the collapse, it's larger now. The change wasn't kind to it. It isn't kind to anything it encounters.",
             "points": 5,
             "options": [],
             "xenos": {
@@ -2544,6 +2603,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 2,
             "label": "The Shambling Dead",
+            "notes": "The majority of the risen — slow, relentless, dangerous only in numbers. The numbers are not a problem they have.",
             "points": 3,
             "options": [
               "mob",
@@ -2558,6 +2618,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 2,
             "label": "The Shooting Dead",
+            "notes": "The ones that retained enough function to use a weapon. Nobody knows how. Nobody wants to get close enough to study it.",
             "points": 3,
             "options": [
               "mob"
@@ -2571,6 +2632,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 1,
             "label": "The Rising Dead",
+            "notes": "Something in the bite. Something in the water. The conversion is faster than anyone would prefer.",
             "points": 4,
             "options": [
               "increased-squad"
@@ -2585,6 +2647,7 @@ export const SETTINGS = [
             "typeId": "lesser-xeno",
             "count": 1,
             "label": "The Running Dead",
+            "notes": "Whatever kept them slow didn't keep them slow. These ones sprint. The survivors have stopped trying to explain it.",
             "points": 3,
             "options": [],
             "xenos": {
@@ -2604,6 +2667,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "The Angel",
+            "notes": "Something found in the ruins that the Disciples believe is divine. It radiates something. It follows something. Whatever it is, it protects its faithful.",
             "points": 12,
             "options": [],
             "xenos": {
@@ -2617,6 +2681,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "Zealots",
+            "notes": "True believers with absolute commitment and nothing left to lose. The Angel makes them fearless. The absence of fear is not always an advantage.",
             "points": 3,
             "options": [],
             "xenos": {
@@ -2627,6 +2692,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 1,
             "label": "Templars",
+            "notes": "The armed protectors of the faith — trained, equipped from pre-collapse stores, and utterly devoted. They are the Angel's sword.",
             "points": 8,
             "options": [
               "mob",
@@ -2640,6 +2706,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 1,
             "label": "Pilgrims",
+            "notes": "Those who've joined the procession but not yet been tested. They carry what they're given and follow where they're led.",
             "points": 1,
             "options": [],
             "xenos": {}
@@ -2656,6 +2723,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 1,
             "label": "The Children",
+            "notes": "Not literally children, though some of them are. The community calls its closest kin the Children — those who carry the most obvious marks of the change.",
             "points": 4,
             "options": [],
             "xenos": {
@@ -2667,6 +2735,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 1,
             "label": "The Fazakerley Siblings",
+            "notes": "Four of them, inseparable since before the collapse. Whatever the mutation did to their bodies, it didn't touch the bond between them. It may have strengthened it.",
             "points": 4,
             "options": [
               "assault-doctrine",
@@ -2680,6 +2749,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "The McGowan Clan",
+            "notes": "A family that's been in the wastes since before the collapse, gradually drifting further from baseline. Territorial, capable, and numerous.",
             "points": 5,
             "options": [
               "high-powered-blades"
@@ -2693,6 +2763,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Pa Cooper's Hunting Party",
+            "notes": "Old Cooper has been hunting the waste for thirty years. His party moves with him and no one else. What they bring back keeps the community fed.",
             "points": 5,
             "options": [],
             "xenos": {
@@ -2705,6 +2776,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Mama Gosling's Brood",
+            "notes": "Gosling herself is ancient by wasteland standards, and whatever she did to survive this long, some of it passed to the brood she raised. They're adaptable in ways that aren't entirely physical.",
             "points": 5,
             "options": [
               "mobile"
@@ -2736,6 +2808,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Captain, Ship's Officers, and One Nervous Ensign",
+            "notes": "The Captain will make first contact, negotiate under fire, and find a solution that satisfies everyone. The ensign will not have a good day.",
             "points": 8,
             "options": [
               "close-quarters",
@@ -2751,6 +2824,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 2,
             "label": "Security Team",
+            "notes": "There to protect the officers while they do the talking. Extensively trained. They spend most of their time standing still and looking composed.",
             "points": 4,
             "options": [],
             "xenos": {
@@ -2762,6 +2836,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 2,
             "label": "Science Team",
+            "notes": "They're here for the anomaly, the artefact, or the lifeform. The security situation is, from their perspective, an obstacle to fieldwork.",
             "points": 4,
             "options": [
               "close-quarters"
@@ -2784,6 +2859,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Centurions",
+            "notes": "The Empire's elite formations, named for a tradition they revere and a history they've rewritten. They're effective. That's the only measure the Empire applies.",
             "points": 9,
             "options": [
               "anti-tank"
@@ -2796,6 +2872,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 2,
             "label": "Principes",
+            "notes": "The core of the Imperial line, trained from youth and organised into formations designed to grind down everything in front of them.",
             "points": 2,
             "options": [],
             "xenos": {}
@@ -2804,6 +2881,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Hastati",
+            "notes": "Expendable screens and garrison troops. The Empire has a surplus. Most Hastati know this.",
             "points": 1,
             "options": [],
             "xenos": {}
@@ -2812,6 +2890,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "Penal Troopers High on Combat Drugs",
+            "notes": "Crime in the Empire is met with two options. One involves a cell. The other involves a combat stimulant and a dangerous assignment.",
             "points": 3,
             "options": [
               "increased-squad",
@@ -2825,6 +2904,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Triarius Infantry Support Walker",
+            "notes": "The Empire's answer to the question of what heavy fire support should look like when you have enough hubris and enough engineers. It's impressive. It's also a target.",
             "points": 7,
             "options": [
               "armour-piercing",
@@ -2846,6 +2926,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Marine Forlorn Hope",
+            "notes": "The first squad through the breach, before the situation is confirmed stable. The name is traditional. The attrition rate supports it.",
             "points": 9,
             "options": [
               "close-quarters",
@@ -2859,6 +2940,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "Marine Assault Squad",
+            "notes": "Combat-boarding specialists, trained for close-quarters work in zero gravity. They're very good at things that only matter in very specific terrible situations.",
             "points": 6,
             "options": [
               "even-heavier"
@@ -2869,6 +2951,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 3,
             "label": "Fleet Armsmen",
+            "notes": "The ship's own security contingent, deployed groundside when needed. Not marines. They know this. They've stopped minding.",
             "points": 3,
             "options": [
               "close-quarters"
@@ -2889,6 +2972,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "Raiders on Hover Boards or Jetbikes",
+            "notes": "Fast-attack harassment — hit the flanks, scatter the formation, take anything not bolted down, and leave before the response arrives.",
             "points": 6,
             "options": [
               "increased-squad",
@@ -2903,6 +2987,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Looters",
+            "notes": "The reason the Raiders bother with any of this. Once the shooting's done, the Looters move in and strip the site of anything with a market value.",
             "points": 4,
             "options": [
               "increased-squad",
@@ -2918,6 +3003,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "Dropship Reavers",
+            "notes": "They arrive via controlled crash, which tells you everything about the culture. The dropship is optional for the return trip.",
             "points": 3,
             "options": [
               "increased-squad"
@@ -2928,6 +3014,7 @@ export const SETTINGS = [
             "typeId": "transport-vehicle",
             "count": 1,
             "label": "Converted Cargo Shuttle",
+            "notes": "A ship built to move freight, now modified to move violence. The weapons are non-standard, the shielding is improvised, and it works better than it should.",
             "points": 8,
             "options": [
               "transport-10"
@@ -2941,6 +3028,7 @@ export const SETTINGS = [
             "typeId": "lesser-xeno",
             "count": 1,
             "label": "Barely-trained Beasts",
+            "notes": "Whatever these creatures are, they've been incompletely domesticated and pointed at the enemy. The domestication is the part that needs work.",
             "points": 3,
             "options": [],
             "xenos": {
@@ -2959,6 +3047,7 @@ export const SETTINGS = [
             "typeId": "greater-xeno",
             "count": 1,
             "label": "Queen",
+            "notes": "The singular intelligence that directs the swarm. She doesn't give orders. She is the orders. The colony exists as an extension of her will.",
             "points": 6,
             "options": [
               "demolitions"
@@ -2969,6 +3058,7 @@ export const SETTINGS = [
             "typeId": "lesser-xeno",
             "count": 3,
             "label": "Waves of Chitin",
+            "notes": "The swarm in mass formation — relentless, expendable, and moving with a collective purpose that individual courage cannot stop.",
             "points": 5,
             "options": [
               "swarm"
@@ -2981,6 +3071,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 1,
             "label": "Newborns",
+            "notes": "Fresh from the birthing chambers, already capable and already killing. The Queen doesn't waste energy on childhood.",
             "points": 3,
             "options": [
               "mob",
@@ -3002,6 +3093,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "Chief Riding Irritable Xeno Beast",
+            "notes": "The Chief leads from above the battle on an animal that views everything with violent suspicion. This inspires the warriors considerably.",
             "points": 4,
             "options": [
               "increased-squad",
@@ -3016,6 +3108,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 1,
             "label": "Mounted Warriors",
+            "notes": "Riders who grew up on their beasts and fight better mounted than most cultures fight on foot. Their weapons are pre-gunpowder. Their effectiveness is not.",
             "points": 5,
             "options": [
               "armoured",
@@ -3028,6 +3121,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 3,
             "label": "Warriors",
+            "notes": "Armed with the weapons of their tradition and vastly more effective with them than outsiders assume. The assumption is a mistake.",
             "points": 3,
             "options": [
               "mob"
@@ -3038,6 +3132,7 @@ export const SETTINGS = [
             "typeId": "lesser-xeno",
             "count": 2,
             "label": "Trained Beasts",
+            "notes": "Animals the tribe has worked with for generations. Trained is a relative term. Loyal is more accurate.",
             "points": 2,
             "options": [],
             "xenos": {}
@@ -3046,6 +3141,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Tribal Scouts with Traded Weapons",
+            "notes": "Ranging ahead of the tribe with weapons acquired through exchange with passing traders. They know their territory. They learn everything else.",
             "points": 2,
             "options": [],
             "xenos": {}
@@ -3062,6 +3158,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Command Node",
+            "notes": "A fragment of the original control architecture, still processing, still directing. It doesn't know how long it's been dormant. It doesn't consider this relevant.",
             "points": 7,
             "options": [
               "close-quarters"
@@ -3077,6 +3174,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "War Puppets",
+            "notes": "Autonomous combat platforms that predated most spacefaring civilisations. They were built to last. They did.",
             "points": 9,
             "options": [
               "super-heavy-armour"
@@ -3090,6 +3188,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Chromatic Orb",
+            "notes": "A weapons system whose operating principles were never recovered from the Ancient databases. It functions. How it functions is a question for a better-equipped research team.",
             "points": 8,
             "options": [],
             "xenos": {
@@ -3110,6 +3209,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 2,
             "label": "Security Teams",
+            "notes": "The ship's armed response, deployed whenever something needs securing and the crew would prefer not to discuss what that something is.",
             "points": 3,
             "options": [],
             "xenos": {
@@ -3120,6 +3220,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Medical Team",
+            "notes": "Here to heal. Currently in a situation where there is more healing required than they anticipated. They're managing.",
             "points": 3,
             "options": [
               "undisciplined"
@@ -3133,6 +3234,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Engineering Team",
+            "notes": "Their natural environment is a maintenance crawlspace. Outside of it, they have good tools, good instincts, and limited enthusiasm for being shot at.",
             "points": 2,
             "options": [
               "undisciplined"
@@ -3146,6 +3248,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 2,
             "label": "Security Robots",
+            "notes": "The ship's automated response units, operating on protocols last updated three captains ago. They are thorough. The protocols do not include discretion.",
             "points": 5,
             "options": [
               "armour-piercing",
@@ -3160,6 +3263,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 1,
             "label": "Crew Dependents and Escorts",
+            "notes": "They shouldn't be here. The mission profile didn't anticipate a situation where staying aboard was more dangerous than coming along.",
             "points": 3,
             "options": [
               "mob"
@@ -3180,6 +3284,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Avatar of the God Machine",
+            "notes": "The Machine's chosen instrument on the field — an autonomous platform carrying out the central intelligence's will with perfect efficiency and no capacity for mercy.",
             "points": 6,
             "options": [],
             "xenos": {
@@ -3190,6 +3295,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 3,
             "label": "Automata Combat Team",
+            "notes": "Standard-issue combat machines, produced in sufficient quantity that individual unit loss is within acceptable parameters. They know this. It doesn't affect their function.",
             "points": 4,
             "options": [
               "heavy-weapon"
@@ -3202,6 +3308,7 @@ export const SETTINGS = [
             "typeId": "lesser-xeno",
             "count": 1,
             "label": "Hunter-killer Machines",
+            "notes": "Built for pursuit and termination. They do not stop. They do not fatigue. The only variable is how long the target runs.",
             "points": 6,
             "options": [
               "swarm",
@@ -3224,6 +3331,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Demon King",
+            "notes": "Something that crossed from the other side and chose this dimension as its theatre. It has interests here. What they are, human cognition cannot fully hold.",
             "points": 12,
             "options": [
               "assault-doctrine"
@@ -3240,6 +3348,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 2,
             "label": "Lesser Demon Pack",
+            "notes": "The advance elements of the incursion, sent ahead to soften the environment. Lesser is a comparative term. They're still very difficult to kill.",
             "points": 3,
             "options": [
               "increased-squad",
@@ -3254,6 +3363,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 1,
             "label": "Reality Weaver",
+            "notes": "An entity that treats the local laws of physics as advisory. It doesn't break reality. It just suggests alternatives.",
             "points": 6,
             "options": [],
             "xenos": {
@@ -3275,6 +3385,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Sergeant Kasimir",
+            "notes": "The oldest member of the squad, which in enhanced terms means he's been through more augmentation cycles than the others. He commands by example. The example is usually violent.",
             "points": 9,
             "options": [
               "super-heavy-armour"
@@ -3287,6 +3398,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Troopers Andrei and Helkov",
+            "notes": "A pair who've fought together long enough to operate as a single tactical unit without communicating. Nobody's worked out if this is training or something the augmentation did.",
             "points": 6,
             "options": [
               "close-quarters"
@@ -3299,6 +3411,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Troopers Makropov and Validen",
+            "notes": "The squad's heavy element — more augmentation, more armour, more firepower. When the squad needs something stopped rather than outmaneuvered, these two handle it.",
             "points": 9,
             "options": [
               "anti-tank",
