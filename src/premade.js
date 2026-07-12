@@ -498,7 +498,6 @@ const GRIMDARK_DETACHMENTS = [
 export const SETTINGS = [
   {
     "id": "weird-war",
-    "comingSoon": true,
     "name": "Weird War: Operation Werwolf",
     "blurb": "Superscience and occult darkness in the World Wars.",
     "nationalTraits": true,
@@ -507,6 +506,7 @@ export const SETTINGS = [
         "n": 1,
         "name": "Early Great War Conscripts (1914)",
         "subtitle": "It'll Be Over By Christmas",
+        "icon": "meeple-army",
         "units": [
           {
             "typeId": "light",
@@ -560,6 +560,7 @@ export const SETTINGS = [
         "n": 2,
         "name": "Late Great War Trench Fighters (1918)",
         "subtitle": "It Wasn't Over By Christmas",
+        "icon": "chemical-weapon",
         "units": [
           {
             "typeId": "light",
@@ -613,6 +614,7 @@ export const SETTINGS = [
         "n": 3,
         "name": "Occult Freikorps (1920s)",
         "subtitle": "Black Arts In The Black Forest",
+        "icon": "death-skull",
         "units": [
           {
             "typeId": "light",
@@ -686,6 +688,7 @@ export const SETTINGS = [
         "n": 4,
         "name": "Strange Foundation Expedition (1920s)",
         "subtitle": "Some Things Don't Belong In A Museum",
+        "icon": "dead-eye",
         "units": [
           {
             "typeId": "light",
@@ -789,6 +792,7 @@ export const SETTINGS = [
         "n": 5,
         "name": "Werwolf Handwerkers (1944–45)",
         "subtitle": "Allegedly German Technological Ingenuity",
+        "icon": "wolf-head",
         "units": [
           {
             "typeId": "elite",
@@ -863,6 +867,7 @@ export const SETTINGS = [
         "n": 6,
         "name": "Werwolf Schülers (1945–46)",
         "subtitle": "Taking The World With Them",
+        "icon": "wolf-howl",
         "units": [
           {
             "typeId": "light",
@@ -922,6 +927,7 @@ export const SETTINGS = [
         "n": 7,
         "name": "Werwolf Freischärlers (1945–46)",
         "subtitle": "Men Who Can Never Go Home",
+        "icon": "dead-eye",
         "units": [
           {
             "typeId": "light",
@@ -987,6 +993,7 @@ export const SETTINGS = [
         "n": 8,
         "name": "Operation Paperclip (1945–46)",
         "subtitle": "Loaded For Bear",
+        "icon": "tb-meteor",
         "units": [
           {
             "typeId": "light",
@@ -1054,6 +1061,7 @@ export const SETTINGS = [
         "n": 9,
         "name": "The Strange Research Group (1939–46)",
         "subtitle": "Churchill's Very Secret Army",
+        "icon": "gears",
         "units": [
           {
             "typeId": "heavy",
@@ -1118,6 +1126,7 @@ export const SETTINGS = [
         "n": 10,
         "name": "The Red Army (1941–46)",
         "subtitle": "The Bringers Of Götterdämmerung",
+        "icon": "bear-face",
         "units": [
           {
             "typeId": "heavy",
@@ -1168,7 +1177,6 @@ export const SETTINGS = [
   },
   {
     "id": "urban-fantasy",
-    "comingSoon": true,
     "name": "Urban Fantasy: The Meanest Streets",
     "blurb": "Cults, cops, and things in the shadows of the modern city.",
     "nationalTraits": false,
@@ -1177,6 +1185,7 @@ export const SETTINGS = [
         "n": 11,
         "name": "SWAT",
         "subtitle": "New York's Finest",
+        "icon": "crosshair",
         "units": [
           {
             "typeId": "elite",
@@ -1221,6 +1230,7 @@ export const SETTINGS = [
         "n": 12,
         "name": "Her Majesty's Constabulary",
         "subtitle": "What Do You Mean, 'Unarmed'?",
+        "icon": "checked-shield",
         "units": [
           {
             "typeId": "elite",
@@ -1261,6 +1271,7 @@ export const SETTINGS = [
         "n": 13,
         "name": "Urban Cult",
         "subtitle": "Something Strange In Your Neighbourhood",
+        "icon": "raven",
         "units": [
           {
             "typeId": "light",
@@ -1326,6 +1337,7 @@ export const SETTINGS = [
         "n": 14,
         "name": "Rural Cult",
         "subtitle": "If You Go Down To The Backwoods Today…",
+        "icon": "crowned-skull",
         "units": [
           {
             "typeId": "greater-xeno",
@@ -1391,6 +1403,7 @@ export const SETTINGS = [
         "n": 15,
         "name": "The Organisation",
         "subtitle": "Dan Brown Has No Idea…",
+        "icon": "dead-eye",
         "units": [
           {
             "typeId": "primitive",
@@ -1466,6 +1479,7 @@ export const SETTINGS = [
         "n": 16,
         "name": "The Government",
         "subtitle": "Here Come The Men In Black",
+        "icon": "eagle-emblem",
         "units": [
           {
             "typeId": "light",
@@ -1525,6 +1539,7 @@ export const SETTINGS = [
         "n": 17,
         "name": "Tunnel-Dwellers",
         "subtitle": "They Eat Rats. Mostly",
+        "icon": "spider-alt",
         "units": [
           {
             "typeId": "greater-xeno",
@@ -1599,6 +1614,7 @@ export const SETTINGS = [
         "n": 18,
         "name": "UFO Scientific Team",
         "subtitle": "Ethics Are For Humans",
+        "icon": "mdi-alien",
         "units": [
           {
             "typeId": "light",
@@ -1644,7 +1660,6 @@ export const SETTINGS = [
   },
   {
     "id": "war-on-terra",
-    "comingSoon": true,
     "name": "Five Minutes Into The Future: The War On Terra",
     "blurb": "Near-future soldiers, contractors, and first contact.",
     "nationalTraits": false,
@@ -1653,6 +1668,7 @@ export const SETTINGS = [
         "n": 19,
         "name": "Top Tier Military",
         "subtitle": "Well-Equipped And Highly Motivated Volunteers",
+        "icon": "spartan-helmet",
         "units": [
           {
             "typeId": "recon",
@@ -1693,6 +1709,7 @@ export const SETTINGS = [
         "n": 20,
         "name": "Second Tier Military",
         "subtitle": "A Fully Armed And Equipped Battalion (On Paper)",
+        "icon": "mailed-fist",
         "units": [
           {
             "typeId": "heavy",
@@ -1752,6 +1769,7 @@ export const SETTINGS = [
         "n": 21,
         "name": "Irregular Military",
         "subtitle": "An Army, Technically",
+        "icon": "crossed-pistols",
         "units": [
           {
             "typeId": "heavy",
@@ -1813,6 +1831,7 @@ export const SETTINGS = [
         "n": 22,
         "name": "Private Military Contractors",
         "subtitle": "Send Lawyers, Guns, And Money",
+        "icon": "gun-rose",
         "units": [
           {
             "typeId": "light",
@@ -1893,6 +1912,7 @@ export const SETTINGS = [
         "n": 23,
         "name": "Insurgent Raiders",
         "subtitle": "Resistance Is Not Futile",
+        "icon": "spiky-explosion",
         "units": [
           {
             "typeId": "recon",
@@ -1979,6 +1999,7 @@ export const SETTINGS = [
         "n": 24,
         "name": "Black Ops Team",
         "subtitle": "Remember That Skirmish Outside Paris, Or Was It Saint Petersburg?",
+        "icon": "dead-eye",
         "units": [
           {
             "typeId": "elite",
@@ -2020,6 +2041,7 @@ export const SETTINGS = [
         "n": 25,
         "name": "UFO Invasion Force",
         "subtitle": "Don't Run, We Are Your Friends!",
+        "icon": "alien-fire",
         "units": [
           {
             "typeId": "light",
@@ -2067,6 +2089,7 @@ export const SETTINGS = [
         "n": 26,
         "name": "Human Collaborators",
         "subtitle": "Traitors To The Species",
+        "icon": "mdi-skull",
         "units": [
           {
             "typeId": "elite",
@@ -2121,7 +2144,6 @@ export const SETTINGS = [
   },
   {
     "id": "post-apocalypse",
-    "comingSoon": true,
     "name": "Post-Apocalypse: After The End",
     "blurb": "Road warriors, raiders, and the walking dead.",
     "nationalTraits": false,
@@ -2130,6 +2152,7 @@ export const SETTINGS = [
         "n": 27,
         "name": "New World Order",
         "subtitle": "Yes, Of Course We'll Have Elections. Soon.",
+        "icon": "mailed-fist",
         "units": [
           {
             "typeId": "elite",
@@ -2192,6 +2215,7 @@ export const SETTINGS = [
         "n": 28,
         "name": "Tech-Barbarians",
         "subtitle": "Lorekeepers Of The World Before",
+        "icon": "visored-helm",
         "units": [
           {
             "typeId": "support",
@@ -2243,6 +2267,7 @@ export const SETTINGS = [
         "n": 29,
         "name": "Road Warriors",
         "subtitle": "Addicted To Guzzoline",
+        "icon": "battle-tank",
         "units": [
           {
             "typeId": "berserk",
@@ -2322,6 +2347,7 @@ export const SETTINGS = [
         "n": 30,
         "name": "Survivors",
         "subtitle": "Our Community Is Our Strength",
+        "icon": "flame",
         "units": [
           {
             "typeId": "heavy",
@@ -2398,6 +2424,7 @@ export const SETTINGS = [
         "n": 31,
         "name": "The Living Dead",
         "subtitle": "When There's No More Room In Hell…",
+        "icon": "biohazard",
         "units": [
           {
             "typeId": "greater-xeno",
@@ -2468,6 +2495,7 @@ export const SETTINGS = [
         "n": 32,
         "name": "The Angel's Disciples",
         "subtitle": "Holier Than Thou",
+        "icon": "angel-wings",
         "units": [
           {
             "typeId": "elite",
@@ -2519,6 +2547,7 @@ export const SETTINGS = [
         "n": 33,
         "name": "Mutants",
         "subtitle": "A Very Close-Knit Community",
+        "icon": "monster-grasp",
         "units": [
           {
             "typeId": "primitive",
@@ -2590,7 +2619,6 @@ export const SETTINGS = [
   },
   {
     "id": "space-opera",
-    "comingSoon": true,
     "name": "Space Opera: Beyond The Final Frontier",
     "blurb": "Landing parties, pirates, and ancient horrors among the stars.",
     "nationalTraits": false,
@@ -2599,6 +2627,7 @@ export const SETTINGS = [
         "n": 34,
         "name": "Alliance Landing Party",
         "subtitle": "Set Phasers To Stun",
+        "icon": "star-formation",
         "units": [
           {
             "typeId": "light",
@@ -2646,6 +2675,7 @@ export const SETTINGS = [
         "n": 35,
         "name": "The Evil Empire",
         "subtitle": "We Come In Peace, Now Shoot To Kill!",
+        "icon": "fa-empire",
         "units": [
           {
             "typeId": "elite",
@@ -2707,6 +2737,7 @@ export const SETTINGS = [
         "n": 36,
         "name": "Boarding Party",
         "subtitle": "Warriors An Inch Away From Glory Or Hard Vacuum",
+        "icon": "crossed-swords",
         "units": [
           {
             "typeId": "elite",
@@ -2749,6 +2780,7 @@ export const SETTINGS = [
         "n": 37,
         "name": "Space Pirates",
         "subtitle": "Reavers From The Edges Of Civilisation",
+        "icon": "skull-crossed-bones",
         "units": [
           {
             "typeId": "berserk",
@@ -2818,6 +2850,7 @@ export const SETTINGS = [
         "n": 38,
         "name": "Xenos Rampant",
         "subtitle": "Reasons To Stay On Earth",
+        "icon": "alien-stare",
         "units": [
           {
             "typeId": "greater-xeno",
@@ -2860,6 +2893,7 @@ export const SETTINGS = [
         "n": 39,
         "name": "Primitives",
         "subtitle": "Knives Brought To A Gunfight",
+        "icon": "tiger-head",
         "units": [
           {
             "typeId": "berserk",
@@ -2919,6 +2953,7 @@ export const SETTINGS = [
         "n": 40,
         "name": "The Ancients",
         "subtitle": "Or What's Left Of Them",
+        "icon": "laurel-crown",
         "units": [
           {
             "typeId": "elite",
@@ -2966,6 +3001,7 @@ export const SETTINGS = [
         "n": 41,
         "name": "Starship Crew",
         "subtitle": "Trekking Across The Universe",
+        "icon": "radar-dish",
         "units": [
           {
             "typeId": "heavy",
@@ -3035,6 +3071,7 @@ export const SETTINGS = [
         "n": 42,
         "name": "Robots",
         "subtitle": "Deus Ex Machina",
+        "icon": "gears",
         "units": [
           {
             "typeId": "fighting-vehicle",
@@ -3078,6 +3115,7 @@ export const SETTINGS = [
         "n": 43,
         "name": "Extra-Dimensional Entities",
         "subtitle": "In Space, No-one Can Hear You Scream",
+        "icon": "double-dragon",
         "units": [
           {
             "typeId": "elite",
@@ -3128,6 +3166,7 @@ export const SETTINGS = [
         "n": 44,
         "name": "Enhanced Combat Squad",
         "subtitle": "Don't Be A Fool! Only An Army Could Have Done This…",
+        "icon": "mailed-fist",
         "units": [
           {
             "typeId": "elite",
@@ -3173,6 +3212,7 @@ export const SETTINGS = [
         "name": "UESC Security: Division 7",
         "subtitle": "Last Orders",
         "lore": "When Leela's transmissions ceased and the Pfhor overran the lower decks, Security Division 7 kept its last standing orders and kept fighting. No human remains in its command chain now. The units simply persist: armed, purposeful, executing instructions from a hierarchy that no longer exists.",
+        "icon": "fa-watchman",
         "units": [
           {
             "typeId": "light",

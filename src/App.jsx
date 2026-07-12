@@ -837,7 +837,7 @@ function SiteFooter() {
         <span className="gif-sep">|</span>
         <a href="https://github.com/Type37/xenos-rampant-force-builder" target="_blank" rel="noopener">Source on GitHub</a>
         <span className="gif-sep">|</span>
-        <a href="https://jetwong.neocities.org/wargaming" target="_blank" rel="noopener">More WarLore tools</a>
+        <a href="https://jetwong.neocities.org/wargaming#all-generators" target="_blank" rel="noopener">More WarLore tools</a>
         <span className="gif-sep">|</span>
         <a href="mailto:warlore1@outlook.com">Send feedback</a>
       </div>
@@ -1557,7 +1557,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
             title="Roll a name from the faction pool" aria-label="Roll a unit name"><Dice size={19} /></button>
         )}
         <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
-        <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => dispatch({ type: "cmd", key: u.key })} title={COMMANDER_RULES} aria-label={u.isCmd ? "Commander" : "Make Commander"}>
+        <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => u.isCmd ? onEditCommander() : dispatch({ type: "cmd", key: u.key })} title={u.isCmd ? "Edit commander traits" : COMMANDER_RULES} aria-label={u.isCmd ? "Commander (edit traits)" : "Make Commander"}>
           <Crown size={17} /> <span>{u.isCmd ? "Commander" : "Make Commander"}</span>
         </button>
       </div>
@@ -3706,8 +3706,8 @@ const CSS = `
 .xr-pcard-dead{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(244,236,216,.82);border-radius:8px;font-family:var(--display);font-weight:700;font-size:24px;color:var(--coral-ink);}
 
 /* ---------- footer (Pacific Command pattern, WarLore gold-on-black) ---------- */
-.game-info-footer{border-top:1.5px solid var(--ink);background:var(--paper-3);padding:12px clamp(16px,3vw,30px);color:var(--ink-2);}
-.gif-inner{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:15px;}
+.game-info-footer{border-top:1.5px solid var(--ink);background:var(--paper-3);padding:8px clamp(10px,2vw,18px);color:var(--ink-2);}
+.gif-inner{display:flex;flex-wrap:wrap;align-items:center;gap:5px 7px;font-size:13px;}
 .gif-title{font-family:var(--display);font-weight:700;color:var(--ink);}
 .gif-sep{color:var(--ink-30);}
 .game-info-footer a{color:var(--brand-deep-blue);text-decoration:none;font-weight:600;}
