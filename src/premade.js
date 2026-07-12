@@ -1912,7 +1912,7 @@ export const SETTINGS = [
         "n": 23,
         "name": "Insurgent Raiders",
         "subtitle": "Resistance Is Not Futile",
-        "icon": "spiky-explosion",
+        "icon": "black-flag",
         "units": [
           {
             "typeId": "recon",
@@ -1999,7 +1999,7 @@ export const SETTINGS = [
         "n": 24,
         "name": "Black Ops Team",
         "subtitle": "Remember That Skirmish Outside Paris, Or Was It Saint Petersburg?",
-        "icon": "dead-eye",
+        "icon": "cloak-dagger",
         "units": [
           {
             "typeId": "elite",
@@ -2627,7 +2627,7 @@ export const SETTINGS = [
         "n": 34,
         "name": "Alliance Landing Party",
         "subtitle": "Set Phasers To Stun",
-        "icon": "star-formation",
+        "icon": "astronaut-helmet",
         "units": [
           {
             "typeId": "light",
@@ -2850,7 +2850,7 @@ export const SETTINGS = [
         "n": 38,
         "name": "Xenos Rampant",
         "subtitle": "Reasons To Stay On Earth",
-        "icon": "alien-stare",
+        "icon": "hive-mind",
         "units": [
           {
             "typeId": "greater-xeno",
@@ -2953,7 +2953,7 @@ export const SETTINGS = [
         "n": 40,
         "name": "The Ancients",
         "subtitle": "Or What's Left Of Them",
-        "icon": "laurel-crown",
+        "icon": "all-seeing-eye",
         "units": [
           {
             "typeId": "elite",
@@ -3071,7 +3071,7 @@ export const SETTINGS = [
         "n": 42,
         "name": "Robots",
         "subtitle": "Deus Ex Machina",
-        "icon": "gears",
+        "icon": "robot-helmet",
         "units": [
           {
             "typeId": "fighting-vehicle",
@@ -3115,7 +3115,7 @@ export const SETTINGS = [
         "n": 43,
         "name": "Extra-Dimensional Entities",
         "subtitle": "In Space, No-one Can Hear You Scream",
-        "icon": "double-dragon",
+        "icon": "gooey-daemon",
         "units": [
           {
             "typeId": "elite",

@@ -58,6 +58,9 @@ import giPlasmaBolt from "@iconify-icons/game-icons/plasma-bolt";
 import giGhost from "@iconify-icons/game-icons/ghost";
 import giRobotHelmet from "@iconify-icons/game-icons/robot-helmet";
 import giTrackedRobot from "@iconify-icons/game-icons/tracked-robot";
+import giBlackFlag from "@iconify-icons/game-icons/black-flag";
+import giCloakDagger from "@iconify-icons/game-icons/cloak-dagger";
+import giAllSeeingEye from "@iconify-icons/game-icons/all-seeing-eye";
 import giDoubleDragon from "@iconify-icons/game-icons/double-dragon";
 import giDragonSpiral from "@iconify-icons/game-icons/dragon-spiral";
 import giMonsterGrasp from "@iconify-icons/game-icons/monster-grasp";
@@ -150,9 +153,9 @@ import icExport from "@iconify-icons/ph/export-fill";
 import icAlert from "@iconify-icons/ph/warning-circle-fill";
 import icGrip from "@iconify-icons/ph/dots-six-vertical";
 /* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
-import icoAttack from "./assets/stat/defence.png";
+import icoAttack from "./assets/stat/attack.png";
 import icoMove from "./assets/stat/move.png";
-import icoShoot from "./assets/stat/crosshair.svg";
+import icoShoot from "./assets/stat/shoot.png";
 import icoCourage from "./assets/stat/courage.png";
 import icoDefence from "./assets/stat/defence.png";
 import icoArmour from "./assets/stat/armour.png";
@@ -238,6 +241,8 @@ const DETACH_ICON_LIST = [
   { id: "heavy-fighter", C: mk(giHeavyFighter) }, { id: "plasma-bolt", C: mk(giPlasmaBolt) },
   { id: "ghost", C: mk(giGhost) }, { id: "robot-helmet", C: mk(giRobotHelmet) },
   { id: "tracked-robot", C: mk(giTrackedRobot) },
+  { id: "black-flag", C: mk(giBlackFlag) }, { id: "cloak-dagger", C: mk(giCloakDagger) },
+  { id: "all-seeing-eye", C: mk(giAllSeeingEye) },
   { id: "mdi-skull", C: mk(miSkull) }, { id: "mdi-crosshair", C: mk(miCrosshair) },
   { id: "mdi-cross", C: mk(miCross) }, { id: "mdi-knight", C: mk(miKnight) },
   { id: "mdi-alien", C: mk(miAlien) }, { id: "tb-meteor", C: mk(tbMeteor) },
