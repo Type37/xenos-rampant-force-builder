@@ -61,6 +61,23 @@ import giTrackedRobot from "@iconify-icons/game-icons/tracked-robot";
 import giBlackFlag from "@iconify-icons/game-icons/black-flag";
 import giCloakDagger from "@iconify-icons/game-icons/cloak-dagger";
 import giAllSeeingEye from "@iconify-icons/game-icons/all-seeing-eye";
+import giPickelhaube from "@iconify-icons/game-icons/pickelhaube";
+import giStalhelm from "@iconify-icons/game-icons/stahlhelm";
+import giMoon from "@iconify-icons/game-icons/moon";
+import giCompass from "@iconify-icons/game-icons/compass";
+import giIronCross from "@iconify-icons/game-icons/iron-cross";
+import giBalkenkreuz from "@iconify-icons/game-icons/balkenkreuz";
+import giUsaFlag from "@iconify-icons/game-icons/usa-flag";
+import giUnionJack from "@iconify-icons/game-icons/union-jack";
+import giHammerSickle from "@iconify-icons/game-icons/hammer-sickle";
+import giRiotShield from "@iconify-icons/game-icons/riot-shield";
+import giCustodianHelmet from "@iconify-icons/game-icons/custodian-helmet";
+import giMagicPalm from "@iconify-icons/game-icons/magic-palm";
+import giMagicShield from "@iconify-icons/game-icons/magic-shield";
+import giTemplarHeart from "@iconify-icons/game-icons/templar-heart";
+import giSunglasses from "@iconify-icons/game-icons/sunglasses";
+import giRat from "@iconify-icons/game-icons/rat";
+import giCrackedAlienSkull from "@iconify-icons/game-icons/cracked-alien-skull";
 import giDoubleDragon from "@iconify-icons/game-icons/double-dragon";
 import giDragonSpiral from "@iconify-icons/game-icons/dragon-spiral";
 import giMonsterGrasp from "@iconify-icons/game-icons/monster-grasp";
@@ -243,6 +260,15 @@ const DETACH_ICON_LIST = [
   { id: "tracked-robot", C: mk(giTrackedRobot) },
   { id: "black-flag", C: mk(giBlackFlag) }, { id: "cloak-dagger", C: mk(giCloakDagger) },
   { id: "all-seeing-eye", C: mk(giAllSeeingEye) },
+  { id: "pickelhaube", C: mk(giPickelhaube) }, { id: "stahlhelm", C: mk(giStalhelm) },
+  { id: "moon", C: mk(giMoon) }, { id: "compass", C: mk(giCompass) },
+  { id: "iron-cross", C: mk(giIronCross) }, { id: "balkenkreuz", C: mk(giBalkenkreuz) },
+  { id: "usa-flag", C: mk(giUsaFlag) }, { id: "union-jack", C: mk(giUnionJack) },
+  { id: "hammer-sickle", C: mk(giHammerSickle) }, { id: "riot-shield", C: mk(giRiotShield) },
+  { id: "custodian-helmet", C: mk(giCustodianHelmet) }, { id: "magic-palm", C: mk(giMagicPalm) },
+  { id: "magic-shield", C: mk(giMagicShield) }, { id: "templar-heart", C: mk(giTemplarHeart) },
+  { id: "sunglasses", C: mk(giSunglasses) }, { id: "rat", C: mk(giRat) },
+  { id: "cracked-alien-skull", C: mk(giCrackedAlienSkull) },
   { id: "mdi-skull", C: mk(miSkull) }, { id: "mdi-crosshair", C: mk(miCrosshair) },
   { id: "mdi-cross", C: mk(miCross) }, { id: "mdi-knight", C: mk(miKnight) },
   { id: "mdi-alien", C: mk(miAlien) }, { id: "tb-meteor", C: mk(tbMeteor) },
@@ -1029,10 +1055,10 @@ function BudgetPicker({ budget, onChange }) {
 }
 
 /* renders a detachment's picture: an uploaded image or a chosen badge icon */
-function DetachIcon({ list, size = 26, className }) {
-  if (list && list.image) return <span className={className} style={{ backgroundImage: `url(${list.image})` }} aria-hidden="true" />;
+function DetachIcon({ list, size = 26, className, style }) {
+  if (list && list.image) return <span className={className} style={{ backgroundImage: `url(${list.image})`, ...style }} aria-hidden="true" />;
   const Ico = list && list.icon && DETACH_ICON_BY_ID[list.icon];
-  if (Ico) return <span className={`${className || ""} xr-dicon-glyph`} aria-hidden="true"><Ico size={size} /></span>;
+  if (Ico) return <span className={`${className || ""} xr-dicon-glyph`} style={style} aria-hidden="true"><Ico size={size} /></span>;
   return null;
 }
 
@@ -1202,7 +1228,7 @@ function LoadPresetModal({ onLoad, onClose }) {
             <div className="xr-preset-grid">
               {setting.detachments.map((d) => (
                 <button className="xr-preset-card" key={d.n} onClick={() => onLoad(d, setting)}>
-                  {(d.image || d.icon) && <DetachIcon list={d.image ? { image: `${FACTION_BASE}${d.image}` } : d} size={42} className="xr-preset-img" />}
+                  {(d.image || d.icon) && <DetachIcon list={d.image ? { image: `${FACTION_BASE}${d.image}` } : d} size={42} className="xr-preset-img" style={d.badge ? { background: d.badge.bg, color: d.badge.fg } : undefined} />}
                   <span className="xr-preset-name">{d.name}</span>
                   {d.subtitle && <span className="xr-preset-sub">{d.subtitle}</span>}
                   <span className="xr-preset-foot">

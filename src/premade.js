@@ -506,12 +506,13 @@ export const SETTINGS = [
         "n": 1,
         "name": "Early Great War Conscripts (1914)",
         "subtitle": "It'll Be Over By Christmas",
-        "icon": "meeple-army",
+        "icon": "pickelhaube",
         "units": [
           {
             "typeId": "light",
             "count": 1,
             "label": "Platoon Major and Staff",
+            "notes": "An officer from the old army, trained for a war of manoeuvre, now commanding men in trenches he never imagined. His staff work hard to look useful.",
             "points": 1,
             "options": [],
             "xenos": {}
@@ -520,6 +521,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 4,
             "label": "Infantry Group",
+            "notes": "Mobilised from farms and factories across the Empire. Most had never left their village. None of them imagined this.",
             "points": 2,
             "options": [
               "increased-squad",
@@ -531,6 +533,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Jaegers",
+            "notes": "Hunters before the war, they brought those skills to the front. They move quietly and shoot first.",
             "points": 2,
             "options": [],
             "xenos": {}
@@ -539,6 +542,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 2,
             "label": "Uhlan or Hussar Cavalry Troop",
+            "notes": "The cavalry's role on the Western Front lasted about six weeks before the wire and the machine guns made clear what century this war was. These men haven't been told.",
             "points": 4,
             "options": [
               "increased-squad",
@@ -550,6 +554,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Heavy Machine Gun Team",
+            "notes": "The Maxim requires four men to operate and one to mourn what it does. The gunner rarely looks up from the sights.",
             "points": 5,
             "options": [],
             "xenos": {}
@@ -560,12 +565,13 @@ export const SETTINGS = [
         "n": 2,
         "name": "Late Great War Trench Fighters (1918)",
         "subtitle": "It Wasn't Over By Christmas",
-        "icon": "chemical-weapon",
+        "icon": "stahlhelm",
         "units": [
           {
             "typeId": "light",
             "count": 1,
             "label": "Stosstruppen Group",
+            "notes": "Trained to bypass strongpoints and push deep into enemy lines. The Stormtroopers were the best-adapted soldiers of a war that killed everyone who couldn't adapt fast enough.",
             "points": 5,
             "options": [
               "increased-squad",
@@ -577,6 +583,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 2,
             "label": "Infantry Group",
+            "notes": "Four years in the trenches leave marks that don't wash off. These men are frightened of nothing because they've seen everything.",
             "points": 5,
             "options": [
               "increased-squad",
@@ -588,6 +595,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Anti-Tank Rifle Group",
+            "notes": "The tank arrived and the infantry had no answer. So they made one. It's heavy, awkward, and dangerous to fire. It works.",
             "points": 6,
             "options": [
               "armour-piercing"
@@ -598,6 +606,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Beutepanzerwagen (captured British Mark IV tank)",
+            "notes": "Captured, repaired, repainted, and driven back into battle by men who've never read the manual. It runs. Mostly.",
             "points": 3,
             "options": [
               "anti-personnel",
@@ -614,12 +623,14 @@ export const SETTINGS = [
         "n": 3,
         "name": "Occult Freikorps (1920s)",
         "subtitle": "Black Arts In The Black Forest",
-        "icon": "death-skull",
+        "icon": "moon",
+        "badge": { "bg": "#464f43", "fg": "#b5c4ac" },
         "units": [
           {
             "typeId": "light",
             "count": 1,
             "label": "Schüler or Hexe",
+            "notes": "The Freikorps' dark heart — a student of arts the university will never teach, or a woman who learned the old knowledge in the old way. Either is dangerous.",
             "points": 3,
             "options": [],
             "xenos": {
@@ -630,6 +641,7 @@ export const SETTINGS = [
             "typeId": "greater-xeno",
             "count": 1,
             "label": "Waldwächter",
+            "notes": "The forests of Germany are old. The things that guard them are older. The Freikorps didn't summon the Waldwächter — they simply stopped driving it away.",
             "points": 5,
             "options": [],
             "xenos": {
@@ -641,6 +653,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 2,
             "label": "Waldkinder",
+            "notes": "Half-seen shapes between the trees, neither child nor spirit. They follow the Freikorps not out of loyalty, but because the Schüler knows which words to say.",
             "points": 3,
             "options": [
               "savages",
@@ -656,6 +669,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 2,
             "label": "Cultist Coven",
+            "notes": "Men and women who found the old religion waiting for them in the chaos of the Republic. They believe. That is what makes them useful.",
             "points": 2,
             "options": [
               "guerrillas"
@@ -666,6 +680,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Cultist Coven with a Machine Gun",
+            "notes": "The old faith has been updated for the new century. The Mauser is a sacrament. The machine gun is a high altar.",
             "points": 5,
             "options": [],
             "xenos": {}
@@ -674,6 +689,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 1,
             "label": "Moorkörper",
+            "notes": "The bogs have been swallowing people since before recorded history. When the right words are spoken, some of them come back.",
             "points": 1,
             "options": [
               "ravenous-horde"
@@ -688,12 +704,14 @@ export const SETTINGS = [
         "n": 4,
         "name": "Strange Foundation Expedition (1920s)",
         "subtitle": "Some Things Don't Belong In A Museum",
-        "icon": "dead-eye",
+        "icon": "compass",
+        "badge": { "bg": "#1b3a6b", "fg": "#9dc4e8" },
         "units": [
           {
             "typeId": "light",
             "count": 1,
             "label": "Strange Foundation Researchers",
+            "notes": "Academics with more curiosity than caution. They're here to document, catalogue, and ideally not die. Two out of three is considered a good expedition.",
             "points": 2,
             "options": [
               "close-quarters"
@@ -707,6 +725,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Adventurous Mercenaries",
+            "notes": "Hired for their rifle skills and their willingness not to ask questions about the cargo. They've stopped asking questions entirely.",
             "points": 2,
             "options": [
               "heavy-weapon"
@@ -719,6 +738,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Mercenary Adventurers",
+            "notes": "They've been on enough expeditions to know what the warning signs look like. They're still here, which says something about either their luck or their judgement.",
             "points": 2,
             "options": [
               "increased-squad"
@@ -731,6 +751,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Mercenary Horsemen",
+            "notes": "Cavalry escort for the survey teams, hauling equipment through terrain no truck can manage. They've seen things in the hills that don't make it into the reports.",
             "points": 1,
             "options": [
               "mobile"
@@ -743,6 +764,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 2,
             "label": "Local Work Crews or Luggage Bearers",
+            "notes": "Hired in the nearest settlement for wages and promises. They know the local stories. They are not paid enough.",
             "points": 2,
             "options": [
               "mob",
@@ -754,6 +776,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Unreliable Local Guards",
+            "notes": "Armed, present, and with divided loyalties the Foundation pretends not to notice. They know something about the site. They won't say what.",
             "points": 2,
             "options": [
               "increased-squad",
@@ -765,6 +788,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 3,
             "label": "Cargo Trucks",
+            "notes": "The Foundation ships crates that don't appear on the manifest. The trucks carry them. The drivers don't open them.",
             "points": 2,
             "options": [
               "civilian",
@@ -778,6 +802,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Mysterious Gunmen Wearing Fezzes",
+            "notes": "Who they work for is never established. They appear when certain items surface, handle their business efficiently, and leave. The Foundation has stopped trying to follow them.",
             "points": 5,
             "options": [],
             "xenos": {
@@ -792,12 +817,14 @@ export const SETTINGS = [
         "n": 5,
         "name": "Werwolf Handwerkers (1944–45)",
         "subtitle": "Allegedly German Technological Ingenuity",
-        "icon": "wolf-head",
+        "icon": "iron-cross",
+        "badge": { "bg": "#6b0000", "fg": "#0a0a0a" },
         "units": [
           {
             "typeId": "elite",
             "count": 1,
             "label": "Handwerker with MG42 and Powered Armour",
+            "notes": "The engineers who built the prototypes were first to wear them. The powered frame multiplies strength and absorbs damage. The MG42 does the rest.",
             "points": 6,
             "options": [
               "super-heavy-armour"
@@ -810,6 +837,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Haunebu-class Luftscheibe",
+            "notes": "The Vril Society claimed it was recovered technology. The Handwerkers say they built it themselves. Either way, it flies, and it is hard to shoot down.",
             "points": 5,
             "options": [
               "armour-piercing",
@@ -824,6 +852,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Waffen-SS with Exo-skeletons",
+            "notes": "Hydraulic frames over standard infantry kit. Not invincible. Harder to kill than an ordinary man.",
             "points": 4,
             "options": [
               "increased-squad",
@@ -838,6 +867,7 @@ export const SETTINGS = [
             "typeId": "heavy",
             "count": 1,
             "label": "Waffen-SS with Powered Armour and Electro-magnetic Deflector Screens",
+            "notes": "Walking tanks. The deflector screens stop most small-arms fire. Heavy weapons are another matter.",
             "points": 4,
             "options": [
               "increased-squad",
@@ -852,6 +882,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Waffen-SS with Gravitic Wave Emitter",
+            "notes": "Whatever this weapon does, no Allied physics textbook explains it. The effect on targets is not ambiguous. The cause is.",
             "points": 6,
             "options": [
               "armour-piercing",
@@ -873,6 +904,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Schüler and Assistants",
+            "notes": "The magician and the circle of students who help channel the old powers. The Schüler does not carry a weapon. They don't need one.",
             "points": 3,
             "options": [
               "close-quarters"
@@ -885,6 +917,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Dämonenpanzer",
+            "notes": "A Panzer IV with something inside it that isn't a crew. It moves without fuel. It fires without loading. It does not stop.",
             "points": 9,
             "options": [],
             "xenos": {
@@ -898,6 +931,7 @@ export const SETTINGS = [
             "typeId": "greater-xeno",
             "count": 1,
             "label": "Vergulstungkreatur",
+            "notes": "Something between a soldier and an act of violence given form. The Schüler made it from what was available. The materials were not all inanimate.",
             "points": 6,
             "options": [
               "high-powered-blades"
@@ -911,6 +945,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 2,
             "label": "Tausendjährige Krieger",
+            "notes": "Warriors bound to serve for a thousand years. The Reich lasted twelve. The binding still has time to run.",
             "points": 3,
             "options": [
               "increased-squad"
@@ -927,12 +962,13 @@ export const SETTINGS = [
         "n": 7,
         "name": "Werwolf Freischärlers (1945–46)",
         "subtitle": "Men Who Can Never Go Home",
-        "icon": "dead-eye",
+        "icon": "balkenkreuz",
         "units": [
           {
             "typeId": "light",
             "count": 1,
             "label": "Waffen-SS with Panzerfausts and MG42",
+            "notes": "The last generation of true believers, armed with the weapons of a disintegrating war industry. They've heard the news from Berlin. They've chosen not to accept it.",
             "points": 8,
             "options": [
               "increased-squad",
@@ -947,6 +983,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "SS or Heer Holdouts on Horseback",
+            "notes": "When the fuel ran out and the roads were bombed to rubble, the horses came back. These men rode them past surrender and kept going.",
             "points": 4,
             "options": [
               "mobile"
@@ -959,6 +996,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Hitler Youth or Volksturm Partisans",
+            "notes": "Children handed Volkssturmgewehrs and pointed at the advancing enemy. Some of them are terrifyingly willing.",
             "points": 2,
             "options": [
               "guerrillas"
@@ -969,6 +1007,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "SS Assassination Squad",
+            "notes": "They were given a list and released into the chaos. They're working through it methodically. The war's end is not on the list.",
             "points": 4,
             "options": [],
             "xenos": {
@@ -979,6 +1018,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Snipers",
+            "notes": "The ruins provide cover. The refugees provide cover. The chaos provides cover. They've been here for weeks and have no intention of leaving.",
             "points": 6,
             "options": [
               "sniper-team"
@@ -993,12 +1033,14 @@ export const SETTINGS = [
         "n": 8,
         "name": "Operation Paperclip (1945–46)",
         "subtitle": "Loaded For Bear",
-        "icon": "tb-meteor",
+        "icon": "usa-flag",
+        "badge": { "bg": "#3c4a1e", "fg": "#d4d68a" },
         "units": [
           {
             "typeId": "light",
             "count": 1,
             "label": "Army Command Section",
+            "notes": "Intelligence officers whose job was to secure German scientists before the Soviets got there. The scientists they found were not what the briefing described.",
             "points": 3,
             "options": [
               "heavy-weapon"
@@ -1009,6 +1051,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Army GIs",
+            "notes": "Young men from farms and cities, now clearing laboratories built under mountains that aren't on any map. They're professional about it. The nightmares come later.",
             "points": 5,
             "options": [
               "increased-squad",
@@ -1020,6 +1063,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Army Flamethrower Team",
+            "notes": "Some things in the lower levels of the Handwerker facilities can't be detained, questioned, or reasoned with. The flamethrower team understands their role.",
             "points": 4,
             "options": [
               "close-quarters",
@@ -1031,6 +1075,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Office of Strategic Services Team",
+            "notes": "Spies with cover identities operating in a Germany that's technically surrendered. They've stopped calling what they're hunting 'assets'.",
             "points": 3,
             "options": [],
             "xenos": {
@@ -1041,6 +1086,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Sherman M4 Tank",
+            "notes": "American armour in the European theatre, now operating in the underground complexes and mountain passes the official war never reached.",
             "points": 6,
             "options": [],
             "xenos": {}
@@ -1049,6 +1095,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 1,
             "label": "Jeep with MG",
+            "notes": "Fast enough to feel safer than you probably are. The MG provides confidence. The driver provides speed. Neither is sufficient on its own.",
             "points": 3,
             "options": [
               "technical"
@@ -1061,12 +1108,14 @@ export const SETTINGS = [
         "n": 9,
         "name": "The Strange Research Group (1939–46)",
         "subtitle": "Churchill's Very Secret Army",
-        "icon": "gears",
+        "icon": "union-jack",
+        "badge": { "bg": "#00247d", "fg": "#ffffff" },
         "units": [
           {
             "typeId": "heavy",
             "count": 1,
             "label": "Special Air Service Team",
+            "notes": "Churchill's instrument for problems that couldn't be handed to ordinary forces. They've been briefed on what they're hunting. The briefing was classified at the highest level.",
             "points": 5,
             "options": [
               "heavy-weapon"
@@ -1079,6 +1128,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Royal Marines",
+            "notes": "Naval infantry who've cleared beaches under fire and tunnels in silence. Whatever the Strange Research Group sends them after, they approach it the same way: carefully and together.",
             "points": 6,
             "options": [
               "increased-squad",
@@ -1092,6 +1142,7 @@ export const SETTINGS = [
             "typeId": "berserk",
             "count": 1,
             "label": "Gurkhas",
+            "notes": "Warriors whose service to the Crown brings its own knowledge — of mountains, of the dark, of what lives in both. The Schülers are not the first occult force they've faced.",
             "points": 3,
             "options": [
               "increased-squad"
@@ -1102,6 +1153,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Mortar Team",
+            "notes": "Indirect fire for situations where direct contact with the target would be inadvisable. They receive grid references. They don't always know what's on them.",
             "points": 6,
             "options": [
               "indirect-fire"
@@ -1112,6 +1164,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "German Turncoats",
+            "notes": "They crossed over because they'd seen what was in the lower levels of the Schüler facilities. Useful interpreters. Very frightened.",
             "points": 4,
             "options": [
               "increased-squad"
@@ -1126,12 +1179,14 @@ export const SETTINGS = [
         "n": 10,
         "name": "The Red Army (1941–46)",
         "subtitle": "The Bringers Of Götterdämmerung",
-        "icon": "bear-face",
+        "icon": "hammer-sickle",
+        "badge": { "bg": "#cc0000", "fg": "#f5c518" },
         "units": [
           {
             "typeId": "heavy",
             "count": 1,
             "label": "Vengeful Veterans with NKVD Officer",
+            "notes": "Men who walked from the gates of Moscow to the Reichstag. The NKVD officer is there for discipline. The veterans are there because nothing frightens them anymore.",
             "points": 5,
             "options": [
               "increased-squad"
@@ -1144,6 +1199,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 4,
             "label": "Conscript Squad",
+            "notes": "The vast weight of Soviet manpower, armed and pointed west. They have no idea what's in the forest. They've stopped letting that stop them.",
             "points": 2,
             "options": [
               "increased-squad",
@@ -1155,6 +1211,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Maxim Machine Gun Section",
+            "notes": "The Maxim hasn't changed since 1914. The men behind it have changed entirely. They set it up in under a minute and fire with the patience of men who've survived this long.",
             "points": 5,
             "options": [],
             "xenos": {}
@@ -1163,6 +1220,7 @@ export const SETTINGS = [
             "typeId": "greater-xeno",
             "count": 1,
             "label": "Baba Yaga and her cottage",
+            "notes": "Older than any czar, older than any ideology. She moves through the chaos of the Eastern Front on her own business. She chose the Red Army's side. The Red Army has not been told.",
             "points": 6,
             "options": [],
             "xenos": {
@@ -1185,12 +1243,14 @@ export const SETTINGS = [
         "n": 11,
         "name": "SWAT",
         "subtitle": "New York's Finest",
-        "icon": "crosshair",
+        "icon": "riot-shield",
+        "badge": { "bg": "#003087", "fg": "#ffffff" },
         "units": [
           {
             "typeId": "elite",
             "count": 2,
             "label": "SWAT Team",
+            "notes": "The city's weird enough now that they get called in for things the manual never covered. They go in anyway.",
             "points": 6,
             "options": [],
             "xenos": {}
@@ -1199,6 +1259,7 @@ export const SETTINGS = [
             "typeId": "transport-vehicle",
             "count": 1,
             "label": "SWAT Armoured Rescue Vehicle",
+            "notes": "Designed for hostage rescue and crowd control. They've had to adapt the procedures for situations that weren't in either training manual.",
             "points": 4,
             "options": [],
             "xenos": {}
@@ -1207,6 +1268,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "SWAT Sniper Team",
+            "notes": "One shot, one resolution. They've learned to wait longer since the targets started moving in ways that don't follow physics.",
             "points": 5,
             "options": [
               "sniper-team",
@@ -1218,6 +1280,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 3,
             "label": "Beat Cop Perimeter Team",
+            "notes": "Keeping the public back, keeping the story contained, keeping themselves from running. Two out of three is the usual result.",
             "points": 1,
             "options": [
               "close-quarters"
@@ -1230,12 +1293,14 @@ export const SETTINGS = [
         "n": 12,
         "name": "Her Majesty's Constabulary",
         "subtitle": "What Do You Mean, 'Unarmed'?",
-        "icon": "checked-shield",
+        "icon": "custodian-helmet",
+        "badge": { "bg": "#0d2b6e", "fg": "#f0c000" },
         "units": [
           {
             "typeId": "elite",
             "count": 1,
             "label": "AFO Armed Response Team",
+            "notes": "Authorised firearms officers. Briefed on use of force policy, not on what they'd be using it against. They're adapting.",
             "points": 9,
             "options": [
               "assault-doctrine"
@@ -1248,6 +1313,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "AFO Rifle Officers",
+            "notes": "Long-range firearms specialists, deployed when the armed response team can't get close enough. That's become more common.",
             "points": 5,
             "options": [],
             "xenos": {}
@@ -1256,6 +1322,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 2,
             "label": "Police Support Unit",
+            "notes": "Riot shields and batons, maintaining a cordon around something no one can officially acknowledge. They hold the line. That's all they're told to do.",
             "points": 5,
             "options": [
               "armoured"
@@ -1271,12 +1338,14 @@ export const SETTINGS = [
         "n": 13,
         "name": "Urban Cult",
         "subtitle": "Something Strange In Your Neighbourhood",
-        "icon": "raven",
+        "icon": "magic-palm",
+        "badge": { "bg": "#2d0040", "fg": "#b060e0" },
         "units": [
           {
             "typeId": "light",
             "count": 1,
             "label": "Back-alley Sorcerer and Bodyguards",
+            "notes": "Self-taught, which is more impressive than it sounds. The bodyguards are there because the talent is worth protecting, and because the talent keeps making enemies.",
             "points": 3,
             "options": [
               "close-quarters"
@@ -1289,6 +1358,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Cult Enforcers",
+            "notes": "They handle discipline, collections, and anything else the Sorcerer doesn't want to deal with personally. They're very good at their work.",
             "points": 2,
             "options": [
               "close-quarters"
@@ -1301,6 +1371,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 1,
             "label": "Street Cultists",
+            "notes": "Recruited from the forgotten edges of the city. They have nothing to lose, which is the first thing the Sorcerer looks for.",
             "points": 1,
             "options": [],
             "xenos": {}
@@ -1309,6 +1380,7 @@ export const SETTINGS = [
             "typeId": "greater-xeno",
             "count": 2,
             "label": "Eldritch Horrors (Possibly Squamous)",
+            "notes": "Something the Sorcerer called up and is reasonably confident he controls. The qualifier is doing a lot of work.",
             "points": 6,
             "options": [],
             "xenos": {
@@ -1321,6 +1393,7 @@ export const SETTINGS = [
             "typeId": "lesser-xeno",
             "count": 1,
             "label": "A Tide of Teeth and Insanity",
+            "notes": "It started as a summoning. It has outgrown that description.",
             "points": 6,
             "options": [
               "swarm",
@@ -1337,12 +1410,14 @@ export const SETTINGS = [
         "n": 14,
         "name": "Rural Cult",
         "subtitle": "If You Go Down To The Backwoods Today…",
-        "icon": "crowned-skull",
+        "icon": "magic-shield",
+        "badge": { "bg": "#450060", "fg": "#e060ff" },
         "units": [
           {
             "typeId": "greater-xeno",
             "count": 1,
             "label": "The Mother of Liberty",
+            "notes": "The prophet, the founder, and the reason everyone else stayed. She doesn't recruit so much as she reveals. No one leaves after they've heard her preach.",
             "points": 6,
             "options": [],
             "xenos": {
@@ -1355,6 +1430,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 2,
             "label": "Sworn Patriots",
+            "notes": "Veterans who found a new mission after the old ones stopped making sense. Skilled, disciplined, and entirely wrong about what they're protecting.",
             "points": 4,
             "options": [
               "increased-squad"
@@ -1367,6 +1443,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Novices with Second Thoughts",
+            "notes": "They joined for the community, the purpose, the sense of belonging. Now they're in a field with a rifle and some very difficult questions.",
             "points": 1,
             "options": [
               "increased-squad",
@@ -1380,6 +1457,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Second Amendment Enthusiasts",
+            "notes": "The firepower available to motivated rural Americans is not to be underestimated. These ones are very motivated.",
             "points": 6,
             "options": [],
             "xenos": {
@@ -1390,6 +1468,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 1,
             "label": "Pickup with Lots of Bumper Stickers",
+            "notes": "A technical. The stickers tell you exactly what you're dealing with.",
             "points": 3,
             "options": [
               "civilian",
@@ -1403,12 +1482,14 @@ export const SETTINGS = [
         "n": 15,
         "name": "The Organisation",
         "subtitle": "Dan Brown Has No Idea…",
-        "icon": "dead-eye",
+        "icon": "templar-heart",
+        "badge": { "bg": "#1a1200", "fg": "#c8a000" },
         "units": [
           {
             "typeId": "primitive",
             "count": 1,
             "label": "Coven of Scholars",
+            "notes": "They've been studying this longer than anyone else alive. Their methods are cautious, their archives are irreplaceable, and their enemies are patient.",
             "points": 5,
             "options": [],
             "xenos": {
@@ -1419,6 +1500,7 @@ export const SETTINGS = [
             "typeId": "fighting-vehicle",
             "count": 1,
             "label": "Atlantean War Machine",
+            "notes": "It predates every dynasty. The Organisation found it, woke it, and is hoping their translation of the activation sequence was correct.",
             "points": 5,
             "options": [
               "walker"
@@ -1433,6 +1515,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 1,
             "label": "Archive Security Team",
+            "notes": "Professionals hired to guard material they're not cleared to read. They're very good at what they do and very ignorant of why they're doing it.",
             "points": 1,
             "options": [
               "close-quarters"
@@ -1445,6 +1528,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Private Black Ops Team",
+            "notes": "Deniable assets for deniable operations. Whatever they're retrieving, it won't appear on any manifest.",
             "points": 6,
             "options": [],
             "xenos": {}
@@ -1453,6 +1537,7 @@ export const SETTINGS = [
             "typeId": "softskin-vehicle",
             "count": 1,
             "label": "Armoured SUV",
+            "notes": "Heavily armoured transport for personnel and artefacts the Organisation cannot afford to lose in transit.",
             "points": 4,
             "options": [
               "all-terrain",
@@ -1464,6 +1549,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 1,
             "label": "Immortal Templars",
+            "notes": "They were there at the founding. That was not recently. They remember things the archives have lost.",
             "points": 3,
             "options": [
               "armoured",
@@ -1479,12 +1565,14 @@ export const SETTINGS = [
         "n": 16,
         "name": "The Government",
         "subtitle": "Here Come The Men In Black",
-        "icon": "eagle-emblem",
+        "icon": "sunglasses",
+        "badge": { "bg": "#0a0a0a", "fg": "#606060" },
         "units": [
           {
             "typeId": "light",
             "count": 1,
             "label": "MiB Plus a Few Souvenirs",
+            "notes": "Men in black with some unusual equipment acquired in the line of duty. The items are logged. Their properties are not fully catalogued.",
             "points": 5,
             "options": [
               "armour-piercing"
@@ -1498,6 +1586,7 @@ export const SETTINGS = [
             "typeId": "elite",
             "count": 1,
             "label": "Wetwork Team",
+            "notes": "No warrant, no record, no witnesses. The directive came from somewhere above the oversight committee.",
             "points": 6,
             "options": [],
             "xenos": {}
@@ -1506,6 +1595,7 @@ export const SETTINGS = [
             "typeId": "transport-vehicle",
             "count": 1,
             "label": "Black Helicopter",
+            "notes": "Officially it doesn't exist. Operationally it's very effective.",
             "points": 5,
             "options": [],
             "xenos": {
@@ -1516,6 +1606,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Undercover Surveillance Team",
+            "notes": "They've been on station for months. They've documented everything. They don't know what any of it means.",
             "points": 3,
             "options": [],
             "xenos": {
@@ -1526,6 +1617,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 1,
             "label": "Senate Hearing Liaison Team",
+            "notes": "Their job is to ensure the committee learns as little as possible while believing they've learned everything. They're very polished.",
             "points": 5,
             "options": [
               "sniper-team",
@@ -1539,12 +1631,14 @@ export const SETTINGS = [
         "n": 17,
         "name": "Tunnel-Dwellers",
         "subtitle": "They Eat Rats. Mostly",
-        "icon": "spider-alt",
+        "icon": "rat",
+        "badge": { "bg": "#484848", "fg": "#b8b8b8" },
         "units": [
           {
             "typeId": "greater-xeno",
             "count": 1,
             "label": "The King of Gluttony",
+            "notes": "Enormous and ancient, ruling the underground by right of appetite. It has eaten better things than this city. It will eat better things after.",
             "points": 4,
             "options": [],
             "xenos": {
@@ -1556,6 +1650,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 2,
             "label": "Tunnelling Ghouls",
+            "notes": "They know every junction and maintenance shaft below the city. The tunnels are their territory. The surface is where the food lives.",
             "points": 4,
             "options": [
               "mob"
@@ -1568,6 +1663,7 @@ export const SETTINGS = [
             "typeId": "primitive",
             "count": 3,
             "label": "Starving Ghouls",
+            "notes": "Gaunt and fast and too hungry to be careful. The King sends them first because attrition is not a concept that troubles him.",
             "points": 1,
             "options": [
               "increased-squad",
@@ -1579,6 +1675,7 @@ export const SETTINGS = [
             "typeId": "light",
             "count": 2,
             "label": "Ghouls that Look Human Until You See Their Eyes",
+            "notes": "They move through the surface world for hours at a time, until something triggers the change. The eyes go first.",
             "points": 1,
             "options": [
               "close-quarters"
@@ -1591,6 +1688,7 @@ export const SETTINGS = [
             "typeId": "greater-xeno",
             "count": 1,
             "label": "Pack of Hulking Ghouls",
+            "notes": "The old ones, grown massive on decades of feeding. Not fast. Not subtle. Hard to stop.",
             "points": 5,
             "options": [
               "high-powered-blades"
@@ -1601,6 +1699,7 @@ export const SETTINGS = [
             "typeId": "militia",
             "count": 1,
             "label": "Enslaved and Broken Missing Persons",
+            "notes": "People who went into the wrong place and came back changed. The King keeps them to carry things, open doors, and draw fire.",
             "points": 2,
             "options": [
               "ravenous-horde",
@@ -1614,12 +1713,14 @@ export const SETTINGS = [
         "n": 18,
         "name": "UFO Scientific Team",
         "subtitle": "Ethics Are For Humans",
-        "icon": "mdi-alien",
+        "icon": "cracked-alien-skull",
+        "badge": { "bg": "#001400", "fg": "#39ff14" },
         "units": [
           {
             "typeId": "light",
             "count": 1,
             "label": "Elders",
+            "notes": "They've been studying this world since before it had reliable written records. They've moved on from curiosity. Now they're evaluating.",
             "points": 7,
             "options": [],
             "xenos": {
@@ -1632,6 +1733,7 @@ export const SETTINGS = [
             "typeId": "recon",
             "count": 2,
             "label": "Gatherers",
+            "notes": "Harvesting samples, placing instruments, returning subjects. The Gatherers are thorough. They don't see what they do as violent.",
             "points": 4,
             "options": [],
             "xenos": {
@@ -1643,6 +1745,7 @@ export const SETTINGS = [
             "typeId": "support",
             "count": 1,
             "label": "Hunters",
+            "notes": "When something needs to be recovered, or when the Elders' work is threatened, the Hunters are deployed. Their containment protocols are not human.",
             "points": 9,
             "options": [
               "armour-piercing",
