@@ -39,6 +39,25 @@ import giFlame from "@iconify-icons/game-icons/flame";
 import giGunRose from "@iconify-icons/game-icons/gun-rose";
 import giMeeple from "@iconify-icons/game-icons/meeple-army";
 import giBear from "@iconify-icons/game-icons/bear-face";
+import giAlienEgg from "@iconify-icons/game-icons/alien-egg";
+import giAlienSkull from "@iconify-icons/game-icons/alien-skull";
+import giAstronaut from "@iconify-icons/game-icons/astronaut-helmet";
+import giBlaster from "@iconify-icons/game-icons/blaster";
+import giLaserGun from "@iconify-icons/game-icons/laser-gun";
+import giMechaHead from "@iconify-icons/game-icons/mecha-head";
+import giTentacleStrike from "@iconify-icons/game-icons/tentacle-strike";
+import giTentacleSkull from "@iconify-icons/game-icons/tentacles-skull";
+import giHiveMind from "@iconify-icons/game-icons/hive-mind";
+import giIonCannon from "@iconify-icons/game-icons/ion-cannon-blast";
+import giEnergyShield from "@iconify-icons/game-icons/energy-shield";
+import giOrbital from "@iconify-icons/game-icons/orbital-rays";
+import giClaws from "@iconify-icons/game-icons/claws";
+import giDreadnought from "@iconify-icons/game-icons/dreadnought";
+import giHeavyFighter from "@iconify-icons/game-icons/heavy-fighter";
+import giPlasmaBolt from "@iconify-icons/game-icons/plasma-bolt";
+import giGhost from "@iconify-icons/game-icons/ghost";
+import giRobotHelmet from "@iconify-icons/game-icons/robot-helmet";
+import giTrackedRobot from "@iconify-icons/game-icons/tracked-robot";
 import giDoubleDragon from "@iconify-icons/game-icons/double-dragon";
 import giDragonSpiral from "@iconify-icons/game-icons/dragon-spiral";
 import giMonsterGrasp from "@iconify-icons/game-icons/monster-grasp";
@@ -205,6 +224,20 @@ const DETACH_ICON_LIST = [
   { id: "raven", C: mk(giRaven) },
   { id: "spider-alt", C: mk(giSpider) }, { id: "hydra", C: mk(giHydra) },
   { id: "tiger-head", C: mk(giTiger) },
+  { id: "spiked-shield", C: mk(giSpikedShield) }, { id: "shield-echoes", C: mk(giShieldEchoes) },
+  { id: "rocket-thruster", C: mk(giRocket) }, { id: "cyborg-face", C: mk(giCyborg) },
+  { id: "cultist", C: mk(giCultist) }, { id: "gooey-daemon", C: mk(giDaemon) },
+  { id: "bat-mask", C: mk(giBatMask) },
+  { id: "alien-egg", C: mk(giAlienEgg) }, { id: "alien-skull", C: mk(giAlienSkull) },
+  { id: "astronaut-helmet", C: mk(giAstronaut) }, { id: "blaster", C: mk(giBlaster) },
+  { id: "laser-gun", C: mk(giLaserGun) }, { id: "mecha-head", C: mk(giMechaHead) },
+  { id: "tentacle-strike", C: mk(giTentacleStrike) }, { id: "tentacles-skull", C: mk(giTentacleSkull) },
+  { id: "hive-mind", C: mk(giHiveMind) }, { id: "ion-cannon-blast", C: mk(giIonCannon) },
+  { id: "energy-shield", C: mk(giEnergyShield) }, { id: "orbital-rays", C: mk(giOrbital) },
+  { id: "claws", C: mk(giClaws) }, { id: "dreadnought", C: mk(giDreadnought) },
+  { id: "heavy-fighter", C: mk(giHeavyFighter) }, { id: "plasma-bolt", C: mk(giPlasmaBolt) },
+  { id: "ghost", C: mk(giGhost) }, { id: "robot-helmet", C: mk(giRobotHelmet) },
+  { id: "tracked-robot", C: mk(giTrackedRobot) },
   { id: "mdi-skull", C: mk(miSkull) }, { id: "mdi-crosshair", C: mk(miCrosshair) },
   { id: "mdi-cross", C: mk(miCross) }, { id: "mdi-knight", C: mk(miKnight) },
   { id: "mdi-alien", C: mk(miAlien) }, { id: "tb-meteor", C: mk(tbMeteor) },
@@ -3482,7 +3515,7 @@ const CSS = `
 .xr-preset-by{font-family:var(--ui);font-weight:600;font-size:13.5px;letter-spacing:.02em;color:var(--brand-deep-blue);margin-top:6px;}
 .xr-preset-notes{font-family:var(--ui);font-size:13px;color:var(--ink-2);margin-bottom:14px;display:flex;flex-wrap:wrap;gap:4px 10px;}
 .xr-preset-notes a{color:var(--brand-deep-blue);text-decoration:none;font-weight:600;word-break:break-all;}
-.xr-preset-img{display:block;width:100%;height:118px;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:9px;}
+.xr-preset-img{display:flex;align-items:center;justify-content:center;width:100%;height:118px;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:9px;}
 .xr-preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px;}
 .xr-preset-card{display:flex;flex-direction:column;gap:3px;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:13px 15px 11px;border-radius:var(--r);transition:.13s;}
 .xr-preset-card:hover{background:var(--paper-3);box-shadow:0 3px 10px rgba(31,61,46,.14);}
