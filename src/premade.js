@@ -1660,7 +1660,7 @@ export const SETTINGS = [
   },
   {
     "id": "war-on-terra",
-    "name": "Five Minutes Into The Future: The War On Terra",
+    "name": "War on Terra: Five Minutes Into The Future",
     "blurb": "Near-future soldiers, contractors, and first contact.",
     "nationalTraits": false,
     "detachments": [

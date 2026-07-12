@@ -3412,7 +3412,7 @@ const CSS = `
 .xr-modal.xr-modal-tall{height:min(680px,86vh);}
 .xr-modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:3px solid var(--ink);}
 .xr-modal-title{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.33;}
-.xr-modal-tabs{display:flex;gap:8px;padding:12px 20px;border-bottom:2px solid var(--ink-18);flex-wrap:wrap;}
+.xr-modal-tabs{display:flex;gap:6px;padding:10px 16px;border-bottom:2px solid var(--ink-18);flex-wrap:wrap;}
 /* smooth sliding tabs (add-unit categories) */
 .xr-stabs{position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);margin:12px clamp(14px,3vw,20px);padding:4px;background:var(--paper-3);border-radius:11px;border:2px solid var(--ink-30);}
 .xr-stabs-ind{position:absolute;top:4px;bottom:4px;left:calc(4px + var(--i) * (100% - 8px) / var(--n));width:calc((100% - 8px)/var(--n));border-radius:8px;background:var(--brand-deep);box-shadow:var(--shadow4);transition:left var(--dur-gentle) var(--curve-ease-max);}
@@ -3423,7 +3423,7 @@ const CSS = `
 .xr-stabs .xr-stab svg{flex:none;}
 @media(max-width:480px){.xr-stabs .xr-stab{gap:5px;font-size:14px;}.xr-stabs .xr-stab svg{width:16px;height:16px;}}
 @media(max-width:400px){.xr-stabs .xr-stab{flex-direction:column;gap:2px;font-size:12px;line-height:1.1;}}
-.xr-modal-tab{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:16.5px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:8px 15px;border-radius:9px;min-height:44px;transition:.12s;}
+.xr-modal-tab{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:600;font-size:14px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:5px 12px;border-radius:8px;min-height:38px;transition:.12s;}
 .xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
 .xr-modal-tab.on{color:var(--cream);background:var(--ink);border-color:var(--ink);}
 .xr-tab-n{font-style:normal;font-family:var(--mono);font-weight:700;font-size:13px;background:var(--cream);color:var(--ink);border-radius:10px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;}
