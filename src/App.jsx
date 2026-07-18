@@ -506,6 +506,58 @@ const DETACH_ICON_LIST_META = DETACH_ICON_LIST.map((item) => {
   return { ...item, cat: m.cat || "arcane", setting: m.setting || "scifi", name: m.name || _idToName(item.id) };
 });
 
+/* pre-loaded photo emblems, organised by theme group and sub-folder */
+const SQUAD_IMAGE_GROUPS = [
+  { id: "military", name: "Military", sub: [
+    { id: "fireteams", name: "Fireteams", images: [
+      { id: "ft-apex",      src: "emblems/fireteams/HINF_Fireteam_Apex_Emblem.png",           name: "Fireteam Apex" },
+      { id: "ft-cerberus",  src: "emblems/fireteams/HINF_Fireteam_Cerberus_Emblem.png",       name: "Fireteam Cerberus" },
+      { id: "ft-colossus",  src: "emblems/fireteams/HINF_Fireteam_Colossus_Emblem.png",       name: "Fireteam Colossus" },
+      { id: "ft-crimson",   src: "emblems/fireteams/HINF_Fireteam_Crimson_Emblem.png",        name: "Fireteam Crimson" },
+      { id: "ft-dagger",    src: "emblems/fireteams/HINF_Fireteam_Dagger_Emblem.png",         name: "Fireteam Dagger" },
+      { id: "ft-ferret",    src: "emblems/fireteams/HINF_Fireteam_Ferret_Emblem_Icon.png",    name: "Fireteam Ferret" },
+      { id: "ft-grizzly",   src: "emblems/fireteams/HINF_Fireteam_Grizzly_Emblem.png",        name: "Fireteam Grizzly" },
+      { id: "ft-hellhound", src: "emblems/fireteams/HINF_Fireteam_Hellhound_Emblem.png",      name: "Fireteam Hellhound" },
+      { id: "ft-hydra",     src: "emblems/fireteams/HINF_Fireteam_Hydra_Emblem_Icon.png",     name: "Fireteam Hydra" },
+      { id: "ft-jorogumo",  src: "emblems/fireteams/HINF_Fireteam_Jorogumo_Emblem.png",       name: "Fireteam Jorogumo" },
+      { id: "ft-lancer",    src: "emblems/fireteams/HINF_Fireteam_Lancer_Emblem.png",         name: "Fireteam Lancer" },
+      { id: "ft-mako",      src: "emblems/fireteams/HINF_Fireteam_Mako_Emblem.png",           name: "Fireteam Mako" },
+      { id: "ft-phoenix",   src: "emblems/fireteams/HINF_Fireteam_Phoenix_Emblem_Icon.png",   name: "Fireteam Phoenix" },
+    ]},
+    { id: "cyber", name: "Cyber", images: [
+      { id: "cy-lethbridge", src: "emblems/cyber/HINF_-_Emblem_icon_-_Lethbridge_Netrun.png", name: "Lethbridge Netrun" },
+      { id: "cy-misriah",   src: "emblems/cyber/HINF_-_Emblem_icon_-_Misriah_Netrun.png",    name: "Misriah Netrun" },
+      { id: "cy-vakara",    src: "emblems/cyber/HINF_-_Emblem_icon_-_Vakara_Netrun.png",     name: "Vakara Netrun" },
+      { id: "cy-wst",       src: "emblems/cyber/HINF_-_Emblem_icon_-_WST_Netrun.png",        name: "WST Netrun" },
+    ]},
+    { id: "patterns", name: "Patterns", images: [
+      { id: "pt-floral-awaken", src: "emblems/patterns/HINF_-_Emblem_icon_-_Floral_Awakening.png",       name: "Floral Awakening" },
+      { id: "pt-floral-crest",  src: "emblems/patterns/HINF_-_Emblem_icon_-_Floral_Crest.png",           name: "Floral Crest" },
+      { id: "pt-hispanic",      src: "emblems/patterns/HINF_-_Emblem_icon_-_Hispanic_Heritage_Month.png", name: "Hispanic Heritage" },
+      { id: "pt-blades",        src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidoblades.png",           name: "Kaleidoblades" },
+      { id: "pt-bolt",          src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidobolt.png",             name: "Kaleidobolt" },
+      { id: "pt-chip",          src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidochip.png",             name: "Kaleidochip" },
+      { id: "pt-shot",          src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidoshot.png",             name: "Kaleidoshot" },
+      { id: "pt-volt",          src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidovolt.png",             name: "Kaleidovolt" },
+    ]},
+    { id: "retro", name: "Retro", images: [
+      { id: "rt-pelican",  src: "emblems/retro/HINF_Peter_the_Pelican_Emblem.png",      name: "Peter the Pelican" },
+      { id: "rt-mongoose", src: "emblems/retro/HINF_Phantom_Mongoose_Emblem_Icon.png",  name: "Phantom Mongoose" },
+      { id: "rt-wyld",     src: "emblems/retro/HINF_Wyld_Hogs_Emblem.png",              name: "Wyld Hogs" },
+    ]},
+    { id: "alien", name: "Alien", images: [
+      { id: "al-siqtar", src: "emblems/alien/HINF_-_Emblem_icon_-_Siqtar_Wing.png", name: "Siqtar Wing" },
+    ]},
+    { id: "cards", name: "Cards", images: [
+      { id: "cd-clubs",    src: "emblems/cards/HINF_-_Emblem_icon_-_Clubs.png",    name: "Clubs" },
+      { id: "cd-diamonds", src: "emblems/cards/HINF_-_Emblem_icon_-_Diamonds.png", name: "Diamonds" },
+      { id: "cd-hearts",   src: "emblems/cards/HINF_-_Emblem_icon_-_Hearts.png",   name: "Hearts" },
+      { id: "cd-spades",   src: "emblems/cards/HINF_-_Emblem_icon_-_Spades.png",   name: "Spades" },
+    ]},
+  ]},
+];
+const _allSquadImages = SQUAD_IMAGE_GROUPS.flatMap((g) => g.sub.flatMap((s) => s.images));
+
 /* one big pool of faction names for the "get a random one" link */
 const ALL_NAMES = ALL_GENRES.flatMap((g) => g.groups.flatMap((gr) => gr.factions.flatMap((f) => f.pool || [])));
 
@@ -1285,12 +1337,15 @@ function FloatingField({ label, value, onChange, textarea, rows, autoFocus, onEn
 }
 
 /* pick a badge/emblem from the full library, with two-axis filtering */
-function IconPickerModal({ current, onPick, onUpload, onClose }) {
+function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
+  const [mode, setMode] = useState("icons");
   const [cat, setCat] = useState("all");
   const [setting, setSetting] = useState("all");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState("def");
   const [sel, setSel] = useState(current || null);
+  const [imgSel, setImgSel] = useState(null);
+  const [imgQ, setImgQ] = useState("");
 
   useEffect(() => {
     const fn = (e) => { if (e.key === "Escape") onClose(); };
@@ -1308,6 +1363,16 @@ function IconPickerModal({ current, onPick, onUpload, onClose }) {
     return L;
   }, [cat, setting, q, sort]);
 
+  const filteredGallery = useMemo(() => {
+    if (!imgQ) return SQUAD_IMAGE_GROUPS;
+    const lq = imgQ.toLowerCase();
+    return SQUAD_IMAGE_GROUPS.map((g) => ({
+      ...g,
+      sub: g.sub.map((s) => ({ ...s, images: s.images.filter((i) => i.name.toLowerCase().includes(lq)) }))
+               .filter((s) => s.images.length > 0),
+    })).filter((g) => g.sub.length > 0);
+  }, [imgQ]);
+
   const catCt = (cid) => {
     const base = setting === "all" ? DETACH_ICON_LIST_META : DETACH_ICON_LIST_META.filter((e) => e.setting === setting);
     return cid === "all" ? base.length : base.filter((e) => e.cat === cid).length;
@@ -1320,6 +1385,7 @@ function IconPickerModal({ current, onPick, onUpload, onClose }) {
   const selItem = sel ? DETACH_ICON_LIST_META.find((e) => e.id === sel) : null;
   const selCatName = selItem ? (ICON_CATS.find((c) => c.id === selItem.cat)?.name || "") : "";
   const selSetName = selItem ? (ICON_SETTINGS.find((s) => s.id === selItem.setting)?.name || "") : "";
+  const selImg = imgSel ? _allSquadImages.find((i) => i.id === imgSel) : null;
 
   const secLabel = q ? "Search results"
     : cat !== "all" && setting !== "all" ? `${ICON_CATS.find((c) => c.id === cat)?.name} · ${ICON_SETTINGS.find((s) => s.id === setting)?.name}`
@@ -1333,119 +1399,174 @@ function IconPickerModal({ current, onPick, onUpload, onClose }) {
 
         <div className="xr-epicker-head">
           <span className="xr-modal-title"><Image size={20} /> Choose an emblem</span>
+          <div className="xr-epicker-tabs">
+            <button className={`xr-epicker-tab${mode === "icons" ? " on" : ""}`} onClick={() => setMode("icons")}>Icons</button>
+            <button className={`xr-epicker-tab${mode === "photos" ? " on" : ""}`} onClick={() => setMode("photos")}>Photos</button>
+          </div>
           <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
         </div>
 
-        <div className="xr-epicker-layout">
+        {mode === "icons" && (
+          <div className="xr-epicker-layout">
 
-          {/* sidebar: desktop only */}
-          <aside className="xr-epicker-side">
-            <div className="xr-epicker-side-body">
-              <p className="xr-epicker-side-hd">Type</p>
-              {ICON_CATS.map((c) => (
-                <button key={c.id} className={`xr-epicker-citem${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
-                  <span className="xr-epicker-dot" style={c.col ? { background: c.col } : {}} />
-                  <span className="xr-epicker-cname">{c.name}</span>
-                  <span className="xr-epicker-cct">{catCt(c.id)}</span>
-                </button>
-              ))}
-              <div className="xr-epicker-divider" />
-              <p className="xr-epicker-side-hd">Setting</p>
-              {ICON_SETTINGS.map((s) => (
-                <button key={s.id} className={`xr-epicker-citem${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
-                  <span className="xr-epicker-dot" style={s.col ? { background: s.col } : {}} />
-                  <span className="xr-epicker-cname">{s.name}</span>
-                  <span className="xr-epicker-cct">{setCt(s.id)}</span>
-                </button>
-              ))}
-            </div>
-            <div className="xr-epicker-side-foot">
-              <button className="xr-btn small" onClick={onUpload}><Image size={16} /> Upload image</button>
-            </div>
-          </aside>
-
-          {/* main content */}
-          <div className="xr-epicker-main">
-
-            {/* mobile pill rows (hidden on desktop via CSS) */}
-            <div className="xr-epicker-pills">
-              <div className="xr-epicker-prow">
-                <span className="xr-epicker-plbl">Type</span>
-                <div className="xr-epicker-pscroll">
-                  {ICON_CATS.map((c) => (
-                    <button key={c.id} className={`xr-epicker-pill${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
-                      {c.col && <span className="xr-epicker-pdot" style={{ background: c.col }} />}
-                      {c.short}
-                    </button>
-                  ))}
-                </div>
+            {/* sidebar: desktop only */}
+            <aside className="xr-epicker-side">
+              <div className="xr-epicker-side-body">
+                <p className="xr-epicker-side-hd">Type</p>
+                {ICON_CATS.map((c) => (
+                  <button key={c.id} className={`xr-epicker-citem${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
+                    <span className="xr-epicker-dot" style={c.col ? { background: c.col } : {}} />
+                    <span className="xr-epicker-cname">{c.name}</span>
+                    <span className="xr-epicker-cct">{catCt(c.id)}</span>
+                  </button>
+                ))}
+                <div className="xr-epicker-divider" />
+                <p className="xr-epicker-side-hd">Setting</p>
+                {ICON_SETTINGS.map((s) => (
+                  <button key={s.id} className={`xr-epicker-citem${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
+                    <span className="xr-epicker-dot" style={s.col ? { background: s.col } : {}} />
+                    <span className="xr-epicker-cname">{s.name}</span>
+                    <span className="xr-epicker-cct">{setCt(s.id)}</span>
+                  </button>
+                ))}
               </div>
-              <div className="xr-epicker-prow xr-epicker-prow2">
-                <span className="xr-epicker-plbl">Setting</span>
-                <div className="xr-epicker-pscroll">
-                  {ICON_SETTINGS.map((s) => (
-                    <button key={s.id} className={`xr-epicker-pill${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
-                      {s.col && <span className="xr-epicker-pdot" style={{ background: s.col }} />}
-                      {s.short}
-                    </button>
-                  ))}
-                </div>
+              <div className="xr-epicker-side-foot">
+                <button className="xr-btn small" onClick={onUpload}><Image size={16} /> Upload image</button>
               </div>
-            </div>
+            </aside>
 
-            {/* search + sort */}
-            <div className="xr-epicker-toolbar">
-              <input className="xr-epicker-search" type="search" placeholder="Search emblems…"
-                value={q} onChange={(e) => setQ(e.target.value)} />
-              <select className="xr-epicker-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="def">Default</option>
-                <option value="az">A – Z</option>
-                <option value="cat">By type</option>
-                <option value="set">By setting</option>
-              </select>
-            </div>
+            {/* main content */}
+            <div className="xr-epicker-main">
 
-            {/* icon grid */}
-            <div className="xr-epicker-grid-wrap">
-              <div className="xr-epicker-sec-lbl">
-                {secLabel}<span className="xr-epicker-ct">{filtered.length}</span>
-              </div>
-              {filtered.length === 0
-                ? <p className="xr-epicker-empty">Nothing matches — try broadening the filters.</p>
-                : <div className="xr-epicker-grid">
-                    {filtered.map(({ id, C, name }) => (
-                      <button key={id}
-                        className={`xr-epicker-cell${sel === id ? " sel" : ""}${sel && sel !== id ? " dim" : ""}`}
-                        onClick={() => setSel(sel === id ? null : id)}
-                        aria-label={name} aria-pressed={sel === id} title={name}>
-                        <C size={40} />
-                        <span className="xr-epicker-tip">{name}</span>
+              {/* mobile pill rows (hidden on desktop via CSS) */}
+              <div className="xr-epicker-pills">
+                <div className="xr-epicker-prow">
+                  <span className="xr-epicker-plbl">Type</span>
+                  <div className="xr-epicker-pscroll">
+                    {ICON_CATS.map((c) => (
+                      <button key={c.id} className={`xr-epicker-pill${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
+                        {c.col && <span className="xr-epicker-pdot" style={{ background: c.col }} />}
+                        {c.short}
                       </button>
                     ))}
-                  </div>}
-            </div>
+                  </div>
+                </div>
+                <div className="xr-epicker-prow xr-epicker-prow2">
+                  <span className="xr-epicker-plbl">Setting</span>
+                  <div className="xr-epicker-pscroll">
+                    {ICON_SETTINGS.map((s) => (
+                      <button key={s.id} className={`xr-epicker-pill${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
+                        {s.col && <span className="xr-epicker-pdot" style={{ background: s.col }} />}
+                        {s.short}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-            {/* confirm / upload footer */}
+              {/* search + sort */}
+              <div className="xr-epicker-toolbar">
+                <input className="xr-epicker-search" type="search" placeholder="Search emblems…"
+                  value={q} onChange={(e) => setQ(e.target.value)} />
+                <select className="xr-epicker-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
+                  <option value="def">Default</option>
+                  <option value="az">A – Z</option>
+                  <option value="cat">By type</option>
+                  <option value="set">By setting</option>
+                </select>
+              </div>
+
+              {/* icon grid */}
+              <div className="xr-epicker-grid-wrap">
+                <div className="xr-epicker-sec-lbl">
+                  {secLabel}<span className="xr-epicker-ct">{filtered.length}</span>
+                </div>
+                {filtered.length === 0
+                  ? <p className="xr-epicker-empty">Nothing matches — try broadening the filters.</p>
+                  : <div className="xr-epicker-grid">
+                      {filtered.map(({ id, C, name }) => (
+                        <button key={id}
+                          className={`xr-epicker-cell${sel === id ? " sel" : ""}${sel && sel !== id ? " dim" : ""}`}
+                          onClick={() => setSel(sel === id ? null : id)}
+                          aria-label={name} aria-pressed={sel === id} title={name}>
+                          <C size={40} />
+                          <span className="xr-epicker-tip">{name}</span>
+                        </button>
+                      ))}
+                    </div>}
+              </div>
+
+              {/* confirm / upload footer */}
+              <div className="xr-epicker-foot">
+                {selItem ? (
+                  <>
+                    <span className="xr-epicker-foot-prev"><selItem.C size={22} /></span>
+                    <span className="xr-epicker-foot-info">
+                      {selItem.name}<em>{selCatName} · {selSetName}</em>
+                    </span>
+                    <button className="xr-btn small" onClick={() => setSel(null)}>Clear</button>
+                    <button className="xr-btn" onClick={() => { onPick(sel); }}>Use this emblem</button>
+                  </>
+                ) : (
+                  <>
+                    <button className="xr-btn xr-epicker-upload-m" onClick={onUpload}><Image size={16} /> Upload your own image</button>
+                    <span className="xr-epicker-foot-empty">Select an emblem above.</span>
+                  </>
+                )}
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {mode === "photos" && (
+          <div className="xr-epicker-gallery-pane">
+            <div className="xr-epicker-toolbar">
+              <input className="xr-epicker-search" type="search" placeholder="Search photos…"
+                value={imgQ} onChange={(e) => setImgQ(e.target.value)} />
+            </div>
+            <div className="xr-epicker-gallery-scroll">
+              {filteredGallery.length === 0
+                ? <p className="xr-epicker-empty">Nothing matches.</p>
+                : filteredGallery.map((group) => (
+                    <div key={group.id} className="xr-gallery-group">
+                      <div className="xr-gallery-group-hd">{group.name}</div>
+                      {group.sub.map((sub) => (
+                        <div key={sub.id} className="xr-gallery-sub">
+                          <div className="xr-gallery-sub-hd">{sub.name}</div>
+                          <div className="xr-epicker-grid">
+                            {sub.images.map((img) => (
+                              <button key={img.id}
+                                className={`xr-epicker-cell xr-epicker-imgcell${imgSel === img.id ? " sel" : ""}${imgSel && imgSel !== img.id ? " dim" : ""}`}
+                                onClick={() => setImgSel(imgSel === img.id ? null : img.id)}
+                                aria-label={img.name} aria-pressed={imgSel === img.id} title={img.name}>
+                                <img src={img.src} alt="" />
+                                <span className="xr-epicker-tip">{img.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+            </div>
             <div className="xr-epicker-foot">
-              {selItem ? (
+              {selImg ? (
                 <>
-                  <span className="xr-epicker-foot-prev"><selItem.C size={22} /></span>
-                  <span className="xr-epicker-foot-info">
-                    {selItem.name}<em>{selCatName} · {selSetName}</em>
+                  <span className="xr-epicker-foot-prev">
+                    <img src={selImg.src} alt="" style={{ width: 22, height: 22, objectFit: "contain", borderRadius: 4 }} />
                   </span>
-                  <button className="xr-btn small" onClick={() => setSel(null)}>Clear</button>
-                  <button className="xr-btn" onClick={() => { onPick(sel); }}>Use this emblem</button>
+                  <span className="xr-epicker-foot-info">{selImg.name}<em>Photo</em></span>
+                  <button className="xr-btn small" onClick={() => setImgSel(null)}>Clear</button>
+                  <button className="xr-btn" onClick={() => onPickImage(selImg.src)}>Use this image</button>
                 </>
               ) : (
-                <>
-                  <button className="xr-btn xr-epicker-upload-m" onClick={onUpload}><Image size={16} /> Upload your own image</button>
-                  <span className="xr-epicker-foot-empty">Select an emblem above.</span>
-                </>
+                <span className="xr-epicker-foot-empty">Select a photo above.</span>
               )}
             </div>
-
           </div>
-        </div>
+        )}
+
       </div>
     </div>
   );
@@ -1517,7 +1638,7 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
           <button className="xr-btn primary" onClick={create}><Plus size={17} /> Create detachment</button>
         </div>
       </div>
-      {picking && <IconPickerModal current={icon} onPick={(id) => { setIcon(id); setImage(null); setPicking(false); }} onUpload={() => { setPicking(false); inputRef.current && inputRef.current.click(); }} onClose={() => setPicking(false)} />}
+      {picking && <IconPickerModal current={icon} onPick={(id) => { setIcon(id); setImage(null); setPicking(false); }} onPickImage={(src) => { setImage(src); setIcon(null); setPicking(false); }} onUpload={() => { setPicking(false); inputRef.current && inputRef.current.click(); }} onClose={() => setPicking(false)} />}
     </div>
   );
 }
@@ -2700,7 +2821,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
       {adding && <AddUnitModal onAdd={(id) => { dispatch({ type: "add", typeId: id }); setAdding(false); toast(`${UNIT_BY_ID[id]?.name || "Unit"} added`); }} onClose={() => setAdding(false)} />}
       {abilOpen && sel && <AbilitiesModal u={sel} dispatch={dispatch} onClose={() => setAbilOpen(false)} />}
       {cmdOpen && sel && sel.isCmd && <CommanderModal u={sel} dispatch={dispatch} onClose={() => setCmdOpen(false)} />}
-      {emblemOpen && <IconPickerModal current={list.icon} onPick={(id) => { updateList({ icon: id, image: undefined }); setEmblemOpen(false); }} onUpload={() => { setEmblemOpen(false); emblemFileRef.current && emblemFileRef.current.click(); }} onClose={() => setEmblemOpen(false)} />}
+      {emblemOpen && <IconPickerModal current={list.icon} onPick={(id) => { updateList({ icon: id, image: undefined }); setEmblemOpen(false); }} onPickImage={(src) => { updateList({ image: src, icon: undefined }); setEmblemOpen(false); }} onUpload={() => { setEmblemOpen(false); emblemFileRef.current && emblemFileRef.current.click(); }} onClose={() => setEmblemOpen(false)} />}
 
       <SiteFooter />
     </div>
@@ -3739,6 +3860,18 @@ const CSS = `
 .xr-epicker-foot-info em{font:11px/1 var(--display);font-style:normal;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em;}
 .xr-epicker-foot-empty{flex:1;color:var(--ink-2);font-style:italic;font:13px/1 var(--body);}
 .xr-epicker-upload-m{display:none;}
+/* emblem picker — icon/photo mode tabs */
+.xr-epicker-tabs{display:flex;gap:3px;background:var(--paper-2);border:1.5px solid var(--ink-18);border-radius:8px;padding:3px;}
+.xr-epicker-tab{padding:4px 14px;border-radius:5px;border:none;background:none;color:var(--ink-2);font:13px/1 var(--body);cursor:pointer;}
+.xr-epicker-tab.on{background:var(--ink);color:var(--cream);}
+/* photo gallery pane */
+.xr-epicker-gallery-pane{display:flex;flex-direction:column;flex:1;min-height:0;}
+.xr-epicker-gallery-scroll{flex:1;overflow-y:auto;padding:0 14px 10px;}
+.xr-gallery-group{margin-top:10px;}
+.xr-gallery-group-hd{font:700 11px/1 var(--display);text-transform:uppercase;letter-spacing:.07em;color:var(--brass);padding:8px 0 6px;border-bottom:2px solid var(--ink-18);margin-bottom:2px;}
+.xr-gallery-sub{margin-top:8px;}
+.xr-gallery-sub-hd{font:600 10px/1 var(--display);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2);padding:4px 0 6px;}
+.xr-epicker-imgcell img{width:62%;height:62%;object-fit:contain;}
 /* chosen-badge glyph rendering inside the detachment image slots */
 .xr-dicon-glyph{display:flex;align-items:center;justify-content:center;color:var(--ink);background:var(--paper-3);}
 /* collection groups on the dashboard */
