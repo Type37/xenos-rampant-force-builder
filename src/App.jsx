@@ -506,68 +506,44 @@ const DETACH_ICON_LIST_META = DETACH_ICON_LIST.map((item) => {
   return { ...item, cat: m.cat || "arcane", setting: m.setting || "scifi", name: m.name || _idToName(item.id) };
 });
 
-/* pre-loaded photo emblems, organised by theme group and sub-folder */
-const SQUAD_IMAGE_GROUPS = [
-  { id: "military", name: "Military", sub: [
-    { id: "fireteams", name: "Fireteams", images: [
-      { id: "ft-apex",      src: "emblems/fireteams/HINF_Fireteam_Apex_Emblem.png",           name: "Fireteam Apex" },
-      { id: "ft-cerberus",  src: "emblems/fireteams/HINF_Fireteam_Cerberus_Emblem.png",       name: "Fireteam Cerberus" },
-      { id: "ft-colossus",  src: "emblems/fireteams/HINF_Fireteam_Colossus_Emblem.png",       name: "Fireteam Colossus" },
-      { id: "ft-crimson",   src: "emblems/fireteams/HINF_Fireteam_Crimson_Emblem.png",        name: "Fireteam Crimson" },
-      { id: "ft-dagger",    src: "emblems/fireteams/HINF_Fireteam_Dagger_Emblem.png",         name: "Fireteam Dagger" },
-      { id: "ft-ferret",    src: "emblems/fireteams/HINF_Fireteam_Ferret_Emblem_Icon.png",    name: "Fireteam Ferret" },
-      { id: "ft-grizzly",   src: "emblems/fireteams/HINF_Fireteam_Grizzly_Emblem.png",        name: "Fireteam Grizzly" },
-      { id: "ft-hellhound", src: "emblems/fireteams/HINF_Fireteam_Hellhound_Emblem.png",      name: "Fireteam Hellhound" },
-      { id: "ft-hydra",     src: "emblems/fireteams/HINF_Fireteam_Hydra_Emblem_Icon.png",     name: "Fireteam Hydra" },
-      { id: "ft-jorogumo",  src: "emblems/fireteams/HINF_Fireteam_Jorogumo_Emblem.png",       name: "Fireteam Jorogumo" },
-      { id: "ft-lancer",    src: "emblems/fireteams/HINF_Fireteam_Lancer_Emblem.png",         name: "Fireteam Lancer" },
-      { id: "ft-mako",      src: "emblems/fireteams/HINF_Fireteam_Mako_Emblem.png",           name: "Fireteam Mako" },
-      { id: "ft-phoenix",   src: "emblems/fireteams/HINF_Fireteam_Phoenix_Emblem_Icon.png",   name: "Fireteam Phoenix" },
-    ]},
-    { id: "cyber", name: "Cyber", images: [
-      { id: "cy-lethbridge", src: "emblems/cyber/HINF_-_Emblem_icon_-_Lethbridge_Netrun.png", name: "Lethbridge Netrun" },
-      { id: "cy-misriah",   src: "emblems/cyber/HINF_-_Emblem_icon_-_Misriah_Netrun.png",    name: "Misriah Netrun" },
-      { id: "cy-vakara",    src: "emblems/cyber/HINF_-_Emblem_icon_-_Vakara_Netrun.png",     name: "Vakara Netrun" },
-      { id: "cy-wst",       src: "emblems/cyber/HINF_-_Emblem_icon_-_WST_Netrun.png",        name: "WST Netrun" },
-    ]},
-    { id: "patterns", name: "Patterns", images: [
-      { id: "pt-floral-awaken", src: "emblems/patterns/HINF_-_Emblem_icon_-_Floral_Awakening.png",       name: "Floral Awakening" },
-      { id: "pt-floral-crest",  src: "emblems/patterns/HINF_-_Emblem_icon_-_Floral_Crest.png",           name: "Floral Crest" },
-      { id: "pt-hispanic",      src: "emblems/patterns/HINF_-_Emblem_icon_-_Hispanic_Heritage_Month.png", name: "Hispanic Heritage" },
-      { id: "pt-blades",        src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidoblades.png",           name: "Kaleidoblades" },
-      { id: "pt-bolt",          src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidobolt.png",             name: "Kaleidobolt" },
-      { id: "pt-chip",          src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidochip.png",             name: "Kaleidochip" },
-      { id: "pt-shot",          src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidoshot.png",             name: "Kaleidoshot" },
-      { id: "pt-volt",          src: "emblems/patterns/HINF_-_Emblem_icon_-_Kaleidovolt.png",             name: "Kaleidovolt" },
-    ]},
-    { id: "retro", name: "Retro", images: [
-      { id: "rt-pelican",  src: "emblems/retro/HINF_Peter_the_Pelican_Emblem.png",      name: "Peter the Pelican" },
-      { id: "rt-mongoose", src: "emblems/retro/HINF_Phantom_Mongoose_Emblem_Icon.png",  name: "Phantom Mongoose" },
-      { id: "rt-wyld",     src: "emblems/retro/HINF_Wyld_Hogs_Emblem.png",              name: "Wyld Hogs" },
-    ]},
-    { id: "alien", name: "Alien", images: [
-      { id: "al-siqtar", src: "emblems/alien/HINF_-_Emblem_icon_-_Siqtar_Wing.png", name: "Siqtar Wing" },
-    ]},
-    { id: "cards", name: "Cards", images: [
-      { id: "cd-clubs",    src: "emblems/cards/HINF_-_Emblem_icon_-_Clubs.png",    name: "Clubs" },
-      { id: "cd-diamonds", src: "emblems/cards/HINF_-_Emblem_icon_-_Diamonds.png", name: "Diamonds" },
-      { id: "cd-hearts",   src: "emblems/cards/HINF_-_Emblem_icon_-_Hearts.png",   name: "Hearts" },
-      { id: "cd-spades",   src: "emblems/cards/HINF_-_Emblem_icon_-_Spades.png",   name: "Spades" },
-    ]},
-  ]},
-  { id: "marathon", name: "Marathon", sub: [
-    { id: "uesc", name: "UESC", images: [
-      { id: "mr-recruit",    src: "emblems/marathon/uesc-recruit.webp",            name: "UESC Recruit" },
-      { id: "mr-grenadier",  src: "emblems/marathon/uesc-grenadier-elite.jpg",     name: "UESC Grenadier Elite" },
-      { id: "mr-grenadier-t", src: "emblems/marathon/uesc-grenadier-turnaround.webp", name: "UESC Grenadier" },
-      { id: "mr-warden",     src: "emblems/marathon/warden-assault.webp",          name: "Warden Assault" },
-    ]},
-    { id: "marks", name: "Marks", images: [
-      { id: "mr-mark-01",    src: "emblems/marathon/marathon-mark-01.png",         name: "Marathon Mark 01" },
-    ]},
-  ]},
-];
-const _allSquadImages = SQUAD_IMAGE_GROUPS.flatMap((g) => g.sub.flatMap((s) => s.images));
+/* pre-loaded photo emblems, generated from the folder tree under src/emblems.
+   Each immediate sub-folder is one group; drop a file in a folder and it shows
+   up in the picker automatically. Display names are derived from the file and
+   folder names (see prettify below), so no hand-maintained list to keep in sync. */
+const _emblemUrls = import.meta.glob("./emblems/*/*.{png,jpg,jpeg,webp}", {
+  eager: true, query: "?url", import: "default",
+});
+const _EMBLEM_SMALL = new Set(["the", "of", "and", "a", "an", "to", "in", "on", "for"]);
+const _EMBLEM_ACRONYMS = new Set(["uesc", "wst", "us", "uk", "hq", "ai"]);
+const _titleWord = (w, first) => {
+  if (/^\d+$/.test(w)) return w;                       // keep numbers (e.g. 01)
+  if (/^[A-Z]{2,}$/.test(w)) return w;                 // keep source acronyms (WST)
+  const lw = w.toLowerCase();
+  if (_EMBLEM_ACRONYMS.has(lw)) return w.toUpperCase(); // uppercase known acronyms
+  if (!first && _EMBLEM_SMALL.has(lw)) return lw;       // keep small words lower
+  return lw.charAt(0).toUpperCase() + lw.slice(1);
+};
+const _prettify = (raw) =>
+  raw.replace(/[-_]+/g, " ")
+     .replace(/\b(?:HINF|Emblem|icon)\b/gi, " ")        // drop filename noise words
+     .replace(/\s+/g, " ").trim()
+     .split(" ").filter(Boolean).map((w, i) => _titleWord(w, i === 0)).join(" ");
+
+const SQUAD_IMAGE_GROUPS = (() => {
+  const groups = {};
+  for (const [path, url] of Object.entries(_emblemUrls)) {
+    const m = path.match(/\/emblems\/([^/]+)\/([^/]+)\.[^.]+$/);
+    if (!m) continue;
+    const [, folder, base] = m;
+    (groups[folder] ||= []).push({ id: `${folder}/${base}`, src: url, name: _prettify(base) });
+  }
+  return Object.keys(groups).sort().map((folder) => ({
+    id: folder,
+    name: _prettify(folder),
+    images: groups[folder].sort((a, b) => a.name.localeCompare(b.name)),
+  }));
+})();
+const _allSquadImages = SQUAD_IMAGE_GROUPS.flatMap((g) => g.images);
 
 /* one big pool of faction names for the "get a random one" link */
 const ALL_NAMES = ALL_GENRES.flatMap((g) => g.groups.flatMap((gr) => gr.factions.flatMap((f) => f.pool || [])));
@@ -1377,11 +1353,9 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
   const filteredGallery = useMemo(() => {
     if (!imgQ) return SQUAD_IMAGE_GROUPS;
     const lq = imgQ.toLowerCase();
-    return SQUAD_IMAGE_GROUPS.map((g) => ({
-      ...g,
-      sub: g.sub.map((s) => ({ ...s, images: s.images.filter((i) => i.name.toLowerCase().includes(lq)) }))
-               .filter((s) => s.images.length > 0),
-    })).filter((g) => g.sub.length > 0);
+    return SQUAD_IMAGE_GROUPS
+      .map((g) => ({ ...g, images: g.images.filter((i) => i.name.toLowerCase().includes(lq)) }))
+      .filter((g) => g.images.length > 0);
   }, [imgQ]);
 
   const catCt = (cid) => {
@@ -1542,22 +1516,17 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
                 : filteredGallery.map((group) => (
                     <div key={group.id} className="xr-gallery-group">
                       <div className="xr-gallery-group-hd">{group.name}</div>
-                      {group.sub.map((sub) => (
-                        <div key={sub.id} className="xr-gallery-sub">
-                          <div className="xr-gallery-sub-hd">{sub.name}</div>
-                          <div className="xr-epicker-grid">
-                            {sub.images.map((img) => (
-                              <button key={img.id}
-                                className={`xr-epicker-cell xr-epicker-imgcell${imgSel === img.id ? " sel" : ""}${imgSel && imgSel !== img.id ? " dim" : ""}`}
-                                onClick={() => setImgSel(imgSel === img.id ? null : img.id)}
-                                aria-label={img.name} aria-pressed={imgSel === img.id} title={img.name}>
-                                <img src={img.src} alt="" />
-                                <span className="xr-epicker-tip">{img.name}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+                      <div className="xr-epicker-grid">
+                        {group.images.map((img) => (
+                          <button key={img.id}
+                            className={`xr-epicker-cell xr-epicker-imgcell${imgSel === img.id ? " sel" : ""}${imgSel && imgSel !== img.id ? " dim" : ""}`}
+                            onClick={() => setImgSel(imgSel === img.id ? null : img.id)}
+                            aria-label={img.name} aria-pressed={imgSel === img.id} title={img.name}>
+                            <img src={img.src} alt="" />
+                            <span className="xr-epicker-tip">{img.name}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   ))}
             </div>
