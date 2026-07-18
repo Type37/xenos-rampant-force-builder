@@ -555,6 +555,17 @@ const SQUAD_IMAGE_GROUPS = [
       { id: "cd-spades",   src: "emblems/cards/HINF_-_Emblem_icon_-_Spades.png",   name: "Spades" },
     ]},
   ]},
+  { id: "marathon", name: "Marathon", sub: [
+    { id: "uesc", name: "UESC", images: [
+      { id: "mr-recruit",    src: "emblems/marathon/uesc-recruit.webp",            name: "UESC Recruit" },
+      { id: "mr-grenadier",  src: "emblems/marathon/uesc-grenadier-elite.jpg",     name: "UESC Grenadier Elite" },
+      { id: "mr-grenadier-t", src: "emblems/marathon/uesc-grenadier-turnaround.webp", name: "UESC Grenadier" },
+      { id: "mr-warden",     src: "emblems/marathon/warden-assault.webp",          name: "Warden Assault" },
+    ]},
+    { id: "marks", name: "Marks", images: [
+      { id: "mr-mark-01",    src: "emblems/marathon/marathon-mark-01.png",         name: "Marathon Mark 01" },
+    ]},
+  ]},
 ];
 const _allSquadImages = SQUAD_IMAGE_GROUPS.flatMap((g) => g.sub.flatMap((s) => s.images));
 
