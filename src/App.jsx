@@ -172,10 +172,10 @@ import icGrip from "@iconify-icons/ph/dots-six-vertical";
 /* User-supplied stat icons: black knocked out, recoloured to ink, bundled. */
 import icoAttack from "./assets/stat/attack.png";
 import icoMove from "./assets/stat/move.png";
-import icoShoot from "./assets/stat/shoot.png";
+import icoShoot from "./assets/stat/armour.png";
 import icoCourage from "./assets/stat/courage.png";
 import icoDefence from "./assets/stat/defence.png";
-import icoArmour from "./assets/stat/armour.png";
+import icoArmour from "./assets/stat/shoot.png";
 import icoStrength from "./assets/stat/strength.png";
 
 import {
@@ -3391,7 +3391,7 @@ const CSS = `
 .xr-home-welcome h2{font-family:var(--display);font-weight:700;font-size:27px;color:var(--ink);}
 .xr-home-welcome p{font-family:var(--flavor);font-style:italic;font-size:17px;line-height:1.5;color:var(--ink-2);max-width:40ch;}
 .xr-home-welcome-btns{display:flex;gap:11px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
-.xr-home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.xr-home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
 .xr-list-card{position:relative;border:3px solid var(--ink);border-radius:var(--r);background:var(--paper-2);box-shadow:var(--shadow4);transition:transform var(--dur-normal) var(--curve-ease),box-shadow var(--dur-normal) var(--curve-ease);display:flex;flex-direction:column;overflow:hidden;}
 .xr-list-card:hover{box-shadow:var(--shadow16);transform:translateY(-3px);}
 .xr-list-open{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:16px 16px 12px;}
@@ -3659,7 +3659,7 @@ const CSS = `
 .xr-mast-emblem:hover{transform:translateY(-1px);}
 .xr-mast-emblem:hover .xr-mast-img{border-color:var(--brand-deep-blue);}
 .xr-mast-emblem-add{display:flex;align-items:center;justify-content:center;color:var(--ink-2);}
-.xr-list-img{width:100%;aspect-ratio:1;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:2px;}
+.xr-list-img{width:min(100%,160px);aspect-ratio:1;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:2px;}
 .xr-set-img-row{display:flex;align-items:center;gap:11px;}
 .xr-panel-id{flex:1;min-width:0;}
 .xr-namefield{position:relative;display:block;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);padding:17px 12px 6px;cursor:text;transition:border-color .12s;}
@@ -4045,9 +4045,9 @@ const CSS = `
 .xr-preset-by{font-family:var(--ui);font-weight:400;font-size:12px;letter-spacing:.01em;color:var(--ink-2);margin-top:4px;}
 .xr-preset-notes{font-family:var(--ui);font-size:13px;color:var(--ink-2);margin-bottom:14px;display:flex;flex-wrap:wrap;gap:4px 10px;}
 .xr-preset-notes a{color:var(--brand-deep-blue);text-decoration:none;font-weight:600;word-break:break-all;}
-.xr-preset-img{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:9px;}
+.xr-preset-img{display:flex;align-items:center;justify-content:center;width:min(100%,140px);aspect-ratio:1;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:9px;}
 .xr-preset-img.xr-dicon-glyph svg{width:90px;height:90px;}
-.xr-preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px;}
+.xr-preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
 .xr-preset-card{display:flex;flex-direction:column;gap:3px;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:13px 15px 11px;border-radius:var(--r);transition:.13s;}
 .xr-preset-card:hover{background:var(--paper-3);box-shadow:0 3px 10px rgba(31,61,46,.14);}
 .xr-preset-card:active{transform:scale(.98);}
