@@ -3591,7 +3591,7 @@ const CSS = `
 /* compact unit rows */
 .xr-urow{display:flex;flex-direction:row;align-items:center;gap:10px;text-align:left;border:2px solid var(--ink);border-left-width:6px;border-radius:9px;background:var(--paper-2);padding:7px 12px;transition:transform .13s cubic-bezier(.2,.8,.2,1),background .13s,box-shadow .13s;touch-action:pan-y;-webkit-user-select:none;user-select:none;}
 .xr-urow-body{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;}
-.xr-urow-img{flex:none;width:40px;height:40px;border-radius:7px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);}
+.xr-urow-img{flex:none;width:40px;height:40px;border-radius:7px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:transparent;}
 .xr-urow-ic{flex:none;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);}
 .xr-urow.cat-inf .xr-urow-ic{color:var(--sage);}
 .xr-urow.cat-xeno .xr-urow-ic{color:var(--iris);}
@@ -3650,7 +3650,7 @@ const CSS = `
 .xr-imgup.square,.xr-imgup.square .xr-imgup-thumb,.xr-imgup.square .xr-imgup-add{width:64px;height:64px;border-radius:11px;}
 .xr-imgup-add{display:flex;align-items:center;justify-content:center;border:2px dashed var(--ink-30);background:var(--paper-2);color:var(--ink-2);transition:.13s;}
 .xr-imgup-add:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-3);}
-.xr-imgup-thumb{display:block;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);cursor:pointer;padding:0;}
+.xr-imgup-thumb{display:block;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:transparent;cursor:pointer;padding:0;}
 .xr-imgup-x{position:absolute;top:-12px;right:-12px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid var(--ink);background:var(--coral);color:#3a1206;transition:.12s;}
 .xr-imgup-x:hover{background:var(--coral-ink);color:#fff;}
 /* detachment picture on masthead + dashboard */
