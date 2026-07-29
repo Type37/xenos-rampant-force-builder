@@ -904,7 +904,8 @@ export const SETTINGS = [
         "name": "Werwolf Schülers (1945–46)",
         "subtitle": "Taking The World With Them",
         "lore": "The Schulers were kept away from most battlefields — their creations instilled disgust and fear even in regular Wehrmacht troops. As the Soviets swept through Germany, they were finally unleashed. Most chose escape over a last stand. Some did not.",
-        "icon": "wolf-howl",
+        "icon": "iron-cross",
+        "badge": { "bg": "#c0293a", "fg": "#f5e8d8" },
         "units": [
           {
             "typeId": "light",
@@ -1791,6 +1792,7 @@ export const SETTINGS = [
         "subtitle": "Well-Equipped And Highly Motivated Volunteers",
         "lore": "When the alien invasion struck, decades of dispersed command planning meant that even isolated overseas bases were able to fight back. This detachment could represent any professional military force in the genre — UNIT, XCOM, or any multinational rapid-response organisation.",
         "icon": "spartan-helmet",
+        "image": "war-on-terra/first-tier-military.png",
         "units": [
           {
             "typeId": "recon",
@@ -1836,6 +1838,7 @@ export const SETTINGS = [
         "subtitle": "A Fully Armed And Equipped Battalion (On Paper)",
         "lore": "Being initially overlooked by the invasion gave the less-developed world breathing space to mobilise its large, if poorly trained, armed forces. Logistics and equipment quality are always an issue in such forces, and official corruption — even in the face of alien invasion — may hamper operations still further.",
         "icon": "mailed-fist",
+        "image": "war-on-terra/second-tier-military.png",
         "units": [
           {
             "typeId": "heavy",
@@ -1901,6 +1904,7 @@ export const SETTINGS = [
         "subtitle": "An Army, Technically",
         "lore": "Many a supposedly unbeatable army has learned that poorly paid troops with old rifles and battered pickups can punch well above their weight. Unfortunately, warlords often care more for their own interests than loftier goals — some have even sold their allegiance to the aliens in return for weapons or power over their rivals.",
         "icon": "crossed-pistols",
+        "image": "war-on-terra/irregular.png",
         "units": [
           {
             "typeId": "heavy",
@@ -1969,6 +1973,7 @@ export const SETTINGS = [
         "subtitle": "Send Lawyers, Guns, And Money",
         "lore": "With regular forces overstretched by the invasion, both governments and corporations have turned to PMCs — well-funded, equipped with decent personal gear, and offering a layer of deniability when the mission extends to striking human rivals rather than the invaders.",
         "icon": "gun-rose",
+        "image": "war-on-terra/pmc.png",
         "units": [
           {
             "typeId": "light",
@@ -2057,6 +2062,7 @@ export const SETTINGS = [
         "subtitle": "Resistance Is Not Futile",
         "lore": "Human civilisation survives in the occupied territories, at least until the invaders decide humanity is too troublesome to permit. Most comply; some collaborate; others fight back. The alien reprisals are swift and brutal, which enrages more civilians, which creates more fighters — the classic asymmetric cycle.",
         "icon": "black-flag",
+        "image": "war-on-terra/insurgent.png",
         "units": [
           {
             "typeId": "recon",
@@ -2153,6 +2159,7 @@ export const SETTINGS = [
         "subtitle": "Remember That Skirmish Outside Paris, Or Was It Saint Petersburg?",
         "lore": "Prior to the invasion, alien scouting incursions were regularly and secretly confronted by Special Forces units, some established specifically for that purpose. Nowadays they mainly train resistance movements in occupied territory, but still launch raids when opportunities arise.",
         "icon": "cloak-dagger",
+        "image": "war-on-terra/black-ops-team.png",
         "units": [
           {
             "typeId": "elite",
@@ -2199,6 +2206,7 @@ export const SETTINGS = [
         "subtitle": "Don't Run, We Are Your Friends!",
         "lore": "These aliens have come a long way to take our planet, and their strength is their technology. This detachment escalates the UFO Scientific Team from the Urban Fantasy chapter — the stun weapons are gone, replaced by searing bolts of plasma.",
         "icon": "alien-fire",
+        "image": "war-on-terra/ufo-invasion-force.png",
         "units": [
           {
             "typeId": "light",
@@ -2251,6 +2259,7 @@ export const SETTINGS = [
         "subtitle": "Traitors To The Species",
         "lore": "The invasion was not as sudden as many believed. For decades, scattered humans had already sworn themselves to the coming conquerors. Invading an entire planet requires more troops than even advanced technology can easily provide, so local auxiliaries are inevitable — gifted with power, status, and increased rations in return for their service.",
         "icon": "mdi-skull",
+        "image": "war-on-terra/collaborators.png",
         "units": [
           {
             "typeId": "elite",

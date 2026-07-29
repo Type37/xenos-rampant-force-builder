@@ -879,19 +879,20 @@ function Toaster() {
 
 /* read an image file, downscale it to fit maxPx, hand back a compact JPEG data URL.
    keeps localStorage small: full-res photos would blow the quota. */
-function drawDownscaled(source, w, h, cb) {
+function drawDownscaled(source, w, h, cb, mime = "image/jpeg") {
   const canvas = document.createElement("canvas");
   canvas.width = w; canvas.height = h;
   canvas.getContext("2d").drawImage(source, 0, 0, w, h);
-  try { cb(canvas.toDataURL("image/jpeg", 0.82)); } catch { cb(null); }
+  try { cb(canvas.toDataURL(mime, mime === "image/jpeg" ? 0.82 : undefined)); } catch { cb(null); }
 }
 /* phone photos are stored sideways with an EXIF orientation tag; createImageBitmap
    auto-rotates using it, so the crop below lands on the right part of the picture. */
 function downscaleImage(file, maxPx, cb) {
+  const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
   if (window.createImageBitmap) {
     window.createImageBitmap(file, { imageOrientation: "from-image" }).then((bmp) => {
       const scale = Math.min(1, maxPx / Math.max(bmp.width, bmp.height));
-      drawDownscaled(bmp, Math.max(1, Math.round(bmp.width * scale)), Math.max(1, Math.round(bmp.height * scale)), cb);
+      drawDownscaled(bmp, Math.max(1, Math.round(bmp.width * scale)), Math.max(1, Math.round(bmp.height * scale)), cb, mime);
     }).catch(() => cb(null));
     return;
   }
@@ -900,7 +901,7 @@ function downscaleImage(file, maxPx, cb) {
     const img = new window.Image();
     img.onload = () => {
       const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-      drawDownscaled(img, Math.max(1, Math.round(img.width * scale)), Math.max(1, Math.round(img.height * scale)), cb);
+      drawDownscaled(img, Math.max(1, Math.round(img.width * scale)), Math.max(1, Math.round(img.height * scale)), cb, mime);
     };
     img.onerror = () => cb(null);
     img.src = e.target.result;
@@ -1297,7 +1298,7 @@ function BudgetPicker({ budget, onChange }) {
 
 /* renders a detachment's picture: an uploaded image or a chosen badge icon */
 function DetachIcon({ list, size = 26, className, style }) {
-  if (list && list.image) return <span className={className} style={{ backgroundImage: `url(${list.image})`, ...style }} aria-hidden="true" />;
+  if (list && list.image) return <span className={className} style={{ backgroundImage: `url(${list.image})`, backgroundColor: "transparent", ...style }} aria-hidden="true" />;
   const Ico = list && list.icon && DETACH_ICON_BY_ID[list.icon];
   if (Ico) return <span className={`${className || ""} xr-dicon-glyph`} style={style} aria-hidden="true"><Ico size={size} /></span>;
   return null;
@@ -3658,7 +3659,7 @@ const CSS = `
 .xr-mast-emblem:hover{transform:translateY(-1px);}
 .xr-mast-emblem:hover .xr-mast-img{border-color:var(--brand-deep-blue);}
 .xr-mast-emblem-add{display:flex;align-items:center;justify-content:center;color:var(--ink-2);}
-.xr-list-img{width:100%;height:120px;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:2px;}
+.xr-list-img{width:100%;aspect-ratio:1;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:2px;}
 .xr-set-img-row{display:flex;align-items:center;gap:11px;}
 .xr-panel-id{flex:1;min-width:0;}
 .xr-namefield{position:relative;display:block;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);padding:17px 12px 6px;cursor:text;transition:border-color .12s;}
@@ -4041,10 +4042,10 @@ const CSS = `
 .xr-preset-blurb b{font-family:var(--display);color:var(--ink);}
 .xr-preset-epi{border-left:3px solid var(--brand-deep-blue);padding:3px 0 3px 16px;margin-bottom:8px;max-width:62ch;}
 .xr-preset-quote{font-family:var(--flavor);font-style:italic;font-size:17px;line-height:1.5;color:var(--ink);}
-.xr-preset-by{font-family:var(--ui);font-weight:600;font-size:13.5px;letter-spacing:.02em;color:var(--brand-deep-blue);margin-top:6px;}
+.xr-preset-by{font-family:var(--ui);font-weight:400;font-size:12px;letter-spacing:.01em;color:var(--ink-2);margin-top:4px;}
 .xr-preset-notes{font-family:var(--ui);font-size:13px;color:var(--ink-2);margin-bottom:14px;display:flex;flex-wrap:wrap;gap:4px 10px;}
 .xr-preset-notes a{color:var(--brand-deep-blue);text-decoration:none;font-weight:600;word-break:break-all;}
-.xr-preset-img{display:flex;align-items:center;justify-content:center;width:100%;height:118px;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:9px;}
+.xr-preset-img{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1;border-radius:8px;border:2px solid var(--ink);background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--paper-3);margin-bottom:9px;}
 .xr-preset-img.xr-dicon-glyph svg{width:90px;height:90px;}
 .xr-preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px;}
 .xr-preset-card{display:flex;flex-direction:column;gap:3px;text-align:left;border:2.5px solid var(--ink);background:var(--paper-2);padding:13px 15px 11px;border-radius:var(--r);transition:.13s;}
