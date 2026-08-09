@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import Cropper from "cropperjs";
+import "cropperjs/dist/cropper.css";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -901,49 +903,128 @@ function Toaster() {
   );
 }
 
-/* read an image file, downscale it to fit maxPx, hand back a compact JPEG data URL.
-   keeps localStorage small: full-res photos would blow the quota. */
-function drawDownscaled(source, w, h, cb, mime = "image/jpeg") {
-  const canvas = document.createElement("canvas");
-  canvas.width = w; canvas.height = h;
-  canvas.getContext("2d").drawImage(source, 0, 0, w, h);
-  try { cb(canvas.toDataURL(mime, mime === "image/jpeg" ? 0.82 : undefined)); } catch { cb(null); }
-}
-/* phone photos are stored sideways with an EXIF orientation tag; createImageBitmap
-   auto-rotates using it, so the crop below lands on the right part of the picture. */
-function downscaleImage(file, maxPx, cb) {
-  const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
-  if (window.createImageBitmap) {
-    window.createImageBitmap(file, { imageOrientation: "from-image" }).then((bmp) => {
-      const scale = Math.min(1, maxPx / Math.max(bmp.width, bmp.height));
-      drawDownscaled(bmp, Math.max(1, Math.round(bmp.width * scale)), Math.max(1, Math.round(bmp.height * scale)), cb, mime);
-    }).catch(() => cb(null));
-    return;
-  }
+/* How a picture should sit in its frame.
+   Every frame here is background-size:contain, which is right for the bundled
+   faction art - those are logos, and cropping one cuts the mark. It is wrong for
+   a picture somebody uploaded: a wide photo was letterboxed inside a 64px square
+   with dead space above and below, so an upload never filled the frame it was
+   sitting in. Uploads fill it instead, centred.
+   An upload is always a data: URL and bundled art never is, so the source itself
+   says which of the two this is and nothing has to be passed down to the call
+   sites. Cropped output is square, so for those two the two values agree anyway
+   - this still matters for pictures stored before the crop step existed. */
+const fitFor = (src) => (typeof src === "string" && src.startsWith("data:") ? "cover" : "contain");
+
+/* ---- choosing a picture ----
+   A file arrives, and before anything is stored you get to say which part of it
+   is the picture. What used to be here scaled the WHOLE image down to fit 256px
+   and kept that, which is right when the subject fills the frame and wrong the
+   rest of the time - a wide shot of a squad, a photo with the model off to one
+   side. There was no way to say otherwise.
+
+   Every frame that displays one of these is square (64px in the editor, 40px on
+   a unit row, 26px on a print card), so the crop is square too and there is
+   nothing to choose about the shape.
+
+   Fired from anywhere with chooseImage(file, px, cb), exactly like toast()
+   above: a single <CropHost/> in the app shell listens on the window and puts
+   up the dialog. That is what keeps this callable from a plain onChange handler
+   with no dialog state threaded through the three inputs that use it.
+
+   The callback is only called if you press Use; cancelling drops the file and
+   says nothing, which is what every call site already expected from the old
+   version's failure path. */
+const cropRequest = (src, out, cb) => {
+  window.dispatchEvent(new CustomEvent("xr-crop", { detail: { src, out, cb } }));
+};
+function chooseImage(file, outPx, cb) {
+  if (!file || !file.type || !file.type.startsWith("image/")) { toast("That file is not an image.", "err"); return; }
   const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new window.Image();
-    img.onload = () => {
-      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-      drawDownscaled(img, Math.max(1, Math.round(img.width * scale)), Math.max(1, Math.round(img.height * scale)), cb, mime);
-    };
-    img.onerror = () => cb(null);
-    img.src = e.target.result;
-  };
-  reader.onerror = () => cb(null);
+  reader.onerror = () => toast("That image could not be read.", "err");
+  /* Read to a data URL rather than an object URL because Cropper's EXIF
+     handling parses the orientation tag out of the base64 itself. Phone photos
+     are stored sideways with that tag, and without it a portrait shot arrives
+     on its side - which the old createImageBitmap path was also careful about. */
+  reader.onload = () => cropRequest(reader.result, outPx || 512, cb);
   reader.readAsDataURL(file);
 }
 
-/* How an uploaded picture should sit in its frame.
-   Every frame here is background-size:contain, which is right for the bundled
-   faction art - those are logos, and cropping one cuts the mark. It is wrong for
-   a photo somebody uploaded: a wide shot of a squad got letterboxed inside a
-   64px square with dead space above and below, so uploads never filled the frame
-   they were sitting in. Uploads fill it instead, centred, which is what "square
-   to fit" means for a photograph.
-   An upload is always a data: URL and bundled art never is, so the source tells
-   us which of the two this is without anything having to be passed down. */
-const fitFor = (src) => (typeof src === "string" && src.startsWith("data:") ? "cover" : "contain");
+/* The crop dialog. One of these is mounted in the shell; it is idle until a
+   chooseImage call wakes it. */
+function CropHost() {
+  const [job, setJob] = useState(null);
+  const imgRef = useRef(null);
+  const cropRef = useRef(null);
+
+  useEffect(() => {
+    const onReq = (e) => setJob(e.detail);
+    window.addEventListener("xr-crop", onReq);
+    return () => window.removeEventListener("xr-crop", onReq);
+  }, []);
+
+  /* Cropper owns the DOM it builds inside the <img>, so it is created after the
+     dialog paints and destroyed with it. React never touches those nodes, which
+     is the whole reason this is a ref and not state. */
+  useEffect(() => {
+    if (!job || !imgRef.current) return undefined;
+    const c = new Cropper(imgRef.current, {
+      aspectRatio: 1,
+      viewMode: 1,          // the box cannot leave the picture
+      autoCropArea: 1,      // opens on the largest centred square - what the old automatic fit gave you
+      dragMode: "move",
+      background: false,
+      checkOrientation: true,
+    });
+    cropRef.current = c;
+    return () => { c.destroy(); cropRef.current = null; };
+  }, [job]);
+
+  useEffect(() => {
+    if (!job) return undefined;
+    const onKey = (e) => { if (e.key === "Escape") setJob(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [job]);
+
+  if (!job) return null;
+
+  const use = () => {
+    const c = cropRef.current;
+    if (!c) return;
+    /* getCroppedCanvas does the scaling, so what is stored is exactly the size
+       asked for however big the original was - a 12MP phone photo and a 200px
+       logo both come out the same. imageSmoothingQuality matters here: the
+       default makes a heavy downscale visibly crunchy. */
+    const canvas = c.getCroppedCanvas({
+      width: job.out, height: job.out,
+      fillColor: "#ffffff",
+      imageSmoothingEnabled: true, imageSmoothingQuality: "high",
+    });
+    if (!canvas) { toast("That image could not be cropped.", "err"); setJob(null); return; }
+    const out = canvas.toDataURL("image/jpeg", 0.85);
+    setJob(null);
+    job.cb(out);
+  };
+
+  return (
+    <div className="xr-modal-backdrop" onClick={() => setJob(null)}>
+      <div className="xr-modal xr-modal-narrow xr-crop" role="dialog" aria-modal="true" aria-label="Crop the picture" onClick={(e) => e.stopPropagation()}>
+        <div className="xr-modal-head">
+          <span className="xr-modal-title"><Image size={20} /> Frame the picture</span>
+          <button className="xr-iconbtn" onClick={() => setJob(null)} aria-label="Cancel"><XIc size={20} /></button>
+        </div>
+        <p className="xr-crop-hint">Drag to move, drag a corner to resize, scroll or pinch to zoom.</p>
+        <div className="xr-crop-stage"><img ref={imgRef} src={job.src} alt="" /></div>
+        <div className="xr-modal-foot">
+          <button className="xr-btn" onClick={() => cropRef.current && cropRef.current.rotate(90)}>Rotate</button>
+          <button className="xr-btn" onClick={() => cropRef.current && cropRef.current.reset()}>Reset</button>
+          <button className="xr-btn" onClick={() => setJob(null)}>Cancel</button>
+          <button className="xr-btn primary" onClick={use}><Check size={17} /> Use this picture</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* upload/replace/remove a picture. shows the current image, or an add button. */
 function ImageUpload({ image, onChange, title, shape }) {
@@ -956,7 +1037,7 @@ function ImageUpload({ image, onChange, title, shape }) {
         : <button className="xr-imgup-add" onClick={pick} title={title || "Add a picture"} aria-label={title || "Add a picture"}><Image size={20} /></button>}
       {image && <button className="xr-imgup-x" onClick={() => onChange(null)} title="Remove picture" aria-label="Remove picture"><XIc size={12} /></button>}
       <input ref={inputRef} type="file" accept="image/*" hidden
-        onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) downscaleImage(f, 256, (d) => d && onChange(d)); e.target.value = ""; }} />
+        onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) chooseImage(f, 512, (d) => d && onChange(d)); e.target.value = ""; }} />
     </div>
   );
 }
@@ -1627,7 +1708,7 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
             </div>
             {(image || icon) && <button className="xr-iconbtn small" onClick={() => { setImage(null); setIcon(null); }} title="Remove" aria-label="Remove emblem"><XIc size={16} /></button>}
             <input ref={inputRef} type="file" accept="image/*" hidden
-              onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) downscaleImage(f, 256, (d) => { if (d) { setImage(d); setIcon(null); } }); e.target.value = ""; }} />
+              onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) chooseImage(f, 512, (d) => { if (d) { setImage(d); setIcon(null); } }); e.target.value = ""; }} />
           </div>
 
           <FloatingField id="na-name" label="Name" value={name} onChange={setName} autoFocus onEnter={create} />
@@ -2694,7 +2775,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
               : <span className="xr-mast-img xr-mast-emblem-add"><Image size={20} /></span>}
           </button>
           <input ref={emblemFileRef} type="file" accept="image/*" hidden
-            onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) downscaleImage(f, 256, (d) => { if (d) updateList({ image: d, icon: undefined }); }); e.target.value = ""; }} />
+            onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) chooseImage(f, 512, (d) => { if (d) updateList({ image: d, icon: undefined }); }); e.target.value = ""; }} />
           <input className="xr-detname" value={list.name} placeholder="Name your detachment"
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
           <div className="xr-mastptswrap">
@@ -3301,6 +3382,7 @@ export default function App() {
       </ErrorBoundary>
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
       <Toaster />
+      <CropHost />
     </div>
   );
 }
@@ -4004,6 +4086,15 @@ const CSS = `
 .xr-trait-rule{font-family:var(--body);font-style:normal;font-size:16px;line-height:1.5;color:var(--ink);}
 
 /* add-unit modal */
+.xr-crop{width:min(560px,100%);}
+.xr-crop-hint{margin:0;padding:12px 20px 0;font-size:13px;line-height:1.5;color:var(--ink-70,#4a5a52);}
+/* The stage belongs to Cropper; only its box is ours. min-height stops the
+   dialog collapsing in the frame before the picture has decoded. */
+.xr-crop-stage{margin:12px 20px;min-height:220px;max-height:52vh;background:var(--ink-10,#eceee9);}
+.xr-crop-stage>img{display:block;max-width:100%;}
+.xr-crop .xr-modal-foot{gap:8px;justify-content:flex-start;}
+.xr-crop .xr-modal-foot .primary{margin-left:auto;}
+
 .xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade var(--dur-fast) var(--curve-decel);}
 .xr-modal{width:min(880px,100%);max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:var(--shadow64);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop var(--dur-slow) var(--curve-decel);}
 /* fixed height so switching tabs does not resize/move the window */
