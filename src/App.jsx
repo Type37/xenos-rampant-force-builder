@@ -761,8 +761,32 @@ const LS_CURRENT = "xrb.current";
 function loadLists() {
   try { return JSON.parse(localStorage.getItem(LS_LISTS)) || {}; } catch { return {}; }
 }
+/* A save that did not fit used to be swallowed here, and that is worse than it
+   looks: the write simply did not happen. You carry on editing, everything on
+   screen still says what you typed, and the detachment is gone at the next reload
+   with nothing having said a word about it.
+
+   So a full store is now reported. Once per run of failures, not once per save -
+   this is called on every edit, and a toast on each keystroke would bury the
+   message it is trying to deliver. A save that succeeds afterwards arms it again.
+
+   Anything else (private browsing, storage switched off) still fails quietly:
+   nothing was going to persist in that session whatever we said, and there is
+   nothing the player can do about it. */
+let saveFailed = false;
 function saveLists(lists) {
-  try { localStorage.setItem(LS_LISTS, JSON.stringify(lists)); } catch { /* storage full or blocked */ }
+  try {
+    localStorage.setItem(LS_LISTS, JSON.stringify(lists));
+    saveFailed = false;
+  } catch (e) {
+    // Firefox uses its own name, older Safari only sets the legacy code.
+    const full = e instanceof DOMException
+      && (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED" || e.code === 22);
+    if (full && !saveFailed) {
+      saveFailed = true;
+      toast("Out of space - that did not save. Remove a picture from a unit, or delete a detachment you have finished with.", "err");
+    }
+  }
 }
 function loadPlay(listId) {
   try { return JSON.parse(localStorage.getItem(`xrb.play.${listId}`)) || { turn: 1, units: {} }; }
@@ -910,6 +934,17 @@ function downscaleImage(file, maxPx, cb) {
   reader.readAsDataURL(file);
 }
 
+/* How an uploaded picture should sit in its frame.
+   Every frame here is background-size:contain, which is right for the bundled
+   faction art - those are logos, and cropping one cuts the mark. It is wrong for
+   a photo somebody uploaded: a wide shot of a squad got letterboxed inside a
+   64px square with dead space above and below, so uploads never filled the frame
+   they were sitting in. Uploads fill it instead, centred, which is what "square
+   to fit" means for a photograph.
+   An upload is always a data: URL and bundled art never is, so the source tells
+   us which of the two this is without anything having to be passed down. */
+const fitFor = (src) => (typeof src === "string" && src.startsWith("data:") ? "cover" : "contain");
+
 /* upload/replace/remove a picture. shows the current image, or an add button. */
 function ImageUpload({ image, onChange, title, shape }) {
   const inputRef = useRef(null);
@@ -917,7 +952,7 @@ function ImageUpload({ image, onChange, title, shape }) {
   return (
     <div className={`xr-imgup ${shape || "square"} ${image ? "has" : ""}`}>
       {image
-        ? <button className="xr-imgup-thumb" onClick={pick} title="Change picture" style={{ backgroundImage: `url(${image})` }} aria-label="Change picture" />
+        ? <button className="xr-imgup-thumb" onClick={pick} title="Change picture" style={{ backgroundImage: `url(${image})`, backgroundSize: fitFor(image) }} aria-label="Change picture" />
         : <button className="xr-imgup-add" onClick={pick} title={title || "Add a picture"} aria-label={title || "Add a picture"}><Image size={20} /></button>}
       {image && <button className="xr-imgup-x" onClick={() => onChange(null)} title="Remove picture" aria-label="Remove picture"><XIc size={12} /></button>}
       <input ref={inputRef} type="file" accept="image/*" hidden
@@ -1298,7 +1333,7 @@ function BudgetPicker({ budget, onChange }) {
 
 /* renders a detachment's picture: an uploaded image or a chosen badge icon */
 function DetachIcon({ list, size = 26, className, style }) {
-  if (list && list.image) return <span className={className} style={{ backgroundImage: `url(${list.image})`, backgroundColor: "transparent", ...style }} aria-hidden="true" />;
+  if (list && list.image) return <span className={className} style={{ backgroundImage: `url(${list.image})`, backgroundSize: fitFor(list.image), backgroundColor: "transparent", ...style }} aria-hidden="true" />;
   const Ico = list && list.icon && DETACH_ICON_BY_ID[list.icon];
   if (Ico) return <span className={`${className || ""} xr-dicon-glyph`} style={style} aria-hidden="true"><Ico size={size} /></span>;
   return null;
@@ -1792,7 +1827,7 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging
         }}
         aria-expanded={selected}>
         {u.image
-          ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />
+          ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})`, backgroundSize: fitFor(u.image) }} aria-hidden="true" />
           : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={22} /></span>}
         <span className="xr-urow-body">
           <span className="xr-urow-top">
@@ -2890,7 +2925,7 @@ function PrintView({ list }) {
               return (
                 <div className="xr-pc" key={u.key}>
                   <div className="xr-pc-head">
-                    {u.image && <span className="xr-pc-img" style={{ backgroundImage: `url(${u.image})` }} aria-hidden="true" />}
+                    {u.image && <span className="xr-pc-img" style={{ backgroundImage: `url(${u.image})`, backgroundSize: fitFor(u.image) }} aria-hidden="true" />}
                     <span className="xr-pc-name">{u.isCmd && <Crown size={13} className="xr-sheet-crown" />}{unitDisplayName(u, i)}</span>
                     <span className="xr-pc-type">{t.name}</span>
                     <span className="xr-pc-pts">{unitPoints(u)} pts</span>
