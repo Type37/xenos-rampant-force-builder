@@ -8,7 +8,7 @@
 
 </div>
 
-Assemble and print your detachment in this unofficial detachment builder for [Xenos Rampant](https://www.ospreypublishing.com/us/xenos-rampant-9781472852366/), published by Osprey Games. Unofficial builder by WarLore.
+Assemble and print your detachment in this unofficial detachment builder for [Xenos Rampant](https://www.ospreypublishing.com/us/xenos-rampant-9781472852366/), published by Osprey Games. This web app was designed by WarLore.
 
 ## What it does
 
