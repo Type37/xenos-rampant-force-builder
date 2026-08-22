@@ -1067,7 +1067,7 @@ function profFrom(prof, sp, key) {
 /* how far a bought option or xeno rule shifts a profile value. only the effects
    that change a displayed stat are listed; a "-" or higher target still reads right. */
 const adjInches = (s, d) => { const n = parseInt(s, 10); return Number.isNaN(n) ? s : `${n + d}"`; };
-const improveTgt = (s, by) => { const n = parseInt(s, 10); return Number.isNaN(n) ? s : `${Math.max(2, n - by)}+`; };
+const improveTgt = (s, by, floor = 2) => { const n = parseInt(s, 10); return Number.isNaN(n) ? s : `${Math.max(floor, n - by)}+`; };
 const worsenTgt = (s, by) => { const n = parseInt(s, 10); if (Number.isNaN(n)) return s; const nn = n + by; return nn >= 6 ? "6" : `${nn}+`; };
 /* Effects uniform across every unit that can take them. A unit-specific entry
    in UNIT_STAT_MODS below overrides these for that unit. */
@@ -1091,7 +1091,7 @@ const GLOBAL_STAT_MODS = {
   "large-vehicle": { movDelta: -2 },
   "transport-15": { movDelta: -2 },
   "technical": { act: { sho: "6+" }, prof: { sho: "5+ / 18\"" } },
-  "ravenous-horde": { act: { sho: "n/a" }, prof: { atk: "7+", sho: "n/a" } },
+  "ravenous-horde": { act: { atk: "7+", sho: "n/a" }, prof: { sho: "n/a" } },
   "primitive-missiles": { act: { sho: "6+" }, prof: { sho: "6+ / 6\"" } },
   // xeno rules
   "slow": { movDelta: -2 },
@@ -1151,7 +1151,7 @@ const UNIT_STAT_MODS = {
 const modFor = (unitId, id) => (UNIT_STAT_MODS[unitId] && UNIT_STAT_MODS[unitId][id]) || GLOBAL_STAT_MODS[id];
 /* to-hit targets improve as the number falls (3+ beats 5+); distances, Armour
    and Strength improve as the number rises. */
-const LOWER_IS_BETTER = new Set(["act:cou", "prof:atk", "prof:def", "prof:sho"]);
+const LOWER_IS_BETTER = new Set(["act:atk", "act:mov", "act:sho", "act:cou", "prof:atk", "prof:def", "prof:sho"]);
 const statNum = (block, key, obj) => {
   if (key === "sho") return parseInt(splitRange(obj.sho).main, 10);
   return parseInt(String(obj[key]), 10);
@@ -1171,13 +1171,14 @@ function deriveStats(u, t) {
     if (m.fn) m = m.fn(idSet);
     if (m.act) setBlock(act, "act", m.act);
     if (m.prof) setBlock(prof, "prof", m.prof);
-    if (m.movDelta) { prof.mov = adjInches(prof.mov, m.movDelta); changed.add("prof:mov"); }
-    if (m.armDelta != null) { prof.arm = Number(prof.arm) + m.armDelta; changed.add("prof:arm"); }
-    if (m.couImprove) { act.cou = improveTgt(act.cou, m.couImprove); changed.add("act:cou"); }
-    if (m.couWorsen) { act.cou = worsenTgt(act.cou, m.couWorsen); changed.add("act:cou"); }
-    if (m.atkImprove) { prof.atk = improveTgt(prof.atk, m.atkImprove); changed.add("prof:atk"); }
-    if (m.atkWorsen) { prof.atk = worsenTgt(prof.atk, m.atkWorsen); changed.add("prof:atk"); }
-    if (m.defImprove) { prof.def = improveTgt(prof.def, m.defImprove); changed.add("prof:def"); }
+    if (m.movDelta) setBlock(prof, "prof", { mov: adjInches(prof.mov, m.movDelta) });
+    if (m.armDelta != null) setBlock(prof, "prof", { arm: Number(prof.arm) + m.armDelta });
+    /* Fanatical Discipline caps Courage at 3+, so this improvement floors there, not at 2+. */
+    if (m.couImprove) setBlock(act, "act", { cou: improveTgt(act.cou, m.couImprove, 3) });
+    if (m.couWorsen) setBlock(act, "act", { cou: worsenTgt(act.cou, m.couWorsen) });
+    if (m.atkImprove) setBlock(prof, "prof", { atk: improveTgt(prof.atk, m.atkImprove) });
+    if (m.atkWorsen) setBlock(prof, "prof", { atk: worsenTgt(prof.atk, m.atkWorsen) });
+    if (m.defImprove) setBlock(prof, "prof", { def: improveTgt(prof.def, m.defImprove) });
   });
   if (idSet.has("xeno-ranged")) {
     setBlock(act, "act", { sho: "6+" });
