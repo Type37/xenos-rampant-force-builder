@@ -3204,6 +3204,11 @@ export default function App() {
 
   const current = currentId ? lists[currentId] : null;
 
+  /* the shared WarLore footer shows only on the dashboard (see index.css);
+     a build/print/play route with no list falls back to the dashboard */
+  const shownView = route.view !== "home" && !current ? "home" : route.view;
+  React.useLayoutEffect(() => { document.body.dataset.view = shownView; }, [shownView]);
+
   const updateList = useCallback((patch) => {
     setLists((ls) => currentId && ls[currentId]
       ? { ...ls, [currentId]: { ...ls[currentId], ...patch, updated: Date.now() } }
@@ -4404,6 +4409,8 @@ const CSS = `
 .game-info-footer a{color:var(--brand-deep-blue);text-decoration:none;font-weight:600;}
 .game-info-footer a:hover{text-decoration:underline;}
 .gif-builder{margin-left:auto;}
+/* on the dashboard the credits ride the bottom of the screen until the shared WarLore footer arrives */
+.xr-home .game-info-footer{position:sticky;bottom:0;z-index:30;}
 .game-info-footer a.warlore-mark{font-family:'Terminal Grotesque Open','Zilla Slab',monospace;font-size:17px;letter-spacing:.03em;color:#FFCC00;background:#000;padding:1px 8px;text-decoration:none;font-weight:400;transition:color .12s,background .12s;}
 .game-info-footer a.warlore-mark:hover{color:#000;background:#FFCC00;}
 .warlore-mark .wl-lore{font:inherit;}
