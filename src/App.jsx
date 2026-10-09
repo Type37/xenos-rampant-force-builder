@@ -10,6 +10,8 @@ import { TabList, Tab } from "@astryxdesign/core/TabList";
 import { SegmentedControl, SegmentedControlItem } from "@astryxdesign/core/SegmentedControl";
 import { Tooltip } from "@astryxdesign/core/Tooltip";
 import { ToastViewport, useToast } from "@astryxdesign/core/Toast";
+import { CheckboxList, CheckboxListItem } from "@astryxdesign/core/CheckboxList";
+import { CheckboxInput } from "@astryxdesign/core/CheckboxInput";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -1959,13 +1961,14 @@ function OptionRow({ active, disabled, name, cost, text, onToggle, children, sho
   const lore = text && typeof text === "object" ? text.flavor : null;
   return (
     <div className={`xr-row ${active ? "on" : ""} ${disabled ? "off" : ""}`}>
-      <div className="xr-row-line">
-        <button className="xr-row-hit" onClick={onToggle} disabled={disabled} title={tip}>
-          <span className={`xr-row-cost ${cost < 0 ? "neg" : cost > 0 ? "pos" : ""}`}>{costLabel(cost)}</span>
-          <span className="xr-check" aria-hidden="true">{active ? <Check size={16} /> : null}</span>
-          <span className="xr-row-name">{name}</span>
-        </button>
-      </div>
+      {/* a real checkbox, so a screen reader hears bought or not; the rule text
+          previews on hover only, a tap here is for buying */}
+      <Tooltip content={tip} touchTrigger="none" isEnabled={!!tip && !active}>
+        <div className="xr-row-line">
+          <CheckboxInput className="xr-row-hit" label={name} value={!!active} onChange={() => onToggle()} isDisabled={!!disabled}
+            labelIcon={<span className={`xr-row-cost ${cost < 0 ? "neg" : cost > 0 ? "pos" : ""}`}>{costLabel(cost)}</span>} />
+        </div>
+      </Tooltip>
       {showLore && lore && !active && <p className="xr-row-lore">{lore}</p>}
       {active && <RuleText data={text} className="xr-row-text" />}
       {children}
@@ -2900,11 +2903,15 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
 /* ================================================================== *
  * PRINT: preview + options
  * ================================================================== */
+const PRINT_SECTIONS = [["stats", "Stat table"], ["upgrades", "Upgrades and xeno rules"], ["rules", "Special rules"], ["traits", "Commander trait"]];
+const PRINT_READABILITY = [["compact", "Compact (3 cols)"], ["contrast", "High contrast"], ["large", "Larger type"]];
 function PrintView({ list }) {
   const { roster, budget } = list;
   const [opts, setOpts] = useState({ stats: true, upgrades: true, rules: true, traits: true, contrast: false, large: false, compact: false });
   const { used, count } = useMemo(() => validate(roster, budget, list.freeplay), [roster, budget, list.freeplay]);
-  const tog = (k) => setOpts((o) => ({ ...o, [k]: !o[k] }));
+  // one CheckboxList per group: its value is the keys that are on
+  const picked = (group) => group.filter(([k]) => opts[k]).map(([k]) => k);
+  const setGroup = (group) => (vals) => setOpts((o) => ({ ...o, ...Object.fromEntries(group.map(([k]) => [k, vals.includes(k)])) }));
 
   /* special rules carried by two or more units are defined once in an Abilities
      Reference at the end; each unit then lists only the name. This is the main
@@ -2933,16 +2940,11 @@ function PrintView({ list }) {
         <IconButton className="xr-iconbtn" label="Back to builder" icon={<Back size={20} />} onClick={() => nav("#/build")} />
         <h2 className="xr-print-h">Print setup</h2>
         <div className="xr-print-opts">
-          <span className="xr-print-optlabel">Sections</span>
-          {[["stats", "Stat table"], ["upgrades", "Upgrades and xeno rules"], ["rules", "Special rules"], ["traits", "Commander trait"]].map(([k, lab]) => (
-            <label key={k} className="xr-print-check">
-              <input type="checkbox" checked={opts[k]} onChange={() => tog(k)} /> {lab}
-            </label>
+          {[["Sections", PRINT_SECTIONS], ["Readability", PRINT_READABILITY]].map(([label, group]) => (
+            <CheckboxList key={label} className="xr-print-group" label={label} density="compact" value={picked(group)} onChange={setGroup(group)}>
+              {group.map(([k, lab]) => <CheckboxListItem key={k} value={k} label={lab} />)}
+            </CheckboxList>
           ))}
-          <span className="xr-print-optlabel">Readability</span>
-          <label className="xr-print-check"><input type="checkbox" checked={opts.compact} onChange={() => tog("compact")} /> Compact (3 cols)</label>
-          <label className="xr-print-check"><input type="checkbox" checked={opts.contrast} onChange={() => tog("contrast")} /> High contrast</label>
-          <label className="xr-print-check"><input type="checkbox" checked={opts.large} onChange={() => tog("large")} /> Larger type</label>
           <Button className="xr-btn primary" variant="primary" label="Print" icon={<Printer size={18} />} onClick={() => window.print()} />
         </div>
       </div>
@@ -3416,7 +3418,7 @@ const CSS = `
    every plain rule here, so a class like .xr-btn still has the last word. */
 @layer xr-theme{
 .xr-app{
-  --color-accent:var(--ink); --color-on-accent:var(--cream); --color-accent-muted:var(--ink-18); --color-text-accent:var(--brand-deep-blue);
+  --color-accent:var(--ink); --color-on-accent:var(--cream); --color-accent-muted:rgba(31,61,46,.08); --color-text-accent:var(--brand-deep-blue);
   --color-text-primary:var(--ink); --color-text-secondary:var(--ink-2); --color-text-disabled:var(--ink-30);
   --color-background-body:var(--paper); --color-background-surface:var(--paper); --color-background-card:var(--paper-2);
   --color-background-popover:var(--paper); --color-background-muted:var(--paper-3); --color-background-inverted:var(--ink);
@@ -4013,9 +4015,9 @@ const CSS = `
 .xr-row{border-bottom:1px solid var(--ink-18);padding:4px 0;}
 .xr-row:last-child{border-bottom:none;}
 .xr-row-line{display:flex;align-items:stretch;gap:6px;}
-.xr-row-hit{flex:1;display:flex;align-items:center;gap:10px;text-align:left;padding:8px 4px;min-height:48px;border-radius:8px;transition:.12s;}
+.xr-row-hit{flex:1;padding:8px 4px;min-height:48px;border-radius:8px;font-family:var(--ui);font-weight:600;font-size:16.5px;line-height:1.25;transition:.12s;}
 .xr-row-hit:hover{background:var(--paper-2);}
-.xr-row-hit:disabled{opacity:.5;cursor:not-allowed;}
+.xr-row-hit label{display:flex;align-items:center;gap:10px;font-family:var(--ui);font-weight:600;font-size:16.5px;line-height:1.25;color:var(--ink);cursor:pointer;}
 .xr-row-cost{flex:none;min-width:44px;text-align:center;font-family:var(--mono);font-weight:700;font-size:16.5px;padding:3px 7px;border-radius:8px;border:1.5px solid var(--ink-30);background:var(--paper-2);}
 .xr-row-cost.pos{background:var(--coral);color:var(--ink);border-color:var(--coral-ink);}
 .xr-row-cost.neg{background:var(--sage);color:var(--cream);border-color:var(--sage);}
@@ -4202,10 +4204,9 @@ const CSS = `
 .xr-printview{--pg-w:210mm;--pg-h:297mm;--pg-m:11mm;min-height:100vh;background:var(--paper-3);padding-left:76px;}
 .xr-print-chrome{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px clamp(14px,3vw,30px);border-bottom:3px solid var(--ink);background:var(--paper);position:sticky;top:0;z-index:20;}
 .xr-print-h{font-family:var(--display);font-weight:700;font-size:24px;margin-right:8px;}
-.xr-print-opts{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;}
-.xr-print-optlabel{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink-2);}
-.xr-print-check{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:15.5px;min-height:44px;cursor:pointer;}
-.xr-print-check input{width:20px;height:20px;accent-color:var(--ink);cursor:pointer;}
+.xr-print-opts{display:flex;align-items:flex-start;gap:12px 32px;flex-wrap:wrap;}
+.xr-print-opts>.astryx-button{align-self:center;}
+.xr-print-group{min-width:220px;font-family:var(--body);font-weight:600;font-size:15.5px;}
 /* the preview is sized to a real A4 page, with faint guide lines at each physical
    page break so the sheet reads as the pages it will actually print to */
 .xr-sheet{width:var(--pg-w);max-width:100%;box-sizing:border-box;margin:22px auto 56px;color:#1a1a1a;padding:var(--pg-m);box-shadow:0 4px 22px rgba(31,61,46,.22);background-color:#fff;background-image:repeating-linear-gradient(#0000 0,#0000 calc(var(--pg-h) - 2px),rgba(190,51,25,.30) calc(var(--pg-h) - 2px),rgba(190,51,25,.30) var(--pg-h));background-clip:border-box;}
