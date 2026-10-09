@@ -17,6 +17,8 @@ import { AlertDialog } from "@astryxdesign/core/AlertDialog";
 import { Switch } from "@astryxdesign/core/Switch";
 import { ToggleButton } from "@astryxdesign/core/ToggleButton";
 import { Selector } from "@astryxdesign/core/Selector";
+import { TextInput } from "@astryxdesign/core/TextInput";
+import { TextArea } from "@astryxdesign/core/TextArea";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -1475,20 +1477,14 @@ function DetachIcon({ list, size = 26, className, style }) {
 
 /* email-style floating-label field: the label rests in the box, then lifts into
    the border when the field is focused or filled */
-function FloatingField({ label, value, onChange, textarea, rows, autoFocus, onEnter, id }) {
-  const [focused, setFocused] = useState(false);
-  const up = focused || (value && value.length > 0);
-  const shared = {
-    id, className: "xr-ff-in", value: value || "", autoFocus, spellCheck: false,
-    onFocus: () => setFocused(true), onBlur: () => setFocused(false),
-    onChange: (e) => onChange(e.target.value),
-  };
+/* New detachment's fields: Astryx TextInput/TextArea, labelled like every
+   other form here (the floating label was the one odd one out) */
+function FloatingField({ label, value, onChange, textarea, rows, autoFocus, onEnter, optional }) {
   return (
-    <div className={`xr-ff ${up ? "up" : ""} ${textarea ? "area" : ""}`}>
+    <div className="xr-field">
       {textarea
-        ? <textarea {...shared} rows={rows || 3} />
-        : <input {...shared} onKeyDown={(e) => { if (e.key === "Enter" && onEnter) onEnter(); }} />}
-      <label className="xr-ff-l" htmlFor={id}>{label}</label>
+        ? <TextArea label={label} isOptional={optional} value={value || ""} onChange={onChange} rows={rows || 3} spellCheck={false} />
+        : <TextInput label={label} isOptional={optional} value={value || ""} onChange={onChange} onEnter={onEnter} autoFocus={autoFocus} spellCheck={false} />}
     </div>
   );
 }
@@ -1615,8 +1611,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
 
             {/* search + sort */}
             <div className="xr-epicker-toolbar">
-              <input className="xr-epicker-search" type="search" placeholder="Search emblems…"
-                value={q} onChange={(e) => setQ(e.target.value)} />
+              <TextInput className="xr-epicker-search" label="Search emblems" isLabelHidden placeholder="Search emblems…" value={q} onChange={setQ} hasClear />
               <Selector className="xr-epicker-sort" label="Sort emblems" isLabelHidden value={sort} onChange={setSort} presentation="adaptive"
                 options={[{ value: "def", label: "Default" }, { value: "az", label: "A – Z" }, { value: "cat", label: "By type" }, { value: "set", label: "By setting" }]} />
             </div>
@@ -1667,8 +1662,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
       {mode === "photos" && (
         <div className="xr-epicker-gallery-pane">
           <div className="xr-epicker-toolbar">
-            <input className="xr-epicker-search" type="search" placeholder="Search photos…"
-              value={imgQ} onChange={(e) => setImgQ(e.target.value)} />
+            <TextInput className="xr-epicker-search" label="Search photos" isLabelHidden placeholder="Search photos…" value={imgQ} onChange={setImgQ} hasClear />
           </div>
           <div className="xr-epicker-gallery-scroll">
             {filteredGallery.length === 0
@@ -1758,7 +1752,7 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
 
         <FloatingField id="na-desc" label="Description" value={desc} onChange={setDesc} textarea rows={3} />
 
-        <FloatingField id="na-coll" label="Save to setting (optional)" value={collection} onChange={setCollection} />
+        <FloatingField id="na-coll" label="Save to setting" optional value={collection} onChange={setCollection} />
         <input list="na-collections" hidden />
         {suggestions.length > 0 && (
           <div className="xr-coll-chips">
@@ -2260,10 +2254,9 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
       </div>
 
       <div className="xr-panel-notes">
-        <label className="xr-notes-l" htmlFor={`notes-${u.key}`}>Notes</label>
-        <textarea id={`notes-${u.key}`} className="xr-field-in xr-field-area xr-notes-area" value={u.notes || ""}
+        <TextArea className="xr-notes-area" label="Notes" value={u.notes || ""} rows={2}
           placeholder="Loadout reminders, lore, or tactics for this unit."
-          onChange={(e) => dispatch({ type: "notes", key: u.key, notes: e.target.value })} rows={2} />
+          onChange={(v) => dispatch({ type: "notes", key: u.key, notes: v })} />
       </div>
     </section>
   );
@@ -2445,8 +2438,8 @@ function AbilitiesModal({ u, dispatch, onClose }) {
         <IconButton className="xr-iconbtn" label="Done" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <div className="xr-abil-searchbar">
-        <input className="xr-abil-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search abilities by name or effect" spellCheck={false} aria-label="Search abilities" />
-        {q && <IconButton className="xr-iconbtn small" label="Clear search" icon={<XIc size={16} />} onClick={() => setQ("")} />}
+        <TextInput className="xr-abil-search" label="Search abilities" isLabelHidden value={q} onChange={setQ} hasClear
+          placeholder="Search abilities by name or effect" spellCheck={false} />
       </div>
       {tabs.length > 1 && (
         <TabList className="xr-modal-tabs" role="tablist" aria-label="Ability kinds" value={tab} onChange={setTab}>
@@ -2557,20 +2550,17 @@ function CustomAbilityForm({ initial, onSave, onCancel }) {
   const [text, setText] = useState(initial?.text || "");
   return (
     <div className="xr-custom-form">
-      <label className="xr-field">
-        <span className="xr-field-l">Name</span>
-        <input className="xr-field-in" value={name} onChange={(e) => setName(e.target.value)} placeholder="Eg. Scavenged Plating" autoFocus spellCheck={false} />
-      </label>
+      <div className="xr-field">
+        <TextInput label="Name" value={name} onChange={setName} placeholder="Eg. Scavenged Plating" autoFocus spellCheck={false} />
+      </div>
       <div className="xr-field">
         <span className="xr-field-l" aria-hidden="true">Cost <em>points, negative for a downgrade</em></span>
         <NumberInput className="xr-custom-cost" label="Cost in points, negative for a downgrade" isLabelHidden
           value={cost} isIntegerOnly hasNumberSteppers={false} width={110} onChange={setCost} />
       </div>
-      <label className="xr-field">
-        <span className="xr-field-l">Rule text <em>optional</em></span>
-        <textarea className="xr-field-in xr-field-area" value={text} onChange={(e) => setText(e.target.value)}
-          rows={3} placeholder="What it does at the table." />
-      </label>
+      <div className="xr-field">
+        <TextArea label="Rule text" isOptional value={text} onChange={setText} rows={3} placeholder="What it does at the table." />
+      </div>
       <div className="xr-custom-form-foot">
         <Button className="xr-btn small" label="Cancel" onClick={onCancel} />
         <Button className="xr-btn small primary" variant="primary" label="Save" icon={<Check size={16} />} onClick={() => onSave({ name: name.trim(), cost, text: text.trim() })} isDisabled={!name.trim()} />
@@ -2804,11 +2794,8 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                 trigger={(tp) => <Button {...tp} className={`xr-btn small xr-act ${list.freeplay ? "gold" : ""}`} label="Detachment settings" icon={<Gear size={18} />}
                  >Settings</Button>}>
                   <div className="xr-settings-pop">
-                    <label className="xr-set-field">
-                      <span className="xr-set-field-l">Description <em>optional</em></span>
-                      <textarea className="xr-field-in xr-field-area" value={list.description || ""} onChange={(e) => updateList({ description: e.target.value })}
-                        placeholder="Backstory, tactics, or notes." rows={3} />
-                    </label>
+                    <TextArea label="Description" isOptional value={list.description || ""} onChange={(v) => updateList({ description: v })}
+                      placeholder="Backstory, tactics, or notes." rows={3} />
                     <div className="xr-set-field xr-set-img">
                       <span className="xr-set-field-l">Custom picture</span>
                       <div className="xr-set-img-row">
@@ -2880,10 +2867,9 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                     <span className="xr-detoverview-meta">{used}/{budget} pts, {count} {count === 1 ? "unit" : "units"}</span>
                   </div>
                 </div>
-                <label className="xr-notes-l" htmlFor="det-notes">Detachment notes</label>
-                <textarea id="det-notes" className="xr-field-in xr-field-area xr-detoverview-notes" value={list.description || ""}
+                <TextArea className="xr-detoverview-notes" label="Detachment notes" value={list.description || ""} rows={6}
                   placeholder="Backstory, tactics, or notes for the whole detachment. Shows on the list card and the print sheet."
-                  onChange={(e) => updateList({ description: e.target.value })} rows={6} />
+                  onChange={(v) => updateList({ description: v })} />
                 <p className="xr-detoverview-hint"><Alien size={16} /> Select a unit on the left to edit it.</p>
               </div>
             )
@@ -3817,7 +3803,6 @@ const CSS = `
 .xr-panel-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;}
 .xr-cmd-btn{flex:none;justify-content:center;white-space:nowrap;}
 .xr-panel-notes{margin-top:16px;border-top:2px solid var(--ink-30);padding-top:12px;}
-.xr-notes-l{display:block;font-family:var(--display);font-weight:700;font-size:16px;color:var(--ink);margin-bottom:6px;}
 .xr-notes-area{width:100%;min-height:60px;resize:vertical;}
 /* two-column panel: stats left, rules + abilities on the right */
 .xr-panel-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(288px,100%),1fr));gap:8px 28px;align-items:start;}
@@ -3835,10 +3820,15 @@ const CSS = `
    all, so it rendered at the browser default height (~21px), well under the
    44px minimum tap target on any viewport */
 .xr-abil-searchbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
-.xr-abil-search{flex:1;min-width:0;height:44px;font-family:var(--body);font-size:15.5px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:10px;padding:0 14px;transition:border-color .12s,background .12s;}
-.xr-abil-search::placeholder{color:var(--ink-2);opacity:.75;}
-.xr-abil-search:hover{border-color:var(--ink);}
-.xr-abil-search:focus{outline:none;border-color:var(--coral);background:var(--paper);}
+.xr-abil-searchbar>.astryx-field{flex:1;min-width:0;}
+/* Astryx text fields, one Almanac skin: paper box, ink rule, coral when
+   focused, the app's serif. The ring is the box's, not the inner input's. */
+.xr-app .astryx-text-input :is(input,textarea),.xr-app .astryx-text-area textarea{font:inherit;color:inherit;}
+.xr-app .astryx-text-input,.xr-app .astryx-text-area{min-height:46px;border-color:var(--ink-30);background:var(--paper-2);font-family:var(--body);font-size:17px;color:var(--ink);}
+@media(hover:hover){.xr-app .astryx-text-input:hover,.xr-app .astryx-text-area:hover{border-color:var(--ink);}}
+.xr-app .astryx-text-input:focus-within,.xr-app .astryx-text-area:focus-within{border-color:var(--coral);background:var(--paper);}
+.xr-app .astryx-text-input :is(input,textarea):focus-visible,.xr-app .astryx-text-area :is(input,textarea):focus-visible{box-shadow:none;outline:none;}
+.xr-app .astryx-field-label{font-family:var(--display);font-weight:700;font-size:16px;color:var(--ink);}
 .xr-abil-head{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
 .xr-abil-h{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.4;color:var(--ink);}
 .xr-abil-list{display:flex;flex-direction:column;gap:7px;}
@@ -3892,18 +3882,13 @@ const CSS = `
 /* modal form fields */
 .xr-modal-narrow{width:min(520px,100%);}
 .xr-field{display:block;margin-bottom:18px;}
-.xr-field-l{display:block;font-family:var(--display);font-weight:600;letter-spacing:.03em;font-size:16px;color:var(--ink-2);margin-bottom:6px;}
+/* matches Astryx's field label (.astryx-field-label) so every form reads the same */
+.xr-field-l{display:block;font-family:var(--display);font-weight:700;font-size:16px;color:var(--ink);margin-bottom:6px;}
 .xr-field-l em{font-style:italic;font-variant:normal;font-size:13.5px;margin-left:6px;}
 .xr-field-in{width:100%;font-family:var(--body);font-size:17px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:10px;padding:11px 13px;min-height:48px;}
 .xr-field-roll{display:flex;gap:8px;align-items:stretch;}
 .xr-field-roll .xr-field-in{flex:1;}
 /* email-style floating-label field */
-.xr-ff{position:relative;margin-bottom:18px;}
-.xr-ff-in{width:100%;font-family:var(--body);font-size:16.5px;color:var(--ink);background:var(--paper);border:2px solid var(--ink-30);border-radius:10px;padding:16px 13px 14px;transition:border-color var(--dur-fast) var(--curve-ease);}
-.xr-ff.area .xr-ff-in{resize:vertical;min-height:86px;line-height:1.5;}
-.xr-ff-in:focus{outline:none;border-color:var(--brand-deep-blue);}
-.xr-ff-l{position:absolute;left:10px;top:16px;padding:0 6px;font-family:var(--body);font-size:16.5px;color:var(--ink-2);background:var(--paper);pointer-events:none;transition:top var(--dur-fast) var(--curve-ease),font-size var(--dur-fast) var(--curve-ease),color var(--dur-fast) var(--curve-ease);white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;}
-.xr-ff.up .xr-ff-l{top:-9px;font-size:12.5px;font-weight:600;color:var(--brand-deep-blue);}
 /* new-detachment emblem row + inline links */
 .xr-newimg-row{display:flex;align-items:center;gap:13px;margin-bottom:20px;}
 .xr-newimg{flex:none;width:64px;height:64px;border-radius:12px;border:2px solid var(--ink);background:var(--paper-2);color:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden;transition:border-color .12s,background .12s;}
@@ -3949,7 +3934,7 @@ const CSS = `
 .xr-epicker-pill.on .xr-epicker-pdot{opacity:.8;}
 .xr-epicker-main{display:flex;flex-direction:column;flex:1;min-width:0;}
 .xr-epicker-toolbar{display:flex;gap:8px;padding:10px 14px 8px;flex-shrink:0;}
-.xr-epicker-search{flex:1;padding:7px 11px;border:1.5px solid var(--ink-30);border-radius:8px;background:var(--paper-2);color:var(--ink);font:14px/1 var(--body);}
+.xr-epicker-toolbar>.astryx-field{flex:1;min-width:0;}
 .xr-epicker-search:focus{outline:none;border-color:var(--ink);}
 .xr-epicker-sort{padding:7px 10px;border:1.5px solid var(--ink-30);border-radius:8px;background:var(--paper-2);color:var(--ink);font:13px/1 var(--body);cursor:pointer;}
 .xr-epicker-grid-wrap{flex:1;overflow-y:auto;padding:0 14px 10px;}
@@ -4553,7 +4538,7 @@ const CSS = `
   .xr-psy-tr>:nth-child(5){grid-area:dur;}
   .xr-psy-tr>:nth-child(6){grid-area:eff;}
   /* iOS zooms the page into any field under 16px when it takes focus */
-  .xr-abil-search,.xr-epicker-search,.xr-epicker-sort{font-size:16px;}
+  .xr-epicker-sort{font-size:16px;}
   /* top bar is 60px: a two line label crushed the icon, so phones get the short one */
   .xr-rail-long{display:none;}
   .xr-rail-short{display:inline;}
