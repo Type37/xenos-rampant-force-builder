@@ -1,6 +1,4 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import Cropper from "cropperjs";
-import "cropperjs/dist/cropper.css";
 import { Dialog } from "@astryxdesign/core/Dialog";
 import { NumberInput } from "@astryxdesign/core/NumberInput";
 import { Button } from "@astryxdesign/core/Button";
@@ -1023,18 +1021,23 @@ function CropHost() {
   /* Cropper owns the DOM it builds inside the <img>, so it is created after the
      dialog paints and destroyed with it. React never touches those nodes, which
      is the whole reason this is a ref and not state. */
+  // cropperjs loads the first time a picture needs cropping, not with the app
   useEffect(() => {
     if (!job || !imgRef.current) return undefined;
-    const c = new Cropper(imgRef.current, {
-      aspectRatio: 1,
-      viewMode: 1,          // the box cannot leave the picture
-      autoCropArea: 1,      // opens on the largest centred square - what the old automatic fit gave you
-      dragMode: "move",
-      background: false,
-      checkOrientation: true,
+    let c = null, gone = false;
+    Promise.all([import("cropperjs"), import("cropperjs/dist/cropper.css")]).then(([{ default: Cropper }]) => {
+      if (gone || !imgRef.current) return;
+      c = new Cropper(imgRef.current, {
+        aspectRatio: 1,
+        viewMode: 1,          // the box cannot leave the picture
+        autoCropArea: 1,      // opens on the largest centred square - what the old automatic fit gave you
+        dragMode: "move",
+        background: false,
+        checkOrientation: true,
+      });
+      cropRef.current = c;
     });
-    cropRef.current = c;
-    return () => { c.destroy(); cropRef.current = null; };
+    return () => { gone = true; if (c) c.destroy(); cropRef.current = null; };
   }, [job]);
 
 
