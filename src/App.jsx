@@ -9,6 +9,7 @@ import { Popover } from "@astryxdesign/core/Popover";
 import { TabList, Tab } from "@astryxdesign/core/TabList";
 import { SegmentedControl, SegmentedControlItem } from "@astryxdesign/core/SegmentedControl";
 import { Tooltip } from "@astryxdesign/core/Tooltip";
+import { ToastViewport, useToast } from "@astryxdesign/core/Toast";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -925,29 +926,28 @@ async function copyText(text, okMsg, errMsg = "Could not copy") {
     return false;
   }
 }
+/* the app calls toast(msg, tone, action) from anywhere; this hands each one to
+   Astryx's toast stack, which owns placement, timing, swipe and announcing */
 function Toaster() {
-  const [items, setItems] = useState([]);
-  const dismiss = (id) => setItems((xs) => xs.filter((x) => x.id !== id));
+  const show = useToast();
   useEffect(() => {
     const onToast = (e) => {
       const t = e.detail;
-      setItems((xs) => [...xs.slice(-3), t]);
-      window.setTimeout(() => setItems((xs) => xs.filter((x) => x.id !== t.id)), t.action ? 5200 : 2800);
+      const icon = t.tone === "err" ? <Alert size={18} /> : t.tone === "info" ? <LinkIc size={18} /> : <Check size={18} />;
+      const dismiss = show({
+        body: <span className={`xr-toast-body tone-${t.tone}`}>{icon}{t.msg}</span>,
+        type: t.tone === "err" ? "error" : "info",
+        isAutoHide: true,
+        autoHideDuration: t.action ? 5200 : t.tone === "err" ? 5000 : 2800,
+        endContent: t.action
+          ? <Button className="xr-toast-act" label={t.action.label} onClick={() => { t.action.fn(); dismiss(); }} />
+          : undefined,
+      });
     };
     window.addEventListener("xr-toast", onToast);
     return () => window.removeEventListener("xr-toast", onToast);
-  }, []);
-  return (
-    <div className="xr-toaster" role="status" aria-live="polite" aria-atomic="false">
-      {items.map((t) => (
-        <div key={t.id} className={`xr-toast tone-${t.tone}`}>
-          {t.tone === "err" ? <Alert size={18} /> : t.tone === "info" ? <LinkIc size={18} /> : <Check size={18} />}
-          <span>{t.msg}</span>
-          {t.action && <button className="xr-toast-act" onClick={() => { t.action.fn(); dismiss(t.id); }}>{t.action.label}</button>}
-        </div>
-      ))}
-    </div>
-  );
+  }, [show]);
+  return null;
 }
 
 /* How a picture should sit in its frame.
@@ -3350,6 +3350,7 @@ export default function App() {
   return (
     <div className="xr-app">
       <style>{CSS}</style>
+      <ToastViewport position="bottomEnd" maxVisible={4}>
       <ErrorBoundary routeKey={`${route.view}/${route.unitKey || ""}`}>
         {/* build/print/play need a current list; shownView falls back to home without one */}
         {shownView === "home" && <Dashboard lists={lists} onOpen={openList} onCreate={createList} onLoadPreset={loadPreset} onDup={dupList} onDel={delList} />}
@@ -3360,6 +3361,7 @@ export default function App() {
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
       <Toaster />
       <CropHost />
+      </ToastViewport>
     </div>
   );
 }
@@ -3419,7 +3421,7 @@ const CSS = `
   --color-background-body:var(--paper); --color-background-surface:var(--paper); --color-background-card:var(--paper-2);
   --color-background-popover:var(--paper); --color-background-muted:var(--paper-3); --color-background-inverted:var(--ink);
   --color-neutral:var(--paper-3); --color-border:var(--ink-30); --color-border-emphasized:var(--ink); --border-width:2px;
-  --color-error:var(--coral-ink); --color-on-error:#fff;
+  --color-error:var(--coral-ink); --color-on-error:#fff; --color-background-error-inverted:var(--coral-ink);
   --font-family-body:var(--body); --font-family-heading:var(--display); --font-family-code:var(--mono);
   --radius-inner:5px; --radius-element:10px; --radius-container:16px;
   --focus-outline-color:var(--ink);
@@ -4359,18 +4361,14 @@ const CSS = `
 .xr-printview.compact .xr-bub-num{font-size:11px;}
 
 /* ---------- toasts ---------- */
-.xr-toaster{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;width:max-content;max-width:calc(100vw - 24px);}
-.xr-toast{display:flex;align-items:center;gap:9px;background:var(--ink);color:var(--cream);font-family:var(--body);font-size:15px;font-weight:600;line-height:1.3;padding:11px 16px;border-radius:12px;box-shadow:0 10px 30px rgba(31,61,46,.34);animation:xr-toast-in .22s ease-out;max-width:100%;}
-.xr-toast span{overflow-wrap:anywhere;}
-.xr-toast svg{flex:none;}
-.xr-toast-act{pointer-events:auto;flex:none;margin-left:6px;background:transparent;border:1.5px solid var(--cream);color:var(--cream);font-family:var(--body);font-weight:700;font-size:14px;padding:8px 12px;min-height:44px;border-radius:8px;cursor:pointer;transition:background .12s,color .12s;}
+/* Astryx toasts; the body is the app's icon and message */
+.xr-toast-body{display:flex;align-items:center;gap:9px;color:var(--cream);font-family:var(--body);font-size:15px;font-weight:600;line-height:1.3;}
+.xr-toast-body svg{flex:none;}
+.xr-toast-body.tone-ok svg{color:#8FD08A;}
+.xr-toast-body.tone-err svg{color:#FFE1DA;}
+.xr-toast-body.tone-info svg{color:#F4C95D;}
+.xr-toast-act{flex:none;background:transparent;border:1.5px solid var(--cream);color:var(--cream);font-family:var(--body);font-weight:700;font-size:14px;padding:8px 12px;min-height:44px;border-radius:8px;}
 .xr-toast-act:hover{background:var(--cream);color:var(--ink);}
-.xr-toast.tone-ok svg{color:#8FD08A;}
-.xr-toast.tone-err{background:var(--coral-ink);}
-.xr-toast.tone-err svg{color:#FFE1DA;}
-.xr-toast.tone-info svg{color:#F4C95D;}
-@keyframes xr-toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-@media(prefers-reduced-motion:reduce){.xr-toast{animation:none;}}
 
 /* ---------- play ---------- */
 .xr-play{display:flex;flex-direction:column;min-height:100vh;padding-left:76px;}
