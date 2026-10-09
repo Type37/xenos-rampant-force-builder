@@ -630,7 +630,8 @@ function unitPoints(u) {
     if (r) p += xenoCost(r, v);
   }
   for (const c of u.custom || []) p += c.cost || 0;
-  return p;
+  // bd: a book preset never costs more than the book prints for it
+  return Math.max(1, p - (u.bd || 0));
 }
 function unitSP(u) {
   const t = UNIT_BY_ID[u.typeId];
@@ -717,7 +718,6 @@ function validate(roster, budget, freeplay) {
     roster.forEach((u, i) => {
       const p = unitPoints(u);
       if (p > 12) issues.push({ lvl: "err", msg: `${unitDisplayName(u, i)} costs ${p} points; no unit may cost more than 12.` });
-      if (p < 1) issues.push({ lvl: "err", msg: `${unitDisplayName(u, i)} costs ${p} points; every unit must cost at least 1.` });
     });
     // psychic (and other levelled) powers still to choose
     roster.forEach((u, i) => {
@@ -746,19 +746,19 @@ function rosterFromDetachment(det) {
     for (let c = 0; c < n; c++) {
       const options = {};
       (e.options || []).forEach((id) => { options[id] = true; });
-      roster.push(sanitize({
+      const u = sanitize({
         key: uid(), typeId: e.typeId, name: e.label || "",
         isCmd: !!e.isCmd, traitTable: "aggressive", traitIndex: undefined,
         options, xenos: { ...(e.xenos || {}) }, custom: [], notes: e.notes || "",
-      }));
+      });
+      const over = unitPoints(u) - (e.points || Infinity);
+      roster.push(over > 0 ? { ...u, bd: over } : u);
     }
   });
   if (roster.length && !roster.some((u) => u.isCmd)) roster[0].isCmd = true;
   return roster;
 }
-/* what the builder will actually add up once loaded. The book's printed points
-   (e.points) disagree with the data for some presets (npm run check:presets
-   lists them); the card has to show the number the builder shows. */
+// points as loaded, so the card and the builder agree
 const detachmentPoints = (det) => rosterFromDetachment(det).reduce((n, u) => n + unitPoints(u), 0);
 const detachmentUnits = (det) => det.units.reduce((n, e) => n + (e.count || 1), 0);
 
@@ -816,7 +816,7 @@ function encodeShare(list) {
       tt: u.traitTable, ti: u.traitIndex, o: u.options, x: u.xenos,
       p: (u.psychic && u.psychic.length) ? u.psychic : undefined,
       cu: (u.custom && u.custom.length) ? u.custom : undefined,
-      mr: u.mercRoll, no: u.notes || undefined,
+      mr: u.mercRoll, no: u.notes || undefined, bd: u.bd || undefined,
     })),
   };
   const json = JSON.stringify(payload);
@@ -834,6 +834,7 @@ function decodeShare(str) {
         traitTable: u.tt || "aggressive", traitIndex: u.ti,
         options: u.o || {}, xenos: u.x || {}, psychic: u.p || [],
         custom: u.cu || [], mercRoll: u.mr, notes: u.no || "",
+        bd: Number.isInteger(u.bd) && u.bd > 0 ? u.bd : undefined,
       })),
     };
   } catch { return null; }
@@ -1901,12 +1902,16 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging
           if (e.key === "ArrowDown") { e.preventDefault(); dispatch({ type: "move", key: u.key, delta: 1 }); }
         }}
         aria-expanded={selected}>
-        {u.image
-          ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})`, backgroundSize: fitFor(u.image) }} aria-hidden="true" />
-          : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={22} /></span>}
+        {/* the crown pins to the badge's corner, never in front of the name, so
+            names line up down the list and nothing shifts when you crown a unit */}
+        <span className="xr-urow-mark">
+          {u.image
+            ? <span className="xr-urow-img" style={{ backgroundImage: `url(${u.image})`, backgroundSize: fitFor(u.image) }} aria-hidden="true" />
+            : <span className="xr-urow-ic" aria-hidden="true"><UnitIcon id={u.typeId} size={22} /></span>}
+          {u.isCmd && <Crown className="xr-urow-crown" size={20} />}
+        </span>
         <span className="xr-urow-body">
           <span className="xr-urow-top">
-            {u.isCmd && <Crown className="xr-urow-crown" size={17} />}
             <span className="xr-urow-name">{unitDisplayName(u, i)}</span>
             <b className="xr-urow-pts">{pts}<i>pts</i></b>
           </span>
@@ -2981,7 +2986,7 @@ function PrintView({ list }) {
                 <div className="xr-pc" key={u.key}>
                   <div className="xr-pc-head">
                     {u.image && <span className="xr-pc-img" style={{ backgroundImage: `url(${u.image})`, backgroundSize: fitFor(u.image) }} aria-hidden="true" />}
-                    <span className="xr-pc-name">{u.isCmd && <Crown size={13} className="xr-sheet-crown" />}{unitDisplayName(u, i)}</span>
+                    <span className="xr-pc-name">{unitDisplayName(u, i)}{u.isCmd && <Crown size={13} className="xr-sheet-crown" />}</span>
                     <span className="xr-pc-type">{t.name}</span>
                     <span className="xr-pc-pts">{unitPoints(u)} pts</span>
                   </div>
@@ -3062,8 +3067,7 @@ function PlayView({ list }) {
           return (
             <div className={`xr-pcard cat-${catOf(t)} ${dead ? "dead" : ""} ${s.act ? "acted" : ""} ${s.sup ? "sup" : ""}`} key={u.key}>
               <div className="xr-pcard-head">
-                {u.isCmd && <Crown size={17} className="xr-pcard-crown" />}
-                <span className="xr-pcard-name">{unitDisplayName(u, i)}</span>
+                <span className="xr-pcard-name">{unitDisplayName(u, i)}{u.isCmd && <Crown size={17} className="xr-pcard-crown" />}</span>
                 <span className="xr-pcard-type">{t.name}</span>
               </div>
               <div className="xr-pcard-dice">
@@ -3271,7 +3275,7 @@ export default function App() {
           const options = { ...u.options };
           if (options[a.oid]) delete options[a.oid];
           else { options[a.oid] = true; (o.conflicts || []).forEach((c) => delete options[c]); }
-          return sanitize({ ...u, options });
+          return sanitize({ ...u, options, bd: undefined });
         }));
         break;
       case "xeno":
@@ -3282,10 +3286,10 @@ export default function App() {
           let next = { ...u };
           if (a.xid in xenos) { delete xenos[a.xid]; if (a.xid === "mercenary") next.mercRoll = undefined; }
           else xenos[a.xid] = rule.tiers ? 0 : true;
-          return sanitize({ ...next, xenos });
+          return sanitize({ ...next, xenos, bd: undefined });
         }));
         break;
-      case "tier": setRoster((r) => r.map((u) => (u.key === a.key ? sanitize({ ...u, xenos: { ...u.xenos, [a.xid]: a.i } }) : u))); break;
+      case "tier": setRoster((r) => r.map((u) => (u.key === a.key ? sanitize({ ...u, xenos: { ...u.xenos, [a.xid]: a.i }, bd: undefined }) : u))); break;
       case "mercroll": setRoster((r) => r.map((u) => (u.key === a.key ? { ...u, mercRoll: a.roll } : u))); break;
       case "psypower":
         setRoster((r) => r.map((u) => {
@@ -3706,8 +3710,8 @@ const CSS = `
 .xr-urow.cat-xeno{border-left-color:var(--iris);}
 .xr-urow.cat-veh{border-left-color:var(--rust);}
 .xr-urow-top{display:flex;align-items:center;gap:8px;width:100%;}
-.xr-urow-crown{color:var(--brass);flex:none;}
-.xr-urow.sel .xr-urow-crown{color:#E8C860;}
+.xr-urow-mark{position:relative;flex:none;display:flex;}
+.xr-urow-crown{position:absolute;top:-7px;right:-7px;padding:3px;border-radius:50%;background:var(--cream);border:1.5px solid var(--brass);color:var(--brass);}
 .xr-urow-name{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.15;flex:1;min-width:0;overflow-wrap:break-word;hyphens:auto;}
 .xr-urow-pts{font-family:var(--mono);font-weight:700;font-size:16px;white-space:nowrap;}
 .xr-urow-pts i{font-style:normal;font-size:12px;color:var(--ink-2);margin-left:3px;}
@@ -4214,7 +4218,7 @@ const CSS = `
 .xr-sheet-table td.free{font-weight:700;color:#c23a1e;text-decoration:underline;text-underline-offset:2px;}
 .xr-sheet-table td.free .fmk,.xr-sheet-note .fmk{font-family:var(--display);font-weight:700;color:#c23a1e;text-decoration:none;}
 .xr-sheet-table td .fmk{font-size:10px;margin-left:1px;}
-.xr-sheet-crown{vertical-align:-2px;margin-right:4px;}
+.xr-sheet-crown{vertical-align:-2px;}
 .xr-sheet-note{font-size:13.5px;font-style:italic;color:#444;margin-top:9px;}
 .xr-sheet-note .fmk{font-style:normal;}
 @media print{.xr-sheet-note .fmk{color:#000;}}
@@ -4371,7 +4375,7 @@ const CSS = `
 .xr-pcard.acted{opacity:.62;}
 .xr-pcard.sup{background:#F4604C1E;}
 .xr-pcard-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
-.xr-pcard-crown{color:var(--brass);align-self:center;}
+.xr-pcard-crown{color:var(--brass);margin-left:7px;vertical-align:-2px;}
 .xr-pcard-name{font-family:var(--display);font-weight:700;font-size:19.5px;flex:1;}
 .xr-pcard-type{font-size:15px;font-style:italic;color:var(--ink-2);}
 .xr-pcard-dice{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}

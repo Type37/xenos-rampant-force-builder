@@ -32,7 +32,6 @@ Assemble and print your detachment in this unofficial detachment builder for [Xe
 
 - A print QR code, so a roster reaches a phone without typing a URL.
 - The unit-name field in the detail pane clips long names instead of growing.
-- 17 presets print different points from what the builder adds up, mostly a force field or exploder with no level. `npm run check:presets` lists them for checking against the book.
 
 ## Run it
 
