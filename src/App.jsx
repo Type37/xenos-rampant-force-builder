@@ -13,6 +13,10 @@ import { ToastViewport, useToast } from "@astryxdesign/core/Toast";
 import { CheckboxList, CheckboxListItem } from "@astryxdesign/core/CheckboxList";
 import { CheckboxInput } from "@astryxdesign/core/CheckboxInput";
 import { Collapsible } from "@astryxdesign/core/Collapsible";
+import { AlertDialog } from "@astryxdesign/core/AlertDialog";
+import { Switch } from "@astryxdesign/core/Switch";
+import { ToggleButton } from "@astryxdesign/core/ToggleButton";
+import { Selector } from "@astryxdesign/core/Selector";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -1613,12 +1617,8 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
             <div className="xr-epicker-toolbar">
               <input className="xr-epicker-search" type="search" placeholder="Search emblems…"
                 value={q} onChange={(e) => setQ(e.target.value)} />
-              <select className="xr-epicker-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="def">Default</option>
-                <option value="az">A – Z</option>
-                <option value="cat">By type</option>
-                <option value="set">By setting</option>
-              </select>
+              <Selector className="xr-epicker-sort" label="Sort emblems" isLabelHidden value={sort} onChange={setSort} presentation="adaptive"
+                options={[{ value: "def", label: "Default" }, { value: "az", label: "A – Z" }, { value: "cat", label: "By type" }, { value: "set", label: "By setting" }]} />
             </div>
 
             {/* icon grid */}
@@ -2816,10 +2816,9 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                         <span className="xr-set-field-h">Overrides the emblem on the card and header.</span>
                       </div>
                     </div>
-                    <button className={`xr-set-toggle ${list.freeplay ? "on" : ""}`} onClick={() => updateList({ freeplay: !list.freeplay })} aria-pressed={!!list.freeplay}>
-                      <span className="xr-set-toggle-box">{list.freeplay && <Check size={14} />}</span>
-                      <span className="xr-set-toggle-txt"><b>Free play</b><i>Ignore composition limits (unit count, vehicles, one Commander).</i></span>
-                    </button>
+                    <Switch className={`xr-set-toggle ${list.freeplay ? "on" : ""}`} label="Free play" labelSpacing="spread"
+                      description="Ignore composition limits (unit count, vehicles, one Commander)."
+                      value={!!list.freeplay} onChange={(on) => updateList({ freeplay: on })} />
                     <Button className="xr-btn small danger xr-set-delete" variant="destructive" label="Delete this detachment" icon={<Trash size={16} />} onClick={onDelete} />
                   </div>
               </Pop>
@@ -3040,7 +3039,8 @@ function PlayView({ list }) {
     turn: s.turn + 1,
     units: Object.fromEntries(Object.entries(s.units).map(([k, v]) => [k, { ...v, act: false, sup: false }])),
   }));
-  const resetGame = () => { if (window.confirm("Reset the game? Damage and turn count clear.")) setSt({ turn: 1, units: {} }); };
+  const [confirmReset, setConfirmReset] = useState(false);
+  const resetGame = () => { setSt({ turn: 1, units: {} }); setConfirmReset(false); };
 
   return (
     <div className="xr-play">
@@ -3051,7 +3051,9 @@ function PlayView({ list }) {
         <span className="xr-play-turn">Turn <b>{st.turn}</b></span>
         <div className="xr-actions">
           <Button className="xr-btn primary" variant="primary" label="New turn" icon={<Reset size={17} />} onClick={newTurn} />
-          <Button className="xr-btn danger" variant="destructive" label="Reset game" onClick={resetGame} />
+          <Button className="xr-btn danger" variant="destructive" label="Reset game" onClick={() => setConfirmReset(true)} />
+          <AlertDialog isOpen={confirmReset} onOpenChange={setConfirmReset} title="Reset the game?"
+            description="Damage, activations and the turn count all clear." actionLabel="Reset game" onAction={resetGame} />
         </div>
       </header>
       <main className="xr-play-grid">
@@ -3103,12 +3105,10 @@ function PlayView({ list }) {
                 <span className="xr-pcard-spread"><b>{Math.max(0, sp - s.dmg)}</b>/{sp}</span>
               </div>
               <div className="xr-pcard-toggles">
-                <button className={`xr-ptog ${s.act ? "on" : ""}`} onClick={() => patch(u.key, { act: !s.act })} aria-pressed={s.act}>
-                  <Check size={15} /> Activated
-                </button>
-                <button className={`xr-ptog warn ${s.sup ? "on" : ""}`} onClick={() => patch(u.key, { sup: !s.sup })} aria-pressed={s.sup}>
-                  <Warn size={15} /> Suppressed
-                </button>
+                <ToggleButton className={`xr-ptog ${s.act ? "on" : ""}`} label="Activated" icon={<Check size={15} />}
+                  isPressed={!!s.act} onPressedChange={(on) => patch(u.key, { act: on })} />
+                <ToggleButton className={`xr-ptog warn ${s.sup ? "on" : ""}`} label="Suppressed" icon={<Warn size={15} />}
+                  isPressed={!!s.sup} onPressedChange={(on) => patch(u.key, { sup: on })} />
               </div>
               {dead && <div className="xr-pcard-dead"><XIc size={24} /> Destroyed</div>}
             </div>
@@ -3343,13 +3343,18 @@ export default function App() {
     const nid = uid();
     setLists((ls) => ({ ...ls, [nid]: { ...src, id: nid, name: src.name ? `${src.name} (copy)` : "", roster: src.roster.map((u) => ({ ...u, key: uid() })), updated: Date.now() } }));
   };
-  const delList = (id) => {
-    const l = lists[id];
-    if (!window.confirm(`Delete ${l?.name || "this detachment"}? This cannot be undone.`)) return;
+  // delete asks first, in an Astryx AlertDialog rather than window.confirm,
+  // which some in app browsers block outright
+  const [pendingDel, setPendingDel] = useState(null);
+  const delList = (id) => setPendingDel(id);
+  const confirmDel = () => {
+    const id = pendingDel, l = lists[id];
+    setPendingDel(null);
     setLists((ls) => { const next = { ...ls }; delete next[id]; return next; });
     if (currentId === id) setCurrentId(null);
     toast(`${l?.name || "Detachment"} deleted`);
   };
+  const pendingName = (pendingDel && lists[pendingDel]?.name) || "this detachment";
 
   return (
     <div className="xr-app">
@@ -3363,6 +3368,8 @@ export default function App() {
         {shownView === "play" && <PlayView list={current} />}
       </ErrorBoundary>
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
+      <AlertDialog isOpen={pendingDel != null} onOpenChange={(o) => { if (!o) setPendingDel(null); }}
+        title={`Delete ${pendingName}?`} description="This cannot be undone." actionLabel="Delete detachment" onAction={confirmDel} />
       <Toaster />
       <CropHost />
       </ToastViewport>
@@ -3667,14 +3674,10 @@ const CSS = `
 .xr-popsurf{background:transparent;border:none;box-shadow:none;padding:0;overflow:visible;}
 .xr-settings-pop{width:min(320px,86vw);display:flex;flex-direction:column;gap:14px;background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;box-shadow:0 12px 34px rgba(31,61,46,.26);padding:14px;animation:xr-pop .18s cubic-bezier(.2,.8,.2,1);}
 .xr-set-delete{justify-content:center;margin-top:2px;border-top:2px solid var(--ink-18);padding-top:14px;border-radius:0;border-left:none;border-right:none;border-bottom:none;}
-.xr-set-toggle{display:flex;align-items:flex-start;gap:10px;text-align:left;padding:9px;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);transition:.13s;}
+.xr-set-toggle{padding:9px;font-family:var(--ui);font-weight:600;font-size:16px;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);transition:.13s;}
 .xr-set-toggle:hover{border-color:var(--ink);}
+.xr-set-toggle label{font-family:var(--ui);font-weight:600;font-size:16px;color:var(--ink);}
 .xr-set-toggle.on{border-color:var(--iris);background:#6A4A8C14;}
-.xr-set-toggle-box{flex:none;width:24px;height:24px;margin-top:1px;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink);border-radius:6px;background:var(--paper);color:var(--cream);}
-.xr-set-toggle.on .xr-set-toggle-box{background:var(--iris);border-color:var(--iris);}
-.xr-set-toggle-txt{display:flex;flex-direction:column;gap:2px;}
-.xr-set-toggle-txt b{font-family:var(--ui);font-weight:600;font-size:16px;color:var(--ink);}
-.xr-set-toggle-txt i{font-style:normal;font-size:13.5px;line-height:1.35;color:var(--ink-2);}
 .xr-set-field{display:flex;flex-direction:column;gap:6px;}
 .xr-set-field-l{font-family:var(--ui);font-weight:600;font-size:14px;color:var(--ink);}
 .xr-set-field-h{font-size:13px;line-height:1.35;color:var(--ink-2);}
