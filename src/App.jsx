@@ -756,7 +756,10 @@ function rosterFromDetachment(det) {
   if (roster.length && !roster.some((u) => u.isCmd)) roster[0].isCmd = true;
   return roster;
 }
-const detachmentPoints = (det) => det.units.reduce((n, e) => n + (e.points || 0) * (e.count || 1), 0);
+/* what the builder will actually add up once loaded. The book's printed points
+   (e.points) disagree with the data for some presets (npm run check:presets
+   lists them); the card has to show the number the builder shows. */
+const detachmentPoints = (det) => rosterFromDetachment(det).reduce((n, u) => n + unitPoints(u), 0);
 const detachmentUnits = (det) => det.units.reduce((n, e) => n + (e.count || 1), 0);
 
 /* ---------------- storage ---------------- */
@@ -847,6 +850,8 @@ function parseHash() {
   return { view: "home" };
 }
 const nav = (h) => { window.location.hash = h; };
+// swaps the current history entry instead of adding one, so Back skips it
+const navReplace = (h) => { window.location.replace(h); };
 
 /* every modal goes through Astryx's Dialog: a native <dialog> in the top layer,
    so focus stays inside, and one shared Escape stack closes only the topmost
@@ -1286,7 +1291,7 @@ function RailNav({ view, bottom }) {
   const items = [
     { v: "home", Icon: House, label: "Lists", hash: "#/" },
     { v: "build", Icon: Edit, label: "Build", hash: "#/build" },
-    { v: "print", Icon: Printer, label: "Print setup", hash: "#/print" },
+    { v: "print", Icon: Printer, label: "Print setup", short: "Print", hash: "#/print" },
     { v: "play", Icon: Play, label: "Play", hash: "#/play" },
   ];
   return (
@@ -1295,7 +1300,9 @@ function RailNav({ view, bottom }) {
         {items.map((it) => (
           <button key={it.v} className={`xr-rail-btn ${view === it.v ? "on" : ""}`} title={it.v === "home" ? "All detachments" : it.label}
             onClick={() => nav(it.hash)} aria-current={view === it.v ? "page" : undefined}>
-            <it.Icon size={22} /><span>{it.label}</span>
+            <it.Icon size={22} />{it.short
+              ? <><span className="xr-rail-long">{it.label}</span><span className="xr-rail-short">{it.short}</span></>
+              : <span>{it.label}</span>}
           </button>
         ))}
         <button className="xr-rail-btn" title="Quick rules reference"
@@ -1317,9 +1324,9 @@ function RailMuster({ used, budget, pct, over, status, count, errors, issues, is
     <div className="xr-railmuster">
       <span className="xr-railmuster-cap">Game size</span>
       <div className="xr-railsize" role="group" aria-label="Game size in points">
-        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.max(6, budget - 6) })} title="Smaller game size" aria-label="Smaller game size">−</button>
+        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.max(1, budget - 6) })} title="Smaller game size" aria-label="Smaller game size">−</button>
         <b className="xr-railsize-val" title="Game size in points">{budget}</b>
-        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.min(120, budget + 6) })} title="Larger game size" aria-label="Larger game size">+</button>
+        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.min(999, budget + 6) })} title="Larger game size" aria-label="Larger game size">+</button>
       </div>
       <div className={`xr-railbar ${cls}`} title={`${used} of ${budget} points spent`} aria-hidden="true">
         <div className="xr-railbar-fill" style={{ height: `${Math.min(100, pct)}%` }} />
@@ -1877,7 +1884,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
 /* ================================================================== *
  * BUILDER: compact rows + detail panel
  * ================================================================== */
-const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging, rowStyle, onDragDown, onDragMove, onDragUp, onDragCancel }) {
+const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging, rowStyle, onDragDown, onDragMove, onDragUp, onDragCancel, dragGuard }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const taken = [
@@ -1885,11 +1892,10 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging
     ...XENO_RULES.filter((x) => x.id in u.xenos).map((x) => xenoLabel(x, u)),
   ];
   return (
-    <div className={`xr-urow-wrap ${dragging ? "dragging" : ""}`} style={rowStyle}>
+    <div className={`xr-urow-wrap ${dragging ? "dragging" : ""}`} style={rowStyle} data-key={u.key} data-index={i}>
       <button className={`xr-urow cat-${catOf(t)} ${selected ? "sel" : ""}`}
-        data-key={u.key} data-index={i}
         onPointerDown={onDragDown} onPointerMove={onDragMove} onPointerUp={onDragUp} onPointerCancel={onDragCancel}
-        onClick={() => nav(selected ? "#/build" : `#/build/${u.key}`)}
+        onClick={() => { if (dragGuard.current) return; nav(selected ? "#/build" : `#/build/${u.key}`); }}
         onKeyDown={(e) => {
           if (e.key === "ArrowUp") { e.preventDefault(); dispatch({ type: "move", key: u.key, delta: -1 }); }
           if (e.key === "ArrowDown") { e.preventDefault(); dispatch({ type: "move", key: u.key, delta: 1 }); }
@@ -1910,7 +1916,8 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging
         </span>
       </button>
       <div className="xr-urow-tools">
-        <span className="xr-drag-handle" aria-hidden="true" title="Drag to reorder"><Grip size={14} /></span>
+        <span className="xr-drag-handle" aria-hidden="true" title="Drag to reorder"
+          onPointerDown={onDragDown} onPointerMove={onDragMove} onPointerUp={onDragUp} onPointerCancel={onDragCancel}><Grip size={14} /></span>
         <button onClick={() => { dispatch({ type: "dup", key: u.key }); toast("Unit duplicated"); }} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
         <button className="danger" onClick={() => { const removed = u, at = i; dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); toast(`${unitDisplayName(removed, at)} removed`, "ok", { label: "Undo", fn: () => dispatch({ type: "insertAt", unit: removed, index: at }) }); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
       </div>
@@ -2647,15 +2654,18 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   /* drag-to-reorder: rows shift live via CSS transform while dragging, and the
      actual roster order is only committed once, on pointer-up. */
   const [drag, setDrag] = useState(null); // { key, index, startY, y, rowH, pointerId, moved }
+  const dragGuard = useRef(false);
   const dragTarget = drag && drag.moved ? Math.max(0, Math.min(roster.length - 1, drag.index + Math.round((drag.y - drag.startY) / drag.rowH))) : null;
   const beginDrag = useCallback((e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
+    // touch scrolls the list from anywhere on a row; only the grip starts a drag.
+    // The grip sits beside the row button, so the row data lives on the wrapper.
     if (e.pointerType === "touch" && !e.target.closest(".xr-drag-handle")) return;
-    const btn = e.currentTarget;
-    const wrap = btn.closest(".xr-urow-wrap");
+    const el = e.currentTarget;
+    const wrap = el.closest(".xr-urow-wrap");
     if (!wrap) return;
-    btn.setPointerCapture(e.pointerId);
-    setDrag({ key: btn.dataset.key, index: Number(btn.dataset.index), startY: e.clientY, y: e.clientY, rowH: wrap.offsetHeight, pointerId: e.pointerId, moved: false });
+    el.setPointerCapture(e.pointerId);
+    setDrag({ key: wrap.dataset.key, index: Number(wrap.dataset.index), startY: e.clientY, y: e.clientY, rowH: wrap.offsetHeight, pointerId: e.pointerId, moved: false });
   }, []);
   const moveDrag = useCallback((e) => {
     setDrag((d) => {
@@ -2668,6 +2678,9 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
     if (!drag || e.pointerId !== drag.pointerId) return;
     if (drag.moved) {
       e.preventDefault();
+      // a mouse drag still ends in a click on the row; swallow that one click
+      dragGuard.current = true;
+      setTimeout(() => { dragGuard.current = false; }, 0);
       const toIndex = Math.max(0, Math.min(roster.length - 1, drag.index + Math.round((drag.y - drag.startY) / drag.rowH)));
       if (toIndex !== drag.index) dispatch({ type: "reorder", key: drag.key, toIndex });
     }
@@ -2844,7 +2857,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                   return (
                     <UnitRow key={u.key} u={u} i={i} selected={u.key === selectedKey} dispatch={dispatch}
                       dragging={isDragged} rowStyle={rowStyle}
-                      onDragDown={beginDrag} onDragMove={moveDrag} onDragUp={finishDrag} onDragCancel={cancelDrag} />
+                      onDragDown={beginDrag} onDragMove={moveDrag} onDragUp={finishDrag} onDragCancel={cancelDrag} dragGuard={dragGuard} />
                   );
                 })}
               </div>
@@ -3070,7 +3083,7 @@ function PlayView({ list }) {
                   if (!v) return null;
                   return (
                     <span key={d.key} title={d.tip}>
-                      <img src={d.img} alt="" width="15" height="15" />{d.label} <b>{v.main}{v.range && <i>{v.range}</i>}</b>
+                      <img src={d.img} alt="" width="15" height="15" />{d.label} <b>{v.main}{v.range && <i> / {v.range}</i>}</b>
                     </span>
                   );
                 })}
@@ -3135,7 +3148,8 @@ class ErrorBoundary extends React.Component {
 export default function App() {
   const [route, setRoute] = useState(parseHash());
   const [lists, setLists] = useState(loadLists);
-  const [currentId, setCurrentId] = useState(() => localStorage.getItem(LS_CURRENT) || null);
+  // storage can throw outright (Safari with all cookies blocked, some in app browsers)
+  const [currentId, setCurrentId] = useState(() => { try { return localStorage.getItem(LS_CURRENT) || null; } catch { return null; } });
   const [rulesOpen, setRulesOpen] = useState(false);
 
   useEffect(() => {
@@ -3146,7 +3160,7 @@ export default function App() {
     return () => { window.removeEventListener("hashchange", onHash); window.removeEventListener("xr-open-rules", onRules); };
   }, []);
   useEffect(() => saveLists(lists), [lists]);
-  useEffect(() => { if (currentId) localStorage.setItem(LS_CURRENT, currentId); }, [currentId]);
+  useEffect(() => { if (currentId) try { localStorage.setItem(LS_CURRENT, currentId); } catch { /* not persisted */ } }, [currentId]);
 
   /* a shared link (#/s/<data>) rebuilds the detachment as a new saved list */
   useEffect(() => {
@@ -3156,9 +3170,11 @@ export default function App() {
       const id = uid();
       setLists((ls) => ({ ...ls, [id]: { id, ...imported, updated: Date.now() } }));
       setCurrentId(id);
-      nav("#/build");
+      // replace, not push: Back must not land on the share link and import it again
+      navReplace("#/build");
     } else {
-      nav("#/");
+      toast("That share link is damaged or incomplete, so nothing was imported.", "err");
+      navReplace("#/");
     }
   }, [route.view, route.data]);
 
@@ -3168,6 +3184,10 @@ export default function App() {
      a build/print/play route with no list falls back to the dashboard */
   const shownView = route.view !== "home" && !current ? "home" : route.view;
   React.useLayoutEffect(() => { document.body.dataset.view = shownView; }, [shownView]);
+  // and the address follows, so Back and a reload agree with the screen
+  useEffect(() => {
+    if (shownView === "home" && (route.view === "build" || route.view === "print" || route.view === "play")) navReplace("#/");
+  }, [shownView, route.view]);
 
   const updateList = useCallback((patch) => {
     setLists((ls) => currentId && ls[currentId]
@@ -3309,8 +3329,8 @@ export default function App() {
   const loadPreset = (det, setting) => {
     const id = uid();
     const roster = rosterFromDetachment(det);
-    const bookPts = detachmentPoints(det);
-    const budget = BUDGET_PRESETS.find((b) => b >= bookPts) || BUDGET_PRESETS[BUDGET_PRESETS.length - 1] || 24;
+    const pts = roster.reduce((n, u) => n + unitPoints(u), 0);
+    const budget = BUDGET_PRESETS.find((b) => b >= pts) || BUDGET_PRESETS[BUDGET_PRESETS.length - 1] || 24;
     setLists((ls) => ({ ...ls, [id]: { id, name: det.name, budget, description: det.lore || det.subtitle || "", roster, setting: setting.id, image: det.image ? `${FACTION_BASE}${det.image}` : undefined, icon: det.icon || undefined, nationalTrait: undefined, updated: Date.now() } }));
     setCurrentId(id);
     nav("#/build");
@@ -3330,21 +3350,15 @@ export default function App() {
     toast(`${l?.name || "Detachment"} deleted`);
   };
 
-  /* guard: build/print/play need a current list */
-  if (route.view !== "home" && !current) {
-    return <div className="xr-app"><style>{CSS}</style>
-      <Dashboard lists={lists} onOpen={openList} onCreate={createList} onLoadPreset={loadPreset} onDup={dupList} onDel={delList} />
-    </div>;
-  }
-
   return (
     <div className="xr-app">
       <style>{CSS}</style>
       <ErrorBoundary routeKey={`${route.view}/${route.unitKey || ""}`}>
-        {route.view === "home" && <Dashboard lists={lists} onOpen={openList} onCreate={createList} onLoadPreset={loadPreset} onDup={dupList} onDel={delList} />}
-        {route.view === "build" && <Builder list={current} selectedKey={route.unitKey} dispatch={dispatch} updateList={updateList} onDelete={() => delList(current.id)} />}
-        {route.view === "print" && <PrintView list={current} />}
-        {route.view === "play" && <PlayView list={current} />}
+        {/* build/print/play need a current list; shownView falls back to home without one */}
+        {shownView === "home" && <Dashboard lists={lists} onOpen={openList} onCreate={createList} onLoadPreset={loadPreset} onDup={dupList} onDel={delList} />}
+        {shownView === "build" && <Builder list={current} selectedKey={route.unitKey} dispatch={dispatch} updateList={updateList} onDelete={() => delList(current.id)} />}
+        {shownView === "print" && <PrintView list={current} />}
+        {shownView === "play" && <PlayView list={current} />}
       </ErrorBoundary>
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
       <Toaster />
@@ -3507,9 +3521,12 @@ const CSS = `
    status chip, and the running total pinned to the very bottom. */
 .xr-railmuster{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:7px;width:100%;padding-top:10px;}
 .xr-railmuster-cap{font-family:var(--ui);font-weight:700;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6);}
-.xr-railsize{display:flex;flex-direction:row;align-items:center;gap:3px;}
-.xr-railsize-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:rgba(255,255,255,.85);font-family:var(--display);font-weight:700;font-size:16px;line-height:1;background:rgba(255,255,255,.12);transition:background var(--dur-fast) var(--curve-ease);}
-.xr-railsize-btn:hover{background:rgba(255,255,255,.24);color:#fff;}
+/* value on its own line, −/+ side by side under it: three across overflowed the 76px rail */
+.xr-railsize{display:grid;grid-template-columns:32px 32px;gap:4px;justify-items:center;}
+.xr-railsize-val{grid-column:1/-1;order:-1;}
+/* .xr-app prefix: the global button reset outranks a bare class and was clearing this fill */
+.xr-app .xr-railsize-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:rgba(255,255,255,.85);font-family:var(--display);font-weight:700;font-size:16px;line-height:1;background:rgba(255,255,255,.12);transition:background var(--dur-fast) var(--curve-ease);}
+.xr-app .xr-railsize-btn:hover{background:rgba(255,255,255,.24);color:#fff;}
 .xr-railsize-val{min-width:24px;text-align:center;font-family:var(--mono);font-weight:700;font-size:17px;color:#fff;font-variant-numeric:tabular-nums;}
 .xr-railbar{position:relative;width:14px;flex:1;min-height:80px;display:flex;align-items:flex-end;border-radius:8px;background:rgba(0,0,0,.22);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
 .xr-railbar-fill{display:block;width:100%;background:var(--cream);border-radius:0 0 7px 7px;transition:height var(--dur-slow) var(--curve-ease);}
@@ -3534,6 +3551,7 @@ const CSS = `
 .xr-rail .xr-rail-btn{width:62px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px;border-radius:11px;color:rgba(255,255,255,.82);font-family:var(--display);font-weight:600;font-size:12.5px;letter-spacing:.02em;transition:background var(--dur-fast) var(--curve-ease),color var(--dur-fast) var(--curve-ease);}
 .xr-rail .xr-rail-btn:hover{background:rgba(255,255,255,.16);color:#fff;}
 .xr-rail .xr-rail-btn.on{background:var(--cream);color:var(--brand-deep-blue);}
+.xr-rail-short{display:none;}
 
 /* ---------- collapsible section (progressive disclosure) ---------- */
 .xr-sec{border-top:none;}
@@ -3546,7 +3564,8 @@ const CSS = `
 
 /* ---------- sticky add-unit ---------- */
 .xr-ulist-rows{display:flex;flex-direction:column;gap:7px;}
-.xr-add-sticky{position:sticky;bottom:14px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font-family:var(--body);font-weight:700;font-size:18px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:14px;border-radius:12px;box-shadow:0 3px 12px rgba(31,61,46,.22);transition:.13s;}
+/* .xr-app prefix: the global button reset outranks a bare class and was clearing this fill */
+.xr-app .xr-add-sticky{position:sticky;bottom:14px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font-family:var(--body);font-weight:700;font-size:18px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:14px;border-radius:12px;box-shadow:0 3px 12px rgba(31,61,46,.22);transition:.13s;}
 .xr-add-sticky:hover{background:var(--brand-deep-blue);border-color:var(--brand-deep-blue);}
 .xr-add-sticky:active{transform:scale(.98);}
 
@@ -3689,7 +3708,7 @@ const CSS = `
 .xr-urow-top{display:flex;align-items:center;gap:8px;width:100%;}
 .xr-urow-crown{color:var(--brass);flex:none;}
 .xr-urow.sel .xr-urow-crown{color:#E8C860;}
-.xr-urow-name{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.15;flex:1;min-width:0;overflow-wrap:anywhere;}
+.xr-urow-name{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.15;flex:1;min-width:0;overflow-wrap:break-word;hyphens:auto;}
 .xr-urow-pts{font-family:var(--mono);font-weight:700;font-size:16px;white-space:nowrap;}
 .xr-urow-pts i{font-style:normal;font-size:12px;color:var(--ink-2);margin-left:3px;}
 .xr-urow-sub{font-family:var(--ui);font-weight:500;font-size:12.5px;color:var(--ink-2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
@@ -4508,6 +4527,17 @@ const CSS = `
   .xr-psy-tr>:nth-child(4){grid-area:tgt;}
   .xr-psy-tr>:nth-child(5){grid-area:dur;}
   .xr-psy-tr>:nth-child(6){grid-area:eff;}
+  /* iOS zooms the page into any field under 16px when it takes focus */
+  .xr-abil-search,.xr-epicker-search,.xr-epicker-sort{font-size:16px;}
+  /* top bar is 60px: a two line label crushed the icon, so phones get the short one */
+  .xr-rail-long{display:none;}
+  .xr-rail-short{display:inline;}
+}
+@media(max-width:400px){
+  /* points beside the name left the name a 65px column, which split words
+     ("Infantr / y"); on narrow phones the points drop under the name */
+  .xr-urow-top{flex-wrap:wrap;row-gap:0;}
+  .xr-urow-name{flex-basis:calc(100% - 25px);}
 }
 @media(max-width:480px){
   .xr-word{white-space:normal;}
