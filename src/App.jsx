@@ -8,6 +8,7 @@ import { IconButton } from "@astryxdesign/core/IconButton";
 import { Popover } from "@astryxdesign/core/Popover";
 import { TabList, Tab } from "@astryxdesign/core/TabList";
 import { SegmentedControl, SegmentedControlItem } from "@astryxdesign/core/SegmentedControl";
+import { Tooltip } from "@astryxdesign/core/Tooltip";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -1081,12 +1082,18 @@ function ImageUpload({ image, onChange, title, shape }) {
 }
 
 /* ---------------- small shared pieces ---------------- */
+/* a hint that carries rules information. Astryx Tooltip, where title= did not
+   work: it opens on a tap and on keyboard focus too. */
+function Tip({ content, children }) {
+  return content ? <Tooltip content={content}>{children}</Tooltip> : children;
+}
 function Die({ k, free, children }) {
   return (
-    <span className={`xr-die k-${k}${free ? " free" : ""}`}
-      title={free ? "Free action: this activates on its own, no 2d6 roll needed" : "Roll 2d6: this or higher activates the action"}>
-      {children}{free && <span className="xr-die-free">Free</span>}
-    </span>
+    <Tip content={free ? "Free action: this activates on its own, no 2d6 roll needed" : "Roll 2d6: this or higher activates the action"}>
+      <span className={`xr-die k-${k}${free ? " free" : ""}`}>
+        {children}{free && <span className="xr-die-free">Free</span>}
+      </span>
+    </Tip>
   );
 }
 function orderFrom(act, key, noAttack) {
@@ -1249,13 +1256,13 @@ function StatTable({ t, sp, u, hint = true, spBubbles = false }) {
         const modV = d.changed.has(`prof:${row.key}`) || (row.key === "sp" && spMod);
         const tip = (dir) => (dir === "up" ? "Improved by an ability" : dir === "down" ? "Lowered by an ability" : "Changed by an ability");
         return (
-          <div className="xr-stt-row" key={row.key} title={row.tip}>
-            <span className="xr-stt-stat"><img className="xr-stt-ic" src={row.img} alt="" width="28" height="28" />{row.label}</span>
-            <span className={`xr-stt-cell ${modO ? "mod " + (dirO || "") : ""}`} title={modO ? tip(dirO) : undefined}>
+          <div className="xr-stt-row" key={row.key}>
+            <Tip content={row.tip}><span className="xr-stt-stat"><img className="xr-stt-ic" src={row.img} alt="" width="28" height="28" />{row.label}</span></Tip>
+            <span className={`xr-stt-cell ${modO ? "mod " + (dirO || "") : ""}`}>
               {o ? <Die k={row.key} free={o.free}>{o.val}</Die> : <span className="xr-dash">-</span>}
-              {modO && <span className={`xr-mod-dir ${dirO || "neutral"}`} aria-hidden="true">{dirO === "up" ? "▲" : dirO === "down" ? "▼" : "●"}</span>}
+              {modO && <Tip content={tip(dirO)}><span className={`xr-mod-dir ${dirO || "neutral"}`}>{dirO === "up" ? "▲" : dirO === "down" ? "▼" : "●"}</span></Tip>}
             </span>
-            <span className={`xr-stt-cell ${modV ? "mod " + (dirV || "") : ""}`} title={modV ? tip(dirV) : undefined}>
+            <span className={`xr-stt-cell ${modV ? "mod " + (dirV || "") : ""}`}>
               {v
                 ? (spBubbles && row.key === "sp"
                     ? (() => {
@@ -1265,15 +1272,16 @@ function StatTable({ t, sp, u, hint = true, spBubbles = false }) {
                           <span className="xr-stt-bubbles" aria-label={`${v.main} Strength Points, half strength below ${Math.ceil(n / 2)}`}>
                             <b className="xr-bub-num">{v.main}</b>
                             {Array.from({ length: n }, (_, bi) => (
-                              <i key={bi} className={`xr-bub ${bi === halfIdx ? "half" : ""}`}
-                                title={bi === halfIdx ? "Half strength: at or below here the unit is battered" : undefined} aria-hidden="true" />
+                              bi === halfIdx
+                                ? <Tip key={bi} content="Half strength: at or below here the unit is battered"><i className="xr-bub half" /></Tip>
+                                : <i key={bi} className="xr-bub" aria-hidden="true" />
                             ))}
                           </span>
                         );
                       })()
                     : <><b>{v.main}</b>{v.range && <i className="xr-rng"> / {v.range} range</i>}</>)
                 : <span className="xr-dash">-</span>}
-              {modV && <span className={`xr-mod-dir ${dirV || "neutral"}`} aria-hidden="true">{dirV === "up" ? "▲" : dirV === "down" ? "▼" : "●"}</span>}
+              {modV && <Tip content={tip(dirV)}><span className={`xr-mod-dir ${dirV || "neutral"}`}>{dirV === "up" ? "▲" : dirV === "down" ? "▼" : "●"}</span></Tip>}
             </span>
           </div>
         );
@@ -1729,7 +1737,7 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
             <b>Emblem</b>
             <button className="xr-linky" onClick={() => setPicking(true)}>Choose an icon or upload a picture</button>
           </div>
-          {(image || icon) && <IconButton className="xr-iconbtn small" label="Remove emblem" icon={<XIc size={16} />} onClick={() => { setImage(null); setIcon(null); }} title="Remove" />}
+          {(image || icon) && <IconButton className="xr-iconbtn small" label="Remove emblem" icon={<XIc size={16} />} onClick={() => { setImage(null); setIcon(null); }} tooltip="Remove" />}
           <input ref={inputRef} type="file" accept="image/*" hidden
             onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) chooseImage(f, 512, (d) => { if (d) { setImage(d); setIcon(null); } }); e.target.value = ""; }} />
         </div>
@@ -1863,7 +1871,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
             <div className="xr-home-bar-btns">
               <Button className="xr-btn primary" variant="primary" label="New detachment" icon={<Plus size={20} />} onClick={() => setCreating(true)} />
               {PRESET_SETTINGS.length > 0 && (
-                <Button className="xr-btn" label="Load a preset" icon={<Book size={19} />} onClick={() => setLoading(true)} title="Start from a ready-made detachment out of the rulebook" />
+                <Button className="xr-btn" label="Load a preset" icon={<Book size={19} />} onClick={() => setLoading(true)} tooltip="Start from a ready-made detachment out of the rulebook" />
               )}
             </div>
           </div>
@@ -2181,11 +2189,11 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
         </div>
         {factionPool && factionPool.length > 0 && (
           <IconButton className="xr-iconbtn xr-name-roll" label="Roll a unit name" icon={<Dice size={19} />} onClick={() => dispatch({ type: "name", key: u.key, name: randomName(factionPool, u.name) })}
-            title="Roll a name from the faction pool" />
+            tooltip="Roll a name from the faction pool" />
         )}
         <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
         <Button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} label={u.isCmd ? "Commander (edit traits)" : "Make Commander"} icon={<Crown size={17} />}
-          onClick={() => u.isCmd ? onEditCommander() : dispatch({ type: "cmd", key: u.key })} title={u.isCmd ? "Edit commander traits" : COMMANDER_RULES}>
+          onClick={() => u.isCmd ? onEditCommander() : dispatch({ type: "cmd", key: u.key })} tooltip={u.isCmd ? "Edit commander traits" : COMMANDER_RULES}>
           <span>{u.isCmd ? "Commander" : "Make Commander"}</span>
         </Button>
       </div>
@@ -2209,7 +2217,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
           <div className="xr-abil">
             <div className="xr-abil-head">
               <h3 className="xr-abil-h">Abilities</h3>
-              <Button className="xr-btn small xr-manage" label="Manage abilities" icon={<Plus size={16} />} onClick={onBuyAbilities} title="Add or remove loadout options and xeno rules" />
+              <Button className="xr-btn small xr-manage" label="Manage abilities" icon={<Plus size={16} />} onClick={onBuyAbilities} tooltip="Add or remove loadout options and xeno rules" />
             </div>
             {boughtOpts.length + boughtXenos.length + custom.length > 0 ? (
               <div className="xr-abil-list">
@@ -2586,10 +2594,10 @@ const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
         {ACT_KEYS.map(({ key, label }) => {
           const o = orderFrom(t.act, key, t.noAttack);
           return (
-            <span className={`xr-cat-act k-${key}`} key={key} title={`${label}, roll 2d6`}>
+            <Tip key={key} content={`${label}, roll 2d6`}><span className={`xr-cat-act k-${key}`}>
               <b>{o ? o.val : "-"}{o && o.free && <sup>F</sup>}</b>
               <em>{label.slice(0, 3)}</em>
-            </span>
+            </span></Tip>
           );
         })}
       </span>
@@ -2598,17 +2606,17 @@ const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
           const raw = s.get(t);
           const v = raw == null || raw === "n/a" || raw === "—" ? "-" : String(raw);
           return (
-            <span className="xr-cat-stat" key={s.label} title={s.label}>
+            <Tip key={s.label} content={s.label}><span className="xr-cat-stat">
               <img src={s.img} alt="" width="22" height="22" />
               <b>{v}</b>
-            </span>
+            </span></Tip>
           );
         })}
       </span>
       {stdRules.length > 0 && (
         <span className="xr-cat-rules" aria-label="Standard rules">
           {stdRules.map((name) => (
-            <span className="xr-cat-rule" key={name} title={typeof SPECIAL_RULES[name] === "string" ? SPECIAL_RULES[name] : name}>{name}</span>
+            <Tip key={name} content={typeof SPECIAL_RULES[name] === "string" ? SPECIAL_RULES[name] : undefined}><span className="xr-cat-rule">{name}</span></Tip>
           ))}
         </span>
       )}
@@ -2772,11 +2780,11 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             </Pop>
           </div>
           <div className="xr-actions">
-            <Button className="xr-btn small xr-act" label="Copy roster as text" icon={<CopyIc size={18} />} onClick={copyList} title="Copy the roster to the clipboard as plain text">Copy</Button>
+            <Button className="xr-btn small xr-act" label="Copy roster as text" icon={<CopyIc size={18} />} onClick={copyList} tooltip="Copy the roster to the clipboard as plain text">Copy</Button>
             <div className="xr-sharewrap">
               <Pop label="Share this detachment" open={shareOpen} setOpen={setShareOpen}
                 trigger={(tp) => <Button {...tp} className="xr-btn small xr-act" label="Share link" icon={<ShareIc size={18} />}
-                  title="Share this detachment as a link">Share</Button>}>
+                  tooltip="Share this detachment as a link">Share</Button>}>
                   <div className="xr-settings-pop xr-share-pop">
                     <p className="xr-share-note">A share link rebuilds this whole detachment in anyone's browser. Everything travels inside the link, so it keeps working offline. Pictures are left out to keep it short.</p>
                     <Button className="xr-btn small block" label="Copy link" icon={<LinkIc size={16} />} onClick={shareLink} />
@@ -2785,11 +2793,11 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                   </div>
               </Pop>
             </div>
-            <Button className="xr-btn small xr-act" label="Print sheet" icon={<Printer size={18} />} onClick={() => nav("#/print")} title="Open the print sheet">Print</Button>
+            <Button className="xr-btn small xr-act" label="Print sheet" icon={<Printer size={18} />} onClick={() => nav("#/print")} tooltip="Open the print sheet">Print</Button>
             <div className="xr-settingswrap">
               <Pop label="Detachment settings" open={settingsOpen} setOpen={setSettingsOpen}
                 trigger={(tp) => <Button {...tp} className={`xr-btn small xr-act ${list.freeplay ? "gold" : ""}`} label="Detachment settings" icon={<Gear size={18} />}
-                  title="Detachment settings">Settings</Button>}>
+                 >Settings</Button>}>
                   <div className="xr-settings-pop">
                     <label className="xr-set-field">
                       <span className="xr-set-field-l">Description <em>optional</em></span>
@@ -2829,9 +2837,9 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
               {roster.length > 1 && (
                 <div className="xr-ulist-file" role="group" aria-label="Order units">
                   <span className="xr-file-l">File by</span>
-                  <Button className="xr-file-btn" label="Type" onClick={() => dispatch({ type: "sort", by: "cat" })} title="Group by type" />
-                  <Button className="xr-file-btn" label="Points" onClick={() => dispatch({ type: "sort", by: "pts" })} title="Sort by points, highest first" />
-                  <Button className="xr-file-btn" label="Name" onClick={() => dispatch({ type: "sort", by: "name" })} title="Sort alphabetically by name" />
+                  <Button className="xr-file-btn" label="Type" onClick={() => dispatch({ type: "sort", by: "cat" })} tooltip="Group by type" />
+                  <Button className="xr-file-btn" label="Points" onClick={() => dispatch({ type: "sort", by: "pts" })} tooltip="Sort by points, highest first" />
+                  <Button className="xr-file-btn" label="Name" onClick={() => dispatch({ type: "sort", by: "name" })} tooltip="Sort alphabetically by name" />
                 </div>
               )}
               <div className="xr-ulist-rows">
@@ -3071,9 +3079,9 @@ function PlayView({ list }) {
                   const v = profFrom(ds.prof, sp, d.key);
                   if (!v) return null;
                   return (
-                    <span key={d.key} title={d.tip}>
+                    <Tip key={d.key} content={d.tip}><span>
                       <img src={d.img} alt="" width="15" height="15" />{d.label} <b>{v.main}{v.range && <i> / {v.range}</i>}</b>
-                    </span>
+                    </span></Tip>
                   );
                 })}
               </div>
