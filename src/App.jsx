@@ -3,6 +3,8 @@ import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.css";
 import { Dialog } from "@astryxdesign/core/Dialog";
 import { NumberInput } from "@astryxdesign/core/NumberInput";
+import { Button } from "@astryxdesign/core/Button";
+import { IconButton } from "@astryxdesign/core/IconButton";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -1031,15 +1033,15 @@ function CropHost() {
     <Modal onClose={() => setJob(null)} label="Crop the picture" className="xr-modal xr-modal-narrow xr-crop" purpose="form">
       <div className="xr-modal-head">
         <span className="xr-modal-title"><Image size={20} /> Frame the picture</span>
-        <button className="xr-iconbtn" onClick={() => setJob(null)} aria-label="Cancel"><XIc size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Cancel" icon={<XIc size={20} />} onClick={() => setJob(null)} />
       </div>
       <p className="xr-crop-hint">Drag to move, drag a corner to resize, scroll or pinch to zoom.</p>
       <div className="xr-crop-stage"><img ref={imgRef} src={job.src} alt="" /></div>
       <div className="xr-modal-foot">
-        <button className="xr-btn" onClick={() => cropRef.current && cropRef.current.rotate(90)}>Rotate</button>
-        <button className="xr-btn" onClick={() => cropRef.current && cropRef.current.reset()}>Reset</button>
-        <button className="xr-btn" onClick={() => setJob(null)}>Cancel</button>
-        <button className="xr-btn primary" onClick={use}><Check size={17} /> Use this picture</button>
+        <Button className="xr-btn" label="Rotate" onClick={() => cropRef.current && cropRef.current.rotate(90)} />
+        <Button className="xr-btn" label="Reset" onClick={() => cropRef.current && cropRef.current.reset()} />
+        <Button className="xr-btn" label="Cancel" onClick={() => setJob(null)} />
+        <Button className="xr-btn primary" variant="primary" label="Use this picture" icon={<Check size={17} />} onClick={use} />
       </div>
     </Modal>
   );
@@ -1358,7 +1360,7 @@ function RulesModal({ onClose }) {
     <Modal onClose={onClose} label="Rules reference" className="xr-modal xr-modal-tall xr-modal-wide">
       <div className="xr-modal-head">
         <span className="xr-modal-title"><Book size={20} /> Rules reference</span>
-        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <div className="xr-modal-tabs" role="tablist">
         {RULES_CATS.map((c) => (
@@ -1378,7 +1380,7 @@ function RulesModal({ onClose }) {
       </div>
       <div className="xr-modal-foot">
         <span className="xr-modal-count">Xenos Rampant, Osprey Games</span>
-        <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+        <Button className="xr-btn primary" variant="primary" label="Done" icon={<Check size={17} />} onClick={onClose} />
       </div>
     </Modal>
   );
@@ -1514,7 +1516,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
           <button className={`xr-epicker-tab${mode === "icons" ? " on" : ""}`} onClick={() => setMode("icons")}>Icons</button>
           <button className={`xr-epicker-tab${mode === "photos" ? " on" : ""}`} onClick={() => setMode("photos")}>Photos</button>
         </div>
-        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
 
       {mode === "icons" && (
@@ -1542,7 +1544,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
               ))}
             </div>
             <div className="xr-epicker-side-foot">
-              <button className="xr-btn small" onClick={onUpload}><Image size={16} /> Upload image</button>
+              <Button className="xr-btn small" label="Upload image" icon={<Image size={16} />} onClick={onUpload} />
             </div>
           </aside>
 
@@ -1615,12 +1617,12 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
                   <span className="xr-epicker-foot-info">
                     {selItem.name}<em>{selCatName} · {selSetName}</em>
                   </span>
-                  <button className="xr-btn small" onClick={() => setSel(null)}>Clear</button>
-                  <button className="xr-btn" onClick={() => { onPick(sel); }}>Use this emblem</button>
+                  <Button className="xr-btn small" label="Clear" onClick={() => setSel(null)} />
+                  <Button className="xr-btn" label="Use this emblem" onClick={() => { onPick(sel); }} />
                 </>
               ) : (
                 <>
-                  <button className="xr-btn xr-epicker-upload-m" onClick={onUpload}><Image size={16} /> Upload your own image</button>
+                  <Button className="xr-btn xr-epicker-upload-m" label="Upload your own image" icon={<Image size={16} />} onClick={onUpload} />
                   <span className="xr-epicker-foot-empty">Select an emblem above.</span>
                 </>
               )}
@@ -1663,8 +1665,8 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
                   <img src={selImg.src} alt="" style={{ width: 22, height: 22, objectFit: "contain", borderRadius: 4 }} />
                 </span>
                 <span className="xr-epicker-foot-info">{selImg.name}<em>Photo</em></span>
-                <button className="xr-btn small" onClick={() => setImgSel(null)}>Clear</button>
-                <button className="xr-btn" onClick={() => onPickImage(selImg.src)}>Use this image</button>
+                <Button className="xr-btn small" label="Clear" onClick={() => setImgSel(null)} />
+                <Button className="xr-btn" label="Use this image" onClick={() => onPickImage(selImg.src)} />
               </>
             ) : (
               <span className="xr-epicker-foot-empty">Select a photo above.</span>
@@ -1696,7 +1698,7 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
     <Modal onClose={onClose} label="New detachment" className="xr-modal xr-modal-narrow" purpose="form">
       <div className="xr-modal-head">
         <span className="xr-modal-title"><Plus size={22} /> New detachment</span>
-        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <div className="xr-modal-body">
         <div className="xr-newimg-row">
@@ -1709,7 +1711,7 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
             <b>Emblem</b>
             <button className="xr-linky" onClick={() => setPicking(true)}>Choose an icon or upload a picture</button>
           </div>
-          {(image || icon) && <button className="xr-iconbtn small" onClick={() => { setImage(null); setIcon(null); }} title="Remove" aria-label="Remove emblem"><XIc size={16} /></button>}
+          {(image || icon) && <IconButton className="xr-iconbtn small" label="Remove emblem" icon={<XIc size={16} />} onClick={() => { setImage(null); setIcon(null); }} title="Remove" />}
           <input ref={inputRef} type="file" accept="image/*" hidden
             onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) chooseImage(f, 512, (d) => { if (d) { setImage(d); setIcon(null); } }); e.target.value = ""; }} />
         </div>
@@ -1735,7 +1737,7 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
         )}
       </div>
       <div className="xr-modal-foot">
-        <button className="xr-btn primary" onClick={create}><Plus size={17} /> Create detachment</button>
+        <Button className="xr-btn primary" variant="primary" label="Create detachment" icon={<Plus size={17} />} onClick={create} />
       </div>
     </Modal>
     {picking && <IconPickerModal current={icon} onPick={(id) => { setIcon(id); setImage(null); setPicking(false); }} onPickImage={(src) => { setImage(src); setIcon(null); setPicking(false); }} onUpload={() => { setPicking(false); inputRef.current && inputRef.current.click(); }} onClose={() => setPicking(false)} />}
@@ -1753,7 +1755,7 @@ function LoadPresetModal({ onLoad, onClose }) {
     <Modal onClose={onClose} label="Load a preset detachment" className="xr-modal xr-modal-tall xr-modal-wide">
       <div className="xr-modal-head">
         <span className="xr-modal-title"><Book size={22} /> Load a preset</span>
-        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <div className="xr-modal-tabs" role="tablist">
         {PRESET_SETTINGS.map((s) => (
@@ -1845,9 +1847,9 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
           <div className="xr-home-bar">
             <h2 className="xr-home-h">Detachments <em>{arr.length}</em></h2>
             <div className="xr-home-bar-btns">
-              <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={20} /> New detachment</button>
+              <Button className="xr-btn primary" variant="primary" label="New detachment" icon={<Plus size={20} />} onClick={() => setCreating(true)} />
               {PRESET_SETTINGS.length > 0 && (
-                <button className="xr-btn" onClick={() => setLoading(true)} title="Start from a ready-made detachment out of the rulebook"><Book size={19} /> Load a preset</button>
+                <Button className="xr-btn" label="Load a preset" icon={<Book size={19} />} onClick={() => setLoading(true)} title="Start from a ready-made detachment out of the rulebook" />
               )}
             </div>
           </div>
@@ -1858,9 +1860,9 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
             <h2>Build your first detachment</h2>
             <p>Start from scratch, or load a ready-made force from the rulebook.</p>
             <div className="xr-home-welcome-btns">
-              <button className="xr-btn primary" onClick={() => setCreating(true)}><Plus size={19} /> New detachment</button>
+              <Button className="xr-btn primary" variant="primary" label="New detachment" icon={<Plus size={19} />} onClick={() => setCreating(true)} />
               {PRESET_SETTINGS.length > 0 && (
-                <button className="xr-btn" onClick={() => setLoading(true)}><Book size={18} /> Load a preset</button>
+                <Button className="xr-btn" label="Load a preset" icon={<Book size={18} />} onClick={() => setLoading(true)} />
               )}
             </div>
           </div>
@@ -2066,12 +2068,8 @@ function TraitPicker({ u, tbl, trait, dispatch }) {
   return (
     <div className="xr-traitpick">
       <div className="xr-traitpick-btns">
-        <button className="xr-btn small" onClick={() => dispatch({ type: "roll", key: u.key })}>
-          <Dice size={17} /> {trait ? "Reroll" : "Roll a trait"}
-        </button>
-        <button className={`xr-btn small ${picking ? "gold" : ""}`} onClick={() => setPicking((p) => !p)} aria-expanded={picking}>
-          <Book size={16} /> Pick a trait
-        </button>
+        <Button className="xr-btn small" label={trait ? "Reroll" : "Roll a trait"} icon={<Dice size={17} />} onClick={() => dispatch({ type: "roll", key: u.key })} />
+        <Button className={`xr-btn small ${picking ? "gold" : ""}`} label="Pick a trait" icon={<Book size={16} />} onClick={() => setPicking((p) => !p)} aria-expanded={picking} />
       </div>
       {picking && (
         <div className="xr-trait-choices">
@@ -2107,7 +2105,7 @@ function CommanderModal({ u, dispatch, onClose }) {
     <Modal onClose={onClose} label="Commander traits" className="xr-modal xr-modal-tall xr-modal-wide">
       <div className="xr-modal-head">
         <span className="xr-modal-title"><Crown size={20} /> Commander traits</span>
-        <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Done" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <div className="xr-modal-body">
         <span className="xr-cmd-step">1. Trait table</span>
@@ -2123,7 +2121,7 @@ function CommanderModal({ u, dispatch, onClose }) {
         <TraitPicker u={u} tbl={tbl} trait={trait} dispatch={dispatch} />
       </div>
       <div className="xr-modal-foot">
-        <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+        <Button className="xr-btn primary" variant="primary" label="Done" icon={<Check size={17} />} onClick={onClose} />
       </div>
     </Modal>
   );
@@ -2161,20 +2159,21 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
   return (
     <section className="xr-panel" aria-label="Unit editor">
       <div className="xr-panel-head">
-        <button className="xr-iconbtn xr-panel-back" onClick={onClose} aria-label="Close unit"><Back size={20} /></button>
+        <IconButton className="xr-iconbtn xr-panel-back" label="Close unit" icon={<Back size={20} />} onClick={onClose} />
         <ImageUpload image={u.image} onChange={(img) => dispatch({ type: "image", key: u.key, image: img })} title="Add a picture to ID this unit" />
         <div className="xr-panel-id">
           <FloatingName value={u.name} fallback={`${t.name} ${index + 1}`}
             onChange={(name) => dispatch({ type: "name", key: u.key, name })} />
         </div>
         {factionPool && factionPool.length > 0 && (
-          <button className="xr-iconbtn xr-name-roll" onClick={() => dispatch({ type: "name", key: u.key, name: randomName(factionPool, u.name) })}
-            title="Roll a name from the faction pool" aria-label="Roll a unit name"><Dice size={19} /></button>
+          <IconButton className="xr-iconbtn xr-name-roll" label="Roll a unit name" icon={<Dice size={19} />} onClick={() => dispatch({ type: "name", key: u.key, name: randomName(factionPool, u.name) })}
+            title="Roll a name from the faction pool" />
         )}
         <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
-        <button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} onClick={() => u.isCmd ? onEditCommander() : dispatch({ type: "cmd", key: u.key })} title={u.isCmd ? "Edit commander traits" : COMMANDER_RULES} aria-label={u.isCmd ? "Commander (edit traits)" : "Make Commander"}>
-          <Crown size={17} /> <span>{u.isCmd ? "Commander" : "Make Commander"}</span>
-        </button>
+        <Button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} label={u.isCmd ? "Commander (edit traits)" : "Make Commander"} icon={<Crown size={17} />}
+          onClick={() => u.isCmd ? onEditCommander() : dispatch({ type: "cmd", key: u.key })} title={u.isCmd ? "Edit commander traits" : COMMANDER_RULES}>
+          <span>{u.isCmd ? "Commander" : "Make Commander"}</span>
+        </Button>
       </div>
 
       <div className="xr-panel-cols">
@@ -2196,7 +2195,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
           <div className="xr-abil">
             <div className="xr-abil-head">
               <h3 className="xr-abil-h">Abilities</h3>
-              <button className="xr-btn small xr-manage" onClick={onBuyAbilities} title="Add or remove loadout options and xeno rules"><Plus size={16} /> Manage abilities</button>
+              <Button className="xr-btn small xr-manage" label="Manage abilities" icon={<Plus size={16} />} onClick={onBuyAbilities} title="Add or remove loadout options and xeno rules" />
             </div>
             {boughtOpts.length + boughtXenos.length + custom.length > 0 ? (
               <div className="xr-abil-list">
@@ -2223,7 +2222,7 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
             <div className="xr-cmdcard">
               <div className="xr-cmdcard-h">
                 <span className="xr-cmdcard-t"><Crown size={15} /> {COMMANDER_TABLES[tbl].label} traits</span>
-                <button className="xr-btn small" onClick={onEditCommander}><Gear size={14} /> Edit</button>
+                <Button className="xr-btn small" label="Edit" icon={<Gear size={14} />} onClick={onEditCommander} />
               </div>
               {trait
                 ? <p className="xr-cmdcard-trait"><b>{trait.name}.</b> {trait.flavor && <i className="xr-trait-flavor">{trait.flavor} </i>}{trait.rule}</p>
@@ -2280,9 +2279,7 @@ function XenoRow({ x, u, dispatch, onConfigure }) {
       {sel && cfg && (
         <div className="xr-xcfg">
           <span className="xr-xcfg-cur">{configSummary(x, u)}</span>
-          <button className="xr-btn small" onClick={() => onConfigure(x.id, x.id === "psychic" ? "powers" : x.id === "mercenary" ? "merc" : "tier")}>
-            <Gear size={15} /> Configure
-          </button>
+          <Button className="xr-btn small" label="Configure" icon={<Gear size={15} />} onClick={() => onConfigure(x.id, x.id === "psychic" ? "powers" : x.id === "mercenary" ? "merc" : "tier")} />
         </div>
       )}
     </OptionRow>
@@ -2326,17 +2323,15 @@ function XenoConfigModal({ rule, u, dispatch, onClose, initialStep }) {
   return (
     <Modal onClose={onClose} label={`Configure ${rule.name}`} className="xr-modal xr-modal-tall">
       <div className="xr-modal-head">
-        {isPsychic && step === "powers" && <button className="xr-iconbtn" onClick={() => setStep("class")} aria-label="Back to class"><Back size={20} /></button>}
+        {isPsychic && step === "powers" && <IconButton className="xr-iconbtn" label="Back to class" icon={<Back size={20} />} onClick={() => setStep("class")} />}
         <span className="xr-modal-title"><Gear size={20} /> {title}</span>
-        <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Done" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <div className="xr-modal-body">
         {isMerc && (
           <>
             <div className="xr-merc-roll">
-              <button className="xr-btn primary" onClick={() => dispatch({ type: "mercroll", key: u.key, roll: 1 + Math.floor(Math.random() * 6) })}>
-                <Dice size={18} /> Roll the die
-              </button>
+              <Button className="xr-btn primary" variant="primary" label="Roll the die" icon={<Dice size={18} />} onClick={() => dispatch({ type: "mercroll", key: u.key, roll: 1 + Math.floor(Math.random() * 6) })} />
               <span className="xr-merc-note">Roll before the game, after Attacker and Defender are set. Or just pick a result.</span>
             </div>
             <div className="xr-merc-table">
@@ -2384,7 +2379,7 @@ function XenoConfigModal({ rule, u, dispatch, onClose, initialStep }) {
         {!isMerc && !isPsychic && tierCards((i) => { dispatch({ type: "tier", key: u.key, xid: rule.id, i }); onClose(); })}
       </div>
       <div className="xr-modal-foot">
-        <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+        <Button className="xr-btn primary" variant="primary" label="Done" icon={<Check size={17} />} onClick={onClose} />
       </div>
     </Modal>
   );
@@ -2420,11 +2415,11 @@ function AbilitiesModal({ u, dispatch, onClose }) {
     <Modal onClose={onClose} label="Buy abilities" className="xr-modal xr-modal-tall">
       <div className="xr-modal-head">
         <span className="xr-modal-title"><Plus size={22} /> {t.name} abilities</span>
-        <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Done" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <div className="xr-abil-searchbar">
         <input className="xr-abil-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search abilities by name or effect" spellCheck={false} aria-label="Search abilities" />
-        {q && <button className="xr-iconbtn small" onClick={() => setQ("")} aria-label="Clear search"><XIc size={16} /></button>}
+        {q && <IconButton className="xr-iconbtn small" label="Clear search" icon={<XIc size={16} />} onClick={() => setQ("")} />}
       </div>
       {tabs.length > 1 && (
         <div className="xr-modal-tabs" role="tablist">
@@ -2487,7 +2482,7 @@ function AbilitiesModal({ u, dispatch, onClose }) {
       </div>
       <div className="xr-modal-foot">
         <span className="xr-modal-count">{bought} bought</span>
-        <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+        <Button className="xr-btn primary" variant="primary" label="Done" icon={<Check size={17} />} onClick={onClose} />
       </div>
     </Modal>
     {config && <XenoConfigModal rule={XENO_BY_ID[config.id]} u={u} dispatch={dispatch} initialStep={config.step} onClose={() => setConfig(null)} />}
@@ -2515,8 +2510,8 @@ function CustomTab({ u, custom, dispatch }) {
             <div className="xr-custom-row-head">
               <span className={`xr-row-cost ${c.cost < 0 ? "neg" : c.cost > 0 ? "pos" : ""}`}>{costLabel(c.cost)}</span>
               <span className="xr-custom-row-name">{c.name || "Untitled ability"}</span>
-              <button className="xr-iconbtn small" onClick={() => { setEditId(c.id); setAdding(false); }} aria-label="Edit"><Edit size={16} /></button>
-              <button className="xr-iconbtn small" onClick={() => dispatch({ type: "customDel", key: u.key, cid: c.id })} aria-label="Delete"><Trash size={16} /></button>
+              <IconButton className="xr-iconbtn small" label="Edit" icon={<Edit size={16} />} onClick={() => { setEditId(c.id); setAdding(false); }} />
+              <IconButton className="xr-iconbtn small" label="Delete" icon={<Trash size={16} />} onClick={() => dispatch({ type: "customDel", key: u.key, cid: c.id })} />
             </div>
             {c.text && <p className="xr-custom-row-text">{c.text}</p>}
           </div>
@@ -2525,7 +2520,7 @@ function CustomTab({ u, custom, dispatch }) {
       {adding ? (
         <CustomAbilityForm onSave={(v) => save(v)} onCancel={() => setAdding(false)} />
       ) : (
-        <button className="xr-btn small" onClick={() => { setAdding(true); setEditId(null); }}><Plus size={16} /> Add custom ability</button>
+        <Button className="xr-btn small" label="Add custom ability" icon={<Plus size={16} />} onClick={() => { setAdding(true); setEditId(null); }} />
       )}
     </div>
   );
@@ -2551,10 +2546,8 @@ function CustomAbilityForm({ initial, onSave, onCancel }) {
           rows={3} placeholder="What it does at the table." />
       </label>
       <div className="xr-custom-form-foot">
-        <button className="xr-btn small" onClick={onCancel}>Cancel</button>
-        <button className="xr-btn small primary" disabled={!name.trim()} onClick={() => onSave({ name: name.trim(), cost, text: text.trim() })}>
-          <Check size={16} /> Save
-        </button>
+        <Button className="xr-btn small" label="Cancel" onClick={onCancel} />
+        <Button className="xr-btn small primary" variant="primary" label="Save" icon={<Check size={16} />} onClick={() => onSave({ name: name.trim(), cost, text: text.trim() })} isDisabled={!name.trim()} />
       </div>
     </div>
   );
@@ -2618,7 +2611,7 @@ function AddUnitModal({ onAdd, onClose }) {
     <Modal onClose={onClose} label="Add unit" className="xr-modal xr-modal-tall xr-modal-wide xr-modal-addunit">
       <div className="xr-modal-head">
         <span className="xr-modal-title"><Plus size={22} /> Add unit</span>
-        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <div className="xr-stabs" role="tablist" style={{ "--n": CATS.length, "--i": Math.max(0, CATS.findIndex((c) => c.id === cat)) }}>
         <span className="xr-stabs-ind" aria-hidden="true" />
@@ -2781,26 +2774,26 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
             )}
           </div>
           <div className="xr-actions">
-            <button className="xr-btn small xr-act" onClick={copyList} title="Copy the roster to the clipboard as plain text" aria-label="Copy roster as text"><CopyIc size={18} /><span>Copy</span></button>
+            <Button className="xr-btn small xr-act" label="Copy roster as text" icon={<CopyIc size={18} />} onClick={copyList} title="Copy the roster to the clipboard as plain text">Copy</Button>
             <div className="xr-sharewrap">
-              <button className="xr-btn small xr-act" onClick={() => setShareOpen((o) => !o)}
-                title="Share this detachment as a link" aria-label="Share link" aria-expanded={shareOpen}><ShareIc size={18} /><span>Share</span></button>
+              <Button className="xr-btn small xr-act" label="Share link" icon={<ShareIc size={18} />} onClick={() => setShareOpen((o) => !o)}
+                title="Share this detachment as a link" aria-expanded={shareOpen}>Share</Button>
               {shareOpen && (
                 <>
                   <button className="xr-settings-scrim" tabIndex={-1} aria-label="Close share menu" onClick={() => setShareOpen(false)} />
                   <div className="xr-settings-pop xr-share-pop" role="dialog" aria-label="Share this detachment">
                     <p className="xr-share-note">A share link rebuilds this whole detachment in anyone's browser. Everything travels inside the link, so it keeps working offline. Pictures are left out to keep it short.</p>
-                    <button className="xr-btn small block" onClick={shareLink}><LinkIc size={16} /> Copy link</button>
-                    <button className="xr-btn small block" onClick={shortLink} disabled={shorting}><Bolt size={16} /> {shorting ? "Shortening…" : "Copy short link"}</button>
+                    <Button className="xr-btn small block" label="Copy link" icon={<LinkIc size={16} />} onClick={shareLink} />
+                    <Button className="xr-btn small block" label={shorting ? "Shortening…" : "Copy short link"} icon={<Bolt size={16} />} onClick={shortLink} isDisabled={shorting} />
                     <p className="xr-share-sub">The short link sends your link to TinyURL to shrink it, so it needs a connection. The plain link always works.</p>
                   </div>
                 </>
               )}
             </div>
-            <button className="xr-btn small xr-act" onClick={() => nav("#/print")} title="Open the print sheet" aria-label="Print sheet"><Printer size={18} /><span>Print</span></button>
+            <Button className="xr-btn small xr-act" label="Print sheet" icon={<Printer size={18} />} onClick={() => nav("#/print")} title="Open the print sheet">Print</Button>
             <div className="xr-settingswrap">
-              <button className={`xr-btn small xr-act ${list.freeplay ? "gold" : ""}`} onClick={() => setSettingsOpen((o) => !o)}
-                title="Detachment settings" aria-label="Detachment settings" aria-expanded={settingsOpen}><Gear size={18} /><span>Settings</span></button>
+              <Button className={`xr-btn small xr-act ${list.freeplay ? "gold" : ""}`} label="Detachment settings" icon={<Gear size={18} />} onClick={() => setSettingsOpen((o) => !o)}
+                title="Detachment settings" aria-expanded={settingsOpen}>Settings</Button>
               {settingsOpen && (
                 <>
                   <button className="xr-settings-scrim" tabIndex={-1} aria-label="Close settings" onClick={() => setSettingsOpen(false)} />
@@ -2821,7 +2814,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                       <span className="xr-set-toggle-box">{list.freeplay && <Check size={14} />}</span>
                       <span className="xr-set-toggle-txt"><b>Free play</b><i>Ignore composition limits (unit count, vehicles, one Commander).</i></span>
                     </button>
-                    <button className="xr-btn small danger xr-set-delete" onClick={onDelete}><Trash size={16} /> Delete this detachment</button>
+                    <Button className="xr-btn small danger xr-set-delete" variant="destructive" label="Delete this detachment" icon={<Trash size={16} />} onClick={onDelete} />
                   </div>
                 </>
               )}
@@ -2937,7 +2930,7 @@ function PrintView({ list }) {
     <div className={`xr-printview ${opts.contrast ? "contrast" : ""} ${opts.large ? "large" : ""} ${opts.compact ? "compact" : ""}`}>
       <RailNav view="print" />
       <div className="xr-print-chrome">
-        <button className="xr-iconbtn" onClick={() => nav("#/build")} aria-label="Back to builder"><Back size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Back to builder" icon={<Back size={20} />} onClick={() => nav("#/build")} />
         <h2 className="xr-print-h">Print setup</h2>
         <div className="xr-print-opts">
           <span className="xr-print-optlabel">Sections</span>
@@ -2950,7 +2943,7 @@ function PrintView({ list }) {
           <label className="xr-print-check"><input type="checkbox" checked={opts.compact} onChange={() => tog("compact")} /> Compact (3 cols)</label>
           <label className="xr-print-check"><input type="checkbox" checked={opts.contrast} onChange={() => tog("contrast")} /> High contrast</label>
           <label className="xr-print-check"><input type="checkbox" checked={opts.large} onChange={() => tog("large")} /> Larger type</label>
-          <button className="xr-btn primary" onClick={() => window.print()}><Printer size={18} /> Print</button>
+          <Button className="xr-btn primary" variant="primary" label="Print" icon={<Printer size={18} />} onClick={() => window.print()} />
         </div>
       </div>
 
@@ -3049,12 +3042,12 @@ function PlayView({ list }) {
     <div className="xr-play">
       <RailNav view="play" />
       <header className="xr-play-mast">
-        <button className="xr-iconbtn" onClick={() => nav("#/build")} aria-label="Back to builder"><Back size={20} /></button>
+        <IconButton className="xr-iconbtn" label="Back to builder" icon={<Back size={20} />} onClick={() => nav("#/build")} />
         <h2 className="xr-play-h">{list.name || "Untitled detachment"}</h2>
         <span className="xr-play-turn">Turn <b>{st.turn}</b></span>
         <div className="xr-actions">
-          <button className="xr-btn primary" onClick={newTurn}><Reset size={17} /> New turn</button>
-          <button className="xr-btn danger" onClick={resetGame}>Reset game</button>
+          <Button className="xr-btn primary" variant="primary" label="New turn" icon={<Reset size={17} />} onClick={newTurn} />
+          <Button className="xr-btn danger" variant="destructive" label="Reset game" onClick={resetGame} />
         </div>
       </header>
       <main className="xr-play-grid">
@@ -3132,8 +3125,8 @@ function ErrorScreen({ error }) {
       <p className="xr-errscreen-p">The builder hit an error and stopped this view. Your saved detachments are safe in this browser.</p>
       {error && error.message && <pre className="xr-errscreen-detail">{String(error.message)}</pre>}
       <div className="xr-errscreen-btns">
-        <button className="xr-btn primary" onClick={() => window.location.reload()}><Reset size={17} /> Reload the builder</button>
-        <button className="xr-btn" onClick={() => { window.location.hash = "#/"; window.location.reload(); }}><House size={17} /> Back to your lists</button>
+        <Button className="xr-btn primary" variant="primary" label="Reload the builder" icon={<Reset size={17} />} onClick={() => window.location.reload()} />
+        <Button className="xr-btn" label="Back to your lists" icon={<House size={17} />} onClick={() => { window.location.hash = "#/"; window.location.reload(); }} />
       </div>
       <p className="xr-errscreen-foot">If it keeps happening, <a href="mailto:warlore1@outlook.com">send feedback</a> and I will take a look.</p>
     </div>
@@ -3416,6 +3409,22 @@ const CSS = `
 @layer xr-reset{
 .xr-app *{box-sizing:border-box;margin:0;}
 .xr-app button{font-family:var(--ui);font-size:inherit;cursor:pointer;color:inherit;background:none;border:none;}
+}
+/* Astryx in Field Almanac colours. Sits above Astryx's own layer and below
+   every plain rule here, so a class like .xr-btn still has the last word. */
+@layer xr-theme{
+.xr-app{
+  --color-accent:var(--ink); --color-on-accent:var(--cream); --color-accent-muted:var(--ink-18); --color-text-accent:var(--brand-deep-blue);
+  --color-text-primary:var(--ink); --color-text-secondary:var(--ink-2); --color-text-disabled:var(--ink-30);
+  --color-background-body:var(--paper); --color-background-surface:var(--paper); --color-background-card:var(--paper-2);
+  --color-background-popover:var(--paper); --color-background-muted:var(--paper-3); --color-background-inverted:var(--ink);
+  --color-neutral:var(--paper-3); --color-border:var(--ink-30); --color-border-emphasized:var(--ink); --border-width:2px;
+  --color-error:var(--coral-ink); --color-on-error:#fff;
+  --font-family-body:var(--body); --font-family-heading:var(--display); --font-family-code:var(--mono);
+  --radius-inner:5px; --radius-element:10px; --radius-container:16px;
+  --focus-outline-color:var(--ink);
+}
+.xr-app .astryx-button{font-family:var(--ui);}
 }
 .xr-app :focus-visible{outline:none;box-shadow:0 0 0 2px var(--cream),0 0 0 4px var(--ink);border-radius:5px;}
 @media (prefers-reduced-motion: reduce){.xr-app *{animation-duration:.01ms !important;transition-duration:.01ms !important;}}
