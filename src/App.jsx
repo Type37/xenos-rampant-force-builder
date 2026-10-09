@@ -203,12 +203,6 @@ import {
   COMMANDER_TABLES, BUDGET_PRESETS, UNIT_BY_ID, XENO_BY_ID,
   PSYCHIC_POWERS,
 } from "./data.js";
-import { SETTINGS } from "./premade.js";
-/* settings flagged hidden or comingSoon are wired up but kept out of the preset picker */
-const PRESET_SETTINGS = SETTINGS.filter((s) => !s.hidden && !s.comingSoon);
-/* the rulebook's genre settings, offered as ready-made collections to save into */
-const BOOK_COLLECTIONS = SETTINGS.filter((s) => !["anvil", "grimdark"].includes(s.id)).map((s) => s.name.split(":")[0]);
-import { ALL_GENRES, randomName } from "./factions.js";
 import { RULES_REFERENCE, RULES_CATS } from "./rules.js";
 import { EMBLEM_EXTRA } from "./emblems-extra.js";
 
@@ -565,8 +559,33 @@ const SQUAD_IMAGE_GROUPS = (() => {
 })();
 const _allSquadImages = SQUAD_IMAGE_GROUPS.flatMap((g) => g.images);
 
-/* one big pool of faction names for the "get a random one" link */
-const ALL_NAMES = ALL_GENRES.flatMap((g) => g.groups.flatMap((gr) => gr.factions.flatMap((f) => f.pool || [])));
+/* The preset detachments and the faction name pools are the two biggest data
+   files, and most visits use neither. Each loads the first time it is needed:
+   presets when New detachment or Load a preset opens, names on the first roll. */
+let _presets = null;
+function usePresets() {
+  const [d, setD] = useState(_presets);
+  useEffect(() => {
+    if (d) return undefined;
+    let live = true;
+    import("./premade.js").then(({ SETTINGS }) => {
+      _presets = {
+        // settings flagged hidden or comingSoon are wired up but kept out of the picker
+        settings: SETTINGS.filter((s) => !s.hidden && !s.comingSoon),
+        // the rulebook's genre settings, offered as ready-made collections to save into
+        collections: SETTINGS.filter((s) => !["anvil", "grimdark"].includes(s.id)).map((s) => s.name.split(":")[0]),
+      };
+      if (live) setD(_presets);
+    });
+    return () => { live = false; };
+  }, [d]);
+  return d;
+}
+let _allNames = null;
+const rollName = (avoid) => import("./factions.js").then(({ ALL_GENRES, randomName }) => {
+  if (!_allNames) _allNames = ALL_GENRES.flatMap((g) => g.groups.flatMap((gr) => gr.factions.flatMap((f) => f.pool || [])));
+  return randomName(_allNames, avoid);
+});
 
 /* two-letter placeholder per generic unit type; the user will refine by hand */
 const UNIT_ABBR = {
@@ -1720,10 +1739,11 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
   const [icon, setIcon] = useState(null);
   const [collection, setCollection] = useState("");
   const [picking, setPicking] = useState(false);
-  const roll = () => setName(randomName(ALL_NAMES, name));
+  const presets = usePresets();
+  const roll = () => rollName(name).then(setName);
   const create = () => onCreate({ name: name.trim(), budget, description: desc.trim(), image: image || undefined, icon: icon || undefined, collection: collection.trim() || undefined });
   const current = { image, icon };
-  const suggestions = [...new Set([...collections.filter(Boolean), ...BOOK_COLLECTIONS])];
+  const suggestions = [...new Set([...collections.filter(Boolean), ...(presets ? presets.collections : [])])];
   return (
     <>
     <Modal onClose={onClose} label="New detachment" className="xr-modal xr-modal-narrow" purpose="form">
@@ -1779,17 +1799,29 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
 
 /* load-a-preset modal: pick a genre setting, then a ready-made detachment */
 function LoadPresetModal({ onLoad, onClose }) {
-  const [sid, setSid] = useState(PRESET_SETTINGS[0] ? PRESET_SETTINGS[0].id : null);
-  const setting = PRESET_SETTINGS.find((s) => s.id === sid) || PRESET_SETTINGS[0];
-  if (!setting) return null;
+  const presets = usePresets();
+  const all = presets ? presets.settings : [];
+  const [sid, setSid] = useState(null);
+  const setting = all.find((s) => s.id === sid) || all[0];
+  if (!setting) {
+    return (
+      <Modal onClose={onClose} label="Load a preset detachment" className="xr-modal xr-modal-tall xr-modal-wide">
+        <div className="xr-modal-head">
+          <span className="xr-modal-title"><Book size={22} /> Load a preset</span>
+          <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
+        </div>
+        <div className="xr-modal-body"><p className="xr-preset-loading" role="status">Opening the rulebook…</p></div>
+      </Modal>
+    );
+  }
   return (
     <Modal onClose={onClose} label="Load a preset detachment" className="xr-modal xr-modal-tall xr-modal-wide">
       <div className="xr-modal-head">
         <span className="xr-modal-title"><Book size={22} /> Load a preset</span>
         <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
-      <TabList className="xr-modal-tabs" role="tablist" aria-label="Settings" value={sid} onChange={setSid}>
-        {PRESET_SETTINGS.map((s) => <Tab panelId="xr-preset-panel" key={s.id} value={s.id} label={s.name.split(":")[0]} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} />)}
+      <TabList className="xr-modal-tabs" role="tablist" aria-label="Settings" value={setting.id} onChange={setSid}>
+        {all.map((s) => <Tab panelId="xr-preset-panel" key={s.id} value={s.id} label={s.name.split(":")[0]} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} />)}
       </TabList>
       <div className="xr-modal-body" id="xr-preset-panel" role="tabpanel">
         {setting.quote ? (
@@ -1875,9 +1907,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
             <h2 className="xr-home-h">Detachments <em>{arr.length}</em></h2>
             <div className="xr-home-bar-btns">
               <Button className="xr-btn primary" variant="primary" label="New detachment" icon={<Plus size={20} />} onClick={() => setCreating(true)} />
-              {PRESET_SETTINGS.length > 0 && (
-                <Button className="xr-btn" label="Load a preset" icon={<Book size={19} />} onClick={() => setLoading(true)} tooltip="Start from a ready-made detachment out of the rulebook" />
-              )}
+              <Button className="xr-btn" label="Load a preset" icon={<Book size={19} />} onClick={() => setLoading(true)} tooltip="Start from a ready-made detachment out of the rulebook" />
             </div>
           </div>
         )}
@@ -1887,9 +1917,7 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
             icon={<span className="xr-home-welcome-badge"><Alien size={48} /></span>}
             actions={<div className="xr-home-welcome-btns">
               <Button className="xr-btn primary" variant="primary" label="New detachment" icon={<Plus size={19} />} onClick={() => setCreating(true)} />
-              {PRESET_SETTINGS.length > 0 && (
-                <Button className="xr-btn" label="Load a preset" icon={<Book size={18} />} onClick={() => setLoading(true)} />
-              )}
+              <Button className="xr-btn" label="Load a preset" icon={<Book size={18} />} onClick={() => setLoading(true)} />
             </div>} />
         ) : groups.length === 1 && groups[0].title === null ? (
           <div className="xr-home-grid">{groups[0].items.map(renderCard)}</div>
@@ -2166,7 +2194,7 @@ function FloatingName({ value, fallback, onChange }) {
   );
 }
 
-function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommander, factionPool }) {
+function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommander }) {
   const t = UNIT_BY_ID[u.typeId];
   const pts = unitPoints(u);
   const sp = unitSP(u);
@@ -2189,10 +2217,9 @@ function UnitPanel({ u, index, onClose, dispatch, onBuyAbilities, onEditCommande
           <FloatingName value={u.name} fallback={`${t.name} ${index + 1}`}
             onChange={(name) => dispatch({ type: "name", key: u.key, name })} />
         </div>
-        {factionPool && factionPool.length > 0 && (
-          <IconButton className="xr-iconbtn xr-name-roll" label="Roll a unit name" icon={<Dice size={19} />} onClick={() => dispatch({ type: "name", key: u.key, name: randomName(factionPool, u.name) })}
-            tooltip="Roll a name from the faction pool" />
-        )}
+        <IconButton className="xr-iconbtn xr-name-roll" label="Roll a unit name" icon={<Dice size={19} />}
+          onClick={() => rollName(u.name).then((name) => dispatch({ type: "name", key: u.key, name }))}
+          tooltip="Roll a name from the faction pool" />
         <span className="xr-panel-pts"><b>{pts}</b><i>pts</i></span>
         <Button className={`xr-btn small xr-cmd-btn ${u.isCmd ? "gold" : ""}`} label={u.isCmd ? "Commander (edit traits)" : "Make Commander"} icon={<Crown size={17} />}
           onClick={() => u.isCmd ? onEditCommander() : dispatch({ type: "cmd", key: u.key })} tooltip={u.isCmd ? "Edit commander traits" : COMMANDER_RULES}>
@@ -2858,7 +2885,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
         </main>
         <div className="xr-detail">
           {sel ? (
-            <UnitPanel key={sel.key} u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} onEditCommander={() => setCmdOpen(true)} factionPool={ALL_NAMES} />
+            <UnitPanel key={sel.key} u={sel} index={selIdx} dispatch={dispatch} onClose={() => nav("#/build")} onBuyAbilities={() => setAbilOpen(true)} onEditCommander={() => setCmdOpen(true)} />
           ) : (
             roster.length > 0 && (
               <div className="xr-detoverview" aria-label="Detachment notes">
