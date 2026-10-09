@@ -6,6 +6,8 @@ import { NumberInput } from "@astryxdesign/core/NumberInput";
 import { Button } from "@astryxdesign/core/Button";
 import { IconButton } from "@astryxdesign/core/IconButton";
 import { Popover } from "@astryxdesign/core/Popover";
+import { TabList, Tab } from "@astryxdesign/core/TabList";
+import { SegmentedControl, SegmentedControlItem } from "@astryxdesign/core/SegmentedControl";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -1380,11 +1382,9 @@ function RulesModal({ onClose }) {
         <span className="xr-modal-title"><Book size={20} /> Rules reference</span>
         <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
-      <div className="xr-modal-tabs" role="tablist">
-        {RULES_CATS.map((c) => (
-          <button key={c} role="tab" aria-selected={cat === c} className={`xr-modal-tab ${cat === c ? "on" : ""}`} onClick={() => setCat(c)}>{c}</button>
-        ))}
-      </div>
+      <TabList className="xr-modal-tabs" role="tablist" aria-label="Rules sections" value={cat} onChange={setCat}>
+        {RULES_CATS.map((c) => <Tab key={c} value={c} label={c} className={`xr-modal-tab ${cat === c ? "on" : ""}`} />)}
+      </TabList>
       <div className="xr-modal-body">
         <div className="xr-rref-cols">
           {sections.map((s) => (
@@ -1530,10 +1530,10 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
 
       <div className="xr-epicker-head">
         <span className="xr-modal-title"><Image size={20} /> Choose an emblem</span>
-        <div className="xr-epicker-tabs">
-          <button className={`xr-epicker-tab${mode === "icons" ? " on" : ""}`} onClick={() => setMode("icons")}>Icons</button>
-          <button className={`xr-epicker-tab${mode === "photos" ? " on" : ""}`} onClick={() => setMode("photos")}>Photos</button>
-        </div>
+        <SegmentedControl className="xr-epicker-tabs" label="Emblem source" value={mode} onChange={setMode} size="sm">
+          <SegmentedControlItem value="icons" label="Icons" />
+          <SegmentedControlItem value="photos" label="Photos" />
+        </SegmentedControl>
         <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
 
@@ -1775,13 +1775,9 @@ function LoadPresetModal({ onLoad, onClose }) {
         <span className="xr-modal-title"><Book size={22} /> Load a preset</span>
         <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
-      <div className="xr-modal-tabs" role="tablist">
-        {PRESET_SETTINGS.map((s) => (
-          <button key={s.id} role="tab" aria-selected={sid === s.id} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} onClick={() => setSid(s.id)}>
-            {s.name.split(":")[0]}
-          </button>
-        ))}
-      </div>
+      <TabList className="xr-modal-tabs" role="tablist" aria-label="Settings" value={sid} onChange={setSid}>
+        {PRESET_SETTINGS.map((s) => <Tab key={s.id} value={s.id} label={s.name.split(":")[0]} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} />)}
+      </TabList>
       <div className="xr-modal-body">
         {setting.quote ? (
           <blockquote className="xr-preset-epi">
@@ -2440,13 +2436,12 @@ function AbilitiesModal({ u, dispatch, onClose }) {
         {q && <IconButton className="xr-iconbtn small" label="Clear search" icon={<XIc size={16} />} onClick={() => setQ("")} />}
       </div>
       {tabs.length > 1 && (
-        <div className="xr-modal-tabs" role="tablist">
+        <TabList className="xr-modal-tabs" role="tablist" aria-label="Ability kinds" value={tab} onChange={setTab}>
           {tabs.map((tb) => (
-            <button key={tb.id} role="tab" aria-selected={tab === tb.id} className={`xr-modal-tab ${tab === tb.id ? "on" : ""}`} onClick={() => setTab(tb.id)}>
-              {tb.label}{tb.n > 0 && <em className="xr-tab-n">{tb.n}</em>}
-            </button>
+            <Tab key={tb.id} value={tb.id} label={tb.label} className={`xr-modal-tab ${tab === tb.id ? "on" : ""}`}
+              endContent={tb.n > 0 ? <em className="xr-tab-n">{tb.n}</em> : undefined} />
           ))}
-        </div>
+        </TabList>
       )}
       <div className="xr-modal-body">
         {needle ? (
@@ -2631,15 +2626,9 @@ function AddUnitModal({ onAdd, onClose }) {
         <span className="xr-modal-title"><Plus size={22} /> Add unit</span>
         <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
-      <div className="xr-stabs" role="tablist" style={{ "--n": CATS.length, "--i": Math.max(0, CATS.findIndex((c) => c.id === cat)) }}>
-        <span className="xr-stabs-ind" aria-hidden="true" />
-        {CATS.map((c) => (
-          <button key={c.id} role="tab" aria-selected={cat === c.id}
-            className={`xr-stab cat-${c.id} ${cat === c.id ? "on" : ""}`} onClick={() => setCat(c.id)}>
-            <c.Icon size={18} /> <span>{c.label}</span>
-          </button>
-        ))}
-      </div>
+      <SegmentedControl className="xr-stabs" label="Unit category" value={cat} onChange={setCat} layout="fill">
+        {CATS.map((c) => <SegmentedControlItem key={c.id} value={c.id} label={c.label} icon={<c.Icon size={18} />} />)}
+      </SegmentedControl>
       <div className="xr-modal-body">
         <div className="xr-pick-grid">
           {units.map((t) => <CatalogCard key={t.id} t={t} onAdd={onAdd} />)}
@@ -2840,9 +2829,9 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
               {roster.length > 1 && (
                 <div className="xr-ulist-file" role="group" aria-label="Order units">
                   <span className="xr-file-l">File by</span>
-                  <button className="xr-file-btn" onClick={() => dispatch({ type: "sort", by: "cat" })} title="Group by type">Type</button>
-                  <button className="xr-file-btn" onClick={() => dispatch({ type: "sort", by: "pts" })} title="Sort by points, highest first">Points</button>
-                  <button className="xr-file-btn" onClick={() => dispatch({ type: "sort", by: "name" })} title="Sort alphabetically by name">Name</button>
+                  <Button className="xr-file-btn" label="Type" onClick={() => dispatch({ type: "sort", by: "cat" })} title="Group by type" />
+                  <Button className="xr-file-btn" label="Points" onClick={() => dispatch({ type: "sort", by: "pts" })} title="Sort by points, highest first" />
+                  <Button className="xr-file-btn" label="Name" onClick={() => dispatch({ type: "sort", by: "name" })} title="Sort alphabetically by name" />
                 </div>
               )}
               <div className="xr-ulist-rows">
@@ -3962,8 +3951,9 @@ const CSS = `
 .xr-epicker-upload-m{display:none;}
 /* emblem picker — icon/photo mode tabs */
 .xr-epicker-tabs{display:flex;gap:3px;background:var(--paper-2);border:1.5px solid var(--ink-18);border-radius:8px;padding:3px;}
-.xr-epicker-tab{padding:4px 14px;border-radius:5px;border:none;background:none;color:var(--ink-2);font:13px/1 var(--body);cursor:pointer;}
-.xr-epicker-tab.on{background:var(--ink);color:var(--cream);}
+.xr-epicker-tabs{flex:none;}
+.xr-epicker-tabs .astryx-segmented-control-item{min-width:max-content;padding:4px 14px;border-radius:5px;color:var(--ink-2);font:13px/1 var(--body);}
+.xr-epicker-tabs .astryx-segmented-control-item[aria-checked="true"]{background:var(--ink);color:var(--cream);}
 /* photo gallery pane */
 .xr-epicker-gallery-pane{display:flex;flex-direction:column;flex:1;min-height:0;}
 .xr-epicker-gallery-scroll{flex:1;overflow-y:auto;padding:0 14px 10px;}
@@ -4114,17 +4104,18 @@ const CSS = `
 .xr-modal.xr-modal-tall{height:min(680px,86vh);}
 .xr-modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:3px solid var(--ink);}
 .xr-modal-title{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.33;}
-.xr-modal-tabs{display:flex;gap:6px;padding:10px 16px;border-bottom:2px solid var(--ink-18);flex-wrap:wrap;}
+.xr-modal-tabs{padding:10px 16px;border-bottom:2px solid var(--ink-18);}
+/* Astryx TabList puts role=tablist on an inner strip; the chips wrap there */
+.xr-modal-tabs [role="tablist"]{display:flex;gap:6px;flex-wrap:wrap;}
 /* smooth sliding tabs (add-unit categories) */
-.xr-stabs{position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);margin:12px clamp(14px,3vw,20px);padding:4px;background:var(--paper-3);border-radius:11px;border:2px solid var(--ink-30);}
-.xr-stabs-ind{position:absolute;top:4px;bottom:4px;left:calc(4px + var(--i) * (100% - 8px) / var(--n));width:calc((100% - 8px)/var(--n));border-radius:8px;background:var(--brand-deep);box-shadow:var(--shadow4);transition:left var(--dur-gentle) var(--curve-ease-max);}
-.xr-stabs .xr-stab{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:0;padding:0 4px;font-family:var(--ui);font-weight:600;font-size:16px;color:var(--ink-2);border-radius:8px;transition:color var(--dur-fast) var(--curve-ease);}
-.xr-stab:hover:not(.on){color:var(--ink);}
-.xr-stab.on{color:#fff;}
-.xr-stabs .xr-stab span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
-.xr-stabs .xr-stab svg{flex:none;}
-@media(max-width:480px){.xr-stabs .xr-stab{gap:5px;font-size:14px;}.xr-stabs .xr-stab svg{width:16px;height:16px;}}
-@media(max-width:400px){.xr-stabs .xr-stab{flex-direction:column;gap:2px;font-size:12px;line-height:1.1;}}
+/* Add unit categories: Astryx SegmentedControl in the Almanac track */
+.xr-stabs{width:auto;margin:12px clamp(14px,3vw,20px);padding:4px;background:var(--paper-3);border-radius:11px;border:2px solid var(--ink-30);}
+.xr-stabs .astryx-segmented-control-item{gap:8px;min-height:44px;min-width:0;padding:0 4px;font-family:var(--ui);font-weight:600;font-size:16px;color:var(--ink-2);border-radius:8px;}
+.xr-stabs .astryx-segmented-control-item:hover{color:var(--ink);}
+.xr-stabs .astryx-segmented-control-item[aria-checked="true"]{background:var(--brand-deep);color:#fff;box-shadow:var(--shadow4);}
+.xr-stabs .astryx-segmented-control-item svg{flex:none;}
+@media(max-width:480px){.xr-stabs .astryx-segmented-control-item{gap:5px;font-size:14px;}.xr-stabs .astryx-segmented-control-item svg{width:16px;height:16px;}}
+@media(max-width:400px){.xr-stabs .astryx-segmented-control-item{flex-direction:column;gap:2px;font-size:12px;line-height:1.1;}}
 .xr-modal-tab{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:600;font-size:14px;color:var(--ink-2);border:2px solid var(--ink-30);background:var(--paper);padding:5px 12px;border-radius:8px;min-height:38px;transition:.12s;}
 .xr-modal-tab:hover{border-color:var(--ink);color:var(--ink);}
 .xr-modal-tab.on{color:var(--cream);background:var(--ink);border-color:var(--ink);}
