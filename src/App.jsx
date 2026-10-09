@@ -5,6 +5,7 @@ import { Dialog } from "@astryxdesign/core/Dialog";
 import { NumberInput } from "@astryxdesign/core/NumberInput";
 import { Button } from "@astryxdesign/core/Button";
 import { IconButton } from "@astryxdesign/core/IconButton";
+import { Popover } from "@astryxdesign/core/Popover";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -875,6 +876,20 @@ function Modal({ onClose, label, className, purpose = "info", sheet = false, chi
   );
 }
 
+/* Astryx Popover, same deal as Modal: its surface is cleared (.xr-popsurf) and
+   the panel is the app's own. It handles placement, light dismiss and the
+   shared Escape stack. trigger is a render function: spread its props onto
+   the button that opens it. No autofocus: on a phone it would open the
+   keyboard on the first field. */
+function Pop({ label, open, setOpen, trigger, children, placement = "below", alignment = "end" }) {
+  return (
+    <Popover label={label} isOpen={open} onOpenChange={setOpen} placement={placement} alignment={alignment}
+      padding={0} className="xr-popsurf" content={children} hasAutoFocus={false}>
+      {trigger}
+    </Popover>
+  );
+}
+
 /* ---- transient toast notifications ----
    fire from anywhere with toast("Copied", "ok"); a single <Toaster/> mounted in
    the app shell listens on the window and renders an aria-live stack. tones:
@@ -1321,7 +1336,8 @@ function RailNav({ view, bottom }) {
 /* the points muster, living at the foot of the nav rail: game-size stepper, a
    vertical fill bar, a compact legality status, and the points total at the very
    bottom. */
-function RailMuster({ used, budget, pct, over, status, count, errors, issues, issuesOpen, setIssuesOpen, updateList }) {
+function RailMuster({ used, budget, pct, over, status, count, errors, issues, updateList }) {
+  const [issuesOpen, setIssuesOpen] = useState(false);
   const cls = over ? "over" : pct >= 90 ? "near" : "";
   return (
     <div className="xr-railmuster">
@@ -1336,17 +1352,19 @@ function RailMuster({ used, budget, pct, over, status, count, errors, issues, is
       </div>
       <div className={`xr-railpts ${cls}`} title="Points spent"><b>{used}</b><span>spent</span></div>
       <div className="xr-statuswrap xr-railstatuswrap">
-        <button className={`xr-status xr-railstatus ${status}`} onClick={() => setIssuesOpen((o) => !o)}
-          aria-expanded={issues.length ? issuesOpen : undefined} title={issues.length ? "See the issues" : `${count} ${count === 1 ? "unit" : "units"} in the detachment`}>
-          {status === "ok" && <><Check size={14} /> {count}</>}
-          {status === "err" && <><Alert size={14} /> {errors.length}</>}
-          {status === "empty" && <>—</>}
-        </button>
-        {issues.length > 0 && (
-          <div className={`xr-issue-pop xr-railpop ${issuesOpen ? "open" : ""}`} role="region" aria-label="Issues">
+        <Pop label="Issues" open={issues.length > 0 && issuesOpen} setOpen={setIssuesOpen} placement="end" alignment="end"
+          trigger={(tp) => (
+            <button {...tp} className={`xr-status xr-railstatus ${status}`}
+              title={issues.length ? "See the issues" : `${count} ${count === 1 ? "unit" : "units"} in the detachment`}>
+              {status === "ok" && <><Check size={14} /> {count}</>}
+              {status === "err" && <><Alert size={14} /> {errors.length}</>}
+              {status === "empty" && <>—</>}
+            </button>
+          )}>
+          <div className="xr-issue-pop xr-railpop open">
             {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
           </div>
-        )}
+        </Pop>
       </div>
     </div>
   );
@@ -2642,13 +2660,6 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const [shorting, setShorting] = useState(false);
   const [emblemOpen, setEmblemOpen] = useState(false);
   const emblemFileRef = useRef(null);
-  useEffect(() => {
-    if (!settingsOpen && !shareOpen && !issuesOpen) return;
-    // defaultPrevented: Astryx's dialog stack already spent this press on a modal
-    const onKey = (e) => { if (e.key !== "Escape" || e.defaultPrevented) return; setSettingsOpen(false); setShareOpen(false); setIssuesOpen(false); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [settingsOpen, shareOpen, issuesOpen]);
   /* drag-to-reorder: rows shift live via CSS transform while dragging, and the
      actual roster order is only committed once, on pointer-up. */
   const [drag, setDrag] = useState(null); // { key, index, startY, y, rowH, pointerId, moved }
@@ -2738,7 +2749,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
 
   return (
     <div className="xr-build">
-      <RailNav view="build" bottom={<RailMuster used={used} budget={budget} pct={pct} over={over} status={status} count={count} errors={errors} issues={issues} issuesOpen={issuesOpen} setIssuesOpen={setIssuesOpen} updateList={updateList} />} />
+      <RailNav view="build" bottom={<RailMuster used={used} budget={budget} pct={pct} over={over} status={status} count={count} errors={errors} issues={issues} updateList={updateList} />} />
       <header className="xr-mast">
         <div className="xr-mast-row">
           <button className="xr-mast-emblem" onClick={() => setEmblemOpen(true)} title="Choose an emblem or upload a picture" aria-label="Choose an emblem or upload a picture">
@@ -2751,53 +2762,46 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
           <input className="xr-detname" value={list.name} placeholder="Name your detachment"
             onChange={(e) => updateList({ name: e.target.value })} spellCheck={false} />
           <div className="xr-mastptswrap">
-            <button className={`xr-mastpts ${over ? "over" : pct >= 90 ? "near" : ""}`} onClick={() => setIssuesOpen((o) => !o)}
-              aria-expanded={issuesOpen} title="Points and status">
-              <b>{used}</b><span>/{budget}</span>
-              {status === "ok" && <em className="xr-mastpts-s ok"><Check size={13} />{count}</em>}
-              {status === "err" && <em className="xr-mastpts-s err"><Alert size={13} />{errors.length}</em>}
-            </button>
-            {issuesOpen && (
-              <>
-                <button className="xr-settings-scrim" tabIndex={-1} aria-label="Close" onClick={() => setIssuesOpen(false)} />
-                <div className="xr-issue-pop xr-mastpop open" role="region" aria-label="Detachment status">
-                  {issues.length > 0 ? (
-                    <>
-                      <span className="xr-mastpop-h"><Alert size={15} /> {issues.length} {issues.length === 1 ? "issue" : "issues"} to fix</span>
-                      {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
-                    </>
-                  ) : (
-                    <span className="xr-mastpop-ok"><Check size={15} /> Looks good. {count} {count === 1 ? "unit" : "units"}, {used}/{budget} points.</span>
-                  )}
-                </div>
-              </>
-            )}
+            <Pop label="Detachment status" open={issuesOpen} setOpen={setIssuesOpen}
+              trigger={(tp) => (
+                <button {...tp} className={`xr-mastpts ${over ? "over" : pct >= 90 ? "near" : ""}`} title="Points and status">
+                  <b>{used}</b><span>/{budget}</span>
+                  {status === "ok" && <em className="xr-mastpts-s ok"><Check size={13} />{count}</em>}
+                  {status === "err" && <em className="xr-mastpts-s err"><Alert size={13} />{errors.length}</em>}
+                </button>
+              )}>
+              <div className="xr-issue-pop xr-mastpop open">
+                {issues.length > 0 ? (
+                  <>
+                    <span className="xr-mastpop-h"><Alert size={15} /> {issues.length} {issues.length === 1 ? "issue" : "issues"} to fix</span>
+                    {issues.map((it, i) => <span key={i} className={`xr-issue ${it.lvl}`}>{it.msg}</span>)}
+                  </>
+                ) : (
+                  <span className="xr-mastpop-ok"><Check size={15} /> Looks good. {count} {count === 1 ? "unit" : "units"}, {used}/{budget} points.</span>
+                )}
+              </div>
+            </Pop>
           </div>
           <div className="xr-actions">
             <Button className="xr-btn small xr-act" label="Copy roster as text" icon={<CopyIc size={18} />} onClick={copyList} title="Copy the roster to the clipboard as plain text">Copy</Button>
             <div className="xr-sharewrap">
-              <Button className="xr-btn small xr-act" label="Share link" icon={<ShareIc size={18} />} onClick={() => setShareOpen((o) => !o)}
-                title="Share this detachment as a link" aria-expanded={shareOpen}>Share</Button>
-              {shareOpen && (
-                <>
-                  <button className="xr-settings-scrim" tabIndex={-1} aria-label="Close share menu" onClick={() => setShareOpen(false)} />
-                  <div className="xr-settings-pop xr-share-pop" role="dialog" aria-label="Share this detachment">
+              <Pop label="Share this detachment" open={shareOpen} setOpen={setShareOpen}
+                trigger={(tp) => <Button {...tp} className="xr-btn small xr-act" label="Share link" icon={<ShareIc size={18} />}
+                  title="Share this detachment as a link">Share</Button>}>
+                  <div className="xr-settings-pop xr-share-pop">
                     <p className="xr-share-note">A share link rebuilds this whole detachment in anyone's browser. Everything travels inside the link, so it keeps working offline. Pictures are left out to keep it short.</p>
                     <Button className="xr-btn small block" label="Copy link" icon={<LinkIc size={16} />} onClick={shareLink} />
                     <Button className="xr-btn small block" label={shorting ? "Shortening…" : "Copy short link"} icon={<Bolt size={16} />} onClick={shortLink} isDisabled={shorting} />
                     <p className="xr-share-sub">The short link sends your link to TinyURL to shrink it, so it needs a connection. The plain link always works.</p>
                   </div>
-                </>
-              )}
+              </Pop>
             </div>
             <Button className="xr-btn small xr-act" label="Print sheet" icon={<Printer size={18} />} onClick={() => nav("#/print")} title="Open the print sheet">Print</Button>
             <div className="xr-settingswrap">
-              <Button className={`xr-btn small xr-act ${list.freeplay ? "gold" : ""}`} label="Detachment settings" icon={<Gear size={18} />} onClick={() => setSettingsOpen((o) => !o)}
-                title="Detachment settings" aria-expanded={settingsOpen}>Settings</Button>
-              {settingsOpen && (
-                <>
-                  <button className="xr-settings-scrim" tabIndex={-1} aria-label="Close settings" onClick={() => setSettingsOpen(false)} />
-                  <div className="xr-settings-pop" role="dialog" aria-label="Detachment settings">
+              <Pop label="Detachment settings" open={settingsOpen} setOpen={setSettingsOpen}
+                trigger={(tp) => <Button {...tp} className={`xr-btn small xr-act ${list.freeplay ? "gold" : ""}`} label="Detachment settings" icon={<Gear size={18} />}
+                  title="Detachment settings">Settings</Button>}>
+                  <div className="xr-settings-pop">
                     <label className="xr-set-field">
                       <span className="xr-set-field-l">Description <em>optional</em></span>
                       <textarea className="xr-field-in xr-field-area" value={list.description || ""} onChange={(e) => updateList({ description: e.target.value })}
@@ -2816,8 +2820,7 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
                     </button>
                     <Button className="xr-btn small danger xr-set-delete" variant="destructive" label="Delete this detachment" icon={<Trash size={16} />} onClick={onDelete} />
                   </div>
-                </>
-              )}
+              </Pop>
             </div>
           </div>
         </div>
@@ -3553,7 +3556,6 @@ const CSS = `
 .xr-railstatus{padding:4px 8px;font-size:13px;border-width:2px;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff;}
 .xr-railstatus.ok{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.4);color:#fff;}
 .xr-railstatus.err{background:#fff;border-color:#fff;color:var(--coral-ink);}
-.xr-railpop{position:absolute;left:calc(100% + 8px);bottom:0;top:auto;}
 .xr-railpts{display:flex;flex-direction:column;align-items:center;line-height:1;font-family:var(--mono);font-variant-numeric:tabular-nums;color:#fff;}
 .xr-railpts b{font-size:22px;font-weight:700;}
 .xr-railpts span{font-size:12px;color:rgba(255,255,255,.75);margin-top:1px;}
@@ -3602,7 +3604,6 @@ const CSS = `
 /* the whole points-badge wrapper is mobile only; the desktop rail muster owns
    the status popover, so gating the wrapper here avoids a double popover */
 .xr-mastptswrap{display:none;position:relative;}
-.xr-mastpop{left:auto;right:0;z-index:60;}
 .xr-mastpop-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;font-size:15px;color:var(--coral-ink);}
 .xr-mastpop-ok{display:flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:15px;color:var(--sage);line-height:1.4;}
 .xr-mastpop-ok svg,.xr-mastpop-h svg{flex:none;}
@@ -3655,8 +3656,9 @@ const CSS = `
 .xr-natl-sel:focus{outline:none;border-color:var(--coral);}
 /* detachment settings popover */
 .xr-settingswrap{position:relative;}
-.xr-settings-scrim{position:fixed;inset:0;z-index:39;background:transparent;border:none;cursor:default;}
-.xr-settings-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:min(320px,86vw);display:flex;flex-direction:column;gap:14px;background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;box-shadow:0 12px 34px rgba(31,61,46,.26);padding:14px;animation:xr-pop .18s cubic-bezier(.2,.8,.2,1);}
+/* Astryx Popover places these; .xr-popsurf clears its own surface */
+.xr-popsurf{background:transparent;border:none;box-shadow:none;padding:0;overflow:visible;}
+.xr-settings-pop{width:min(320px,86vw);display:flex;flex-direction:column;gap:14px;background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;box-shadow:0 12px 34px rgba(31,61,46,.26);padding:14px;animation:xr-pop .18s cubic-bezier(.2,.8,.2,1);}
 .xr-set-delete{justify-content:center;margin-top:2px;border-top:2px solid var(--ink-18);padding-top:14px;border-radius:0;border-left:none;border-right:none;border-bottom:none;}
 .xr-set-toggle{display:flex;align-items:flex-start;gap:10px;text-align:left;padding:9px;border:2px solid var(--ink-30);border-radius:10px;background:var(--paper-2);transition:.13s;}
 .xr-set-toggle:hover{border-color:var(--ink);}
@@ -3678,8 +3680,8 @@ const CSS = `
 .xr-statuswrap{position:relative;}
 .xr-statuswrap .xr-status{cursor:pointer;}
 .xr-status.err,.xr-status.err *{cursor:pointer;}
-.xr-issue-pop{position:absolute;top:calc(100% + 8px);right:0;z-index:35;min-width:270px;max-width:380px;background:var(--paper);border:2px solid var(--ink);border-radius:12px;box-shadow:0 8px 26px rgba(31,61,46,.24);padding:12px;display:none;flex-direction:column;gap:8px;}
-.xr-statuswrap:hover .xr-issue-pop,.xr-issue-pop.open{display:flex;}
+.xr-issue-pop{min-width:270px;max-width:380px;background:var(--paper);border:2px solid var(--ink);border-radius:12px;box-shadow:0 8px 26px rgba(31,61,46,.24);padding:12px;display:none;flex-direction:column;gap:8px;}
+.xr-issue-pop.open{display:flex;}
 .xr-issues{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
 .xr-issue{font-family:var(--ui);font-weight:600;font-size:14.5px;padding:6px 11px;border-radius:8px;border-left:4px solid;background:var(--paper-2);}
 .xr-issue.err{color:var(--coral-ink);border-color:var(--coral-ink);}
@@ -4525,7 +4527,7 @@ const CSS = `
   .xr-detname{font-size:17px;min-height:44px;}
   .xr-file-btn{min-height:44px;}
   .xr-btn.small.xr-manage{min-height:44px;}
-  .xr-sharewrap .xr-settings-pop{position:fixed;top:64px;right:10px;left:10px;width:auto;}
+  .xr-sharewrap .xr-settings-pop{width:calc(100vw - 20px);}
 }
 
 /* ---------- reflow: no view scrolls sideways (320px and up) ---------- */
