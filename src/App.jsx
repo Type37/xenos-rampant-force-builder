@@ -3410,8 +3410,13 @@ const CSS = `
   background:var(--paper);color:var(--ink);font-family:var(--body);
   font-size:17px;line-height:1.55;min-height:100vh;
 }
+/* the reset lives in its own layer, declared below Astryx in index.html. As a
+   plain rule it outranked every single class: .xr-btn, .xr-add-sticky and 18
+   more never got their own fill or border, and it would strip Astryx too. */
+@layer xr-reset{
 .xr-app *{box-sizing:border-box;margin:0;}
 .xr-app button{font-family:var(--ui);font-size:inherit;cursor:pointer;color:inherit;background:none;border:none;}
+}
 .xr-app :focus-visible{outline:none;box-shadow:0 0 0 2px var(--cream),0 0 0 4px var(--ink);border-radius:5px;}
 @media (prefers-reduced-motion: reduce){.xr-app *{animation-duration:.01ms !important;transition-duration:.01ms !important;}}
 
@@ -3528,9 +3533,8 @@ const CSS = `
 /* value on its own line, −/+ side by side under it: three across overflowed the 76px rail */
 .xr-railsize{display:grid;grid-template-columns:32px 32px;gap:4px;justify-items:center;}
 .xr-railsize-val{grid-column:1/-1;order:-1;}
-/* .xr-app prefix: the global button reset outranks a bare class and was clearing this fill */
-.xr-app .xr-railsize-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:rgba(255,255,255,.85);font-family:var(--display);font-weight:700;font-size:16px;line-height:1;background:rgba(255,255,255,.12);transition:background var(--dur-fast) var(--curve-ease);}
-.xr-app .xr-railsize-btn:hover{background:rgba(255,255,255,.24);color:#fff;}
+.xr-railsize-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:rgba(255,255,255,.85);font-family:var(--display);font-weight:700;font-size:16px;line-height:1;background:rgba(255,255,255,.12);transition:background var(--dur-fast) var(--curve-ease);}
+.xr-railsize-btn:hover{background:rgba(255,255,255,.24);color:#fff;}
 .xr-railsize-val{min-width:24px;text-align:center;font-family:var(--mono);font-weight:700;font-size:17px;color:#fff;font-variant-numeric:tabular-nums;}
 .xr-railbar{position:relative;width:14px;flex:1;min-height:80px;display:flex;align-items:flex-end;border-radius:8px;background:rgba(0,0,0,.22);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
 .xr-railbar-fill{display:block;width:100%;background:var(--cream);border-radius:0 0 7px 7px;transition:height var(--dur-slow) var(--curve-ease);}
@@ -3568,8 +3572,7 @@ const CSS = `
 
 /* ---------- sticky add-unit ---------- */
 .xr-ulist-rows{display:flex;flex-direction:column;gap:7px;}
-/* .xr-app prefix: the global button reset outranks a bare class and was clearing this fill */
-.xr-app .xr-add-sticky{position:sticky;bottom:14px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font-family:var(--body);font-weight:700;font-size:18px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:14px;border-radius:12px;box-shadow:0 3px 12px rgba(31,61,46,.22);transition:.13s;}
+.xr-add-sticky{position:sticky;bottom:14px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font-family:var(--body);font-weight:700;font-size:18px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:14px;border-radius:12px;box-shadow:0 3px 12px rgba(31,61,46,.22);transition:.13s;}
 .xr-add-sticky:hover{background:var(--brand-deep-blue);border-color:var(--brand-deep-blue);}
 .xr-add-sticky:active{transform:scale(.98);}
 
