@@ -12,6 +12,7 @@ import { Tooltip } from "@astryxdesign/core/Tooltip";
 import { ToastViewport, useToast } from "@astryxdesign/core/Toast";
 import { CheckboxList, CheckboxListItem } from "@astryxdesign/core/CheckboxList";
 import { CheckboxInput } from "@astryxdesign/core/CheckboxInput";
+import { Collapsible } from "@astryxdesign/core/Collapsible";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -1415,17 +1416,20 @@ function RulesModal({ onClose }) {
 }
 
 /* collapsible section: progressive disclosure inside the unit editor */
+/* the three disclosures below are Astryx Collapsible, which owns the button,
+   aria-expanded and the region it controls. Its own chevron is hidden
+   (.xr-disclose) so each keeps the app's caret. */
 function Section({ title, count, defaultOpen, children }) {
   const [open, setOpen] = useState(!!defaultOpen);
   return (
-    <div className={`xr-sec ${open ? "open" : ""}`}>
-      <button className="xr-sec-h" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+    <Collapsible className={`xr-sec xr-disclose ${open ? "open" : ""}`} isOpen={open} onOpenChange={setOpen}
+      trigger={<>
         <span className="xr-sec-title">{title}</span>
         {count > 0 && <em className="xr-sec-count">{count}</em>}
         <Caret className="xr-sec-caret" size={18} />
-      </button>
-      {open && <div className="xr-sec-body">{children}</div>}
-    </div>
+      </>}>
+      <div className="xr-sec-body">{children}</div>
+    </Collapsible>
   );
 }
 
@@ -2060,12 +2064,10 @@ function withPrereqNote(data, note) {
 function RuleChip({ name, text }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`xr-chipwrap ${open ? "open" : ""}`}>
-      <button className="xr-chip" onClick={() => setOpen((o) => !o)} aria-expanded={open} title={open ? "Hide rule text" : "Show rule text"}>
-        <span>{name}</span>{text && <Caret className="xr-chip-caret" size={13} />}
-      </button>
-      {open && text && <RuleText data={text} className="xr-chip-text" />}
-    </div>
+    <Collapsible className={`xr-chipwrap xr-disclose ${open ? "open" : ""}`} isOpen={open} onOpenChange={setOpen}
+      trigger={<><span>{name}</span>{text && <Caret className="xr-chip-caret" size={13} />}</>}>
+      {text && <RuleText data={text} className="xr-chip-text" />}
+    </Collapsible>
   );
 }
 
@@ -2073,16 +2075,16 @@ function RuleChip({ name, text }) {
 const AbilityItem = React.memo(function AbilityItem({ name, cost, badge, text, tone, kind }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`xr-abil-item ${tone || ""} ${open ? "open" : ""}`}>
-      <button className="xr-abil-item-h" onClick={() => setOpen((o) => !o)} aria-expanded={open} title={open ? "Hide rule text" : "Show rule text"}>
+    <Collapsible className={`xr-abil-item xr-disclose ${tone || ""} ${open ? "open" : ""}`} isOpen={open} onOpenChange={setOpen}
+      trigger={<>
         <Caret className="xr-abil-item-caret" size={14} />
         <span className="xr-abil-item-name">{name}</span>
         {kind && <span className="xr-abil-item-kind">{kind}</span>}
         {badge != null && <span className="xr-abil-item-badge">{badge}</span>}
         {cost != null && <span className="xr-abil-item-cost">{costLabel(cost)}</span>}
-      </button>
-      {open && text && <RuleText data={text} className="xr-abil-item-text" />}
-    </div>
+      </>}>
+      {text && <RuleText data={text} className="xr-abil-item-text" />}
+    </Collapsible>
   );
 });
 
@@ -3575,11 +3577,15 @@ const CSS = `
 
 /* ---------- collapsible section (progressive disclosure) ---------- */
 .xr-sec{border-top:none;}
-.xr-sec-h{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 2px 8px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);min-height:44px;}
+.xr-sec>.astryx-collapsible-trigger{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 2px 8px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);min-height:44px;}
 .xr-sec-title{flex:1;}
 .xr-sec-count{font-family:var(--mono);font-style:normal;font-weight:700;font-size:14px;min-width:26px;height:26px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--cream);border-radius:13px;}
 .xr-sec-caret{color:var(--ink-2);transition:transform .15s;flex:none;}
 .xr-sec.open .xr-sec-caret{transform:rotate(180deg);}
+/* Astryx Collapsible: hide its chevron (the app draws its own caret) and let
+   the trigger's inner span lay its parts straight into the button's flex row */
+.xr-disclose>.astryx-collapsible-trigger>.astryx-icon{display:none;}
+.xr-disclose>.astryx-collapsible-trigger>span{display:contents;}
 .xr-sec-body{padding-bottom:14px;animation:xr-rise .2s cubic-bezier(.2,.8,.2,1);}
 
 /* ---------- sticky add-unit ---------- */
@@ -3815,7 +3821,7 @@ const CSS = `
 .xr-panel-col{min-width:0;}
 .xr-col-stats{max-width:380px;}
 .xr-col-abil .xr-abil{margin-top:0;}
-.xr-panel-col>.xr-sec:first-child .xr-sec-h{padding-top:4px;}
+.xr-panel-col>.xr-sec:first-child>.astryx-collapsible-trigger{padding-top:4px;}
 @media(max-width:900px){.xr-panel-cols{grid-template-columns:1fr;gap:0;}.xr-col-stats{max-width:none;}}
 .xr-group{margin-top:18px;}
 .xr-group-h{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;letter-spacing:.03em;font-size:20px;line-height:1.4;color:var(--ink);padding-bottom:6px;border-bottom:2px solid var(--ink-30);margin-bottom:10px;}
@@ -3842,8 +3848,8 @@ const CSS = `
 .xr-abil-item.xeno .xr-abil-item-kind{color:var(--iris);border-color:#6A4A8C40;}
 .xr-abil-item.psy .xr-abil-item-kind{color:var(--iris);border-color:#6A4A8C40;}
 .xr-abil-item.custom .xr-abil-item-kind{color:var(--rust);border-color:#B06A2C40;}
-.xr-abil-item-h{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:10px 12px;min-height:46px;transition:background .12s;}
-.xr-abil-item-h:hover{background:var(--paper-3);}
+.xr-abil-item>.astryx-collapsible-trigger{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:10px 12px;min-height:46px;transition:background .12s;}
+.xr-abil-item>.astryx-collapsible-trigger:hover{background:var(--paper-3);}
 .xr-abil-item-caret{flex:none;color:var(--ink-2);transition:transform .16s;}
 .xr-abil-item.open .xr-abil-item-caret{transform:rotate(180deg);}
 .xr-abil-item-name{flex:1;font-family:var(--ui);font-weight:600;font-size:15.5px;color:var(--ink);}
@@ -3999,11 +4005,11 @@ const CSS = `
 .xr-custom-form-foot{display:flex;justify-content:flex-end;gap:10px;}
 .xr-chips{display:flex;flex-direction:column;gap:6px;}
 .xr-chipwrap{display:flex;flex-direction:column;}
-.xr-chip{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 10px 6px 12px;min-height:44px;transition:.12s;}
-.xr-chip:hover{border-color:var(--ink);background:var(--paper-2);}
+.xr-chipwrap>.astryx-collapsible-trigger{align-self:flex-start;width:auto;justify-content:flex-start;font-family:var(--ui);display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15.5px;border:1.5px solid var(--ink-30);border-radius:8px;padding:6px 10px 6px 12px;min-height:44px;transition:.12s;}
+.xr-chipwrap>.astryx-collapsible-trigger:hover{border-color:var(--ink);background:var(--paper-2);}
 .xr-chip-caret{color:var(--ink-2);transition:transform .15s;}
-.xr-chip:hover .xr-chip-caret{color:var(--ink);}
-.xr-chipwrap.open .xr-chip{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+.xr-chipwrap>.astryx-collapsible-trigger:hover .xr-chip-caret{color:var(--ink);}
+.xr-chipwrap.open>.astryx-collapsible-trigger{background:var(--ink);color:var(--cream);border-color:var(--ink);}
 .xr-chipwrap.open .xr-chip-caret{transform:rotate(180deg);color:var(--cream);}
 .xr-chip-text{font-family:var(--body);font-style:normal;font-size:16px;color:var(--ink);line-height:1.5;padding:8px 2px 4px;}
 .xr-flavor{display:block;font-family:var(--flavor);font-style:italic;font-size:15.5px;line-height:1.4;color:var(--ink-2);margin-bottom:5px;}
