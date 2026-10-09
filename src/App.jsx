@@ -1391,9 +1391,9 @@ function RulesModal({ onClose }) {
         <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <TabList className="xr-modal-tabs" role="tablist" aria-label="Rules sections" value={cat} onChange={setCat}>
-        {RULES_CATS.map((c) => <Tab key={c} value={c} label={c} className={`xr-modal-tab ${cat === c ? "on" : ""}`} />)}
+        {RULES_CATS.map((c) => <Tab panelId="xr-rules-panel" key={c} value={c} label={c} className={`xr-modal-tab ${cat === c ? "on" : ""}`} />)}
       </TabList>
-      <div className="xr-modal-body">
+      <div className="xr-modal-body" id="xr-rules-panel" role="tabpanel">
         <div className="xr-rref-cols">
           {sections.map((s) => (
             <div className="xr-rref" key={s.title}>
@@ -1784,9 +1784,9 @@ function LoadPresetModal({ onLoad, onClose }) {
         <IconButton className="xr-iconbtn" label="Close" icon={<XIc size={20} />} onClick={onClose} />
       </div>
       <TabList className="xr-modal-tabs" role="tablist" aria-label="Settings" value={sid} onChange={setSid}>
-        {PRESET_SETTINGS.map((s) => <Tab key={s.id} value={s.id} label={s.name.split(":")[0]} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} />)}
+        {PRESET_SETTINGS.map((s) => <Tab panelId="xr-preset-panel" key={s.id} value={s.id} label={s.name.split(":")[0]} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} />)}
       </TabList>
-      <div className="xr-modal-body">
+      <div className="xr-modal-body" id="xr-preset-panel" role="tabpanel">
         {setting.quote ? (
           <blockquote className="xr-preset-epi">
             <p className="xr-preset-quote">{setting.quote}</p>
@@ -2446,12 +2446,12 @@ function AbilitiesModal({ u, dispatch, onClose }) {
       {tabs.length > 1 && (
         <TabList className="xr-modal-tabs" role="tablist" aria-label="Ability kinds" value={tab} onChange={setTab}>
           {tabs.map((tb) => (
-            <Tab key={tb.id} value={tb.id} label={tb.label} className={`xr-modal-tab ${tab === tb.id ? "on" : ""}`}
+            <Tab panelId="xr-abil-panel" key={tb.id} value={tb.id} label={tb.label} className={`xr-modal-tab ${tab === tb.id ? "on" : ""}`}
               endContent={tb.n > 0 ? <em className="xr-tab-n">{tb.n}</em> : undefined} />
           ))}
         </TabList>
       )}
-      <div className="xr-modal-body">
+      <div className="xr-modal-body" id="xr-abil-panel" role="tabpanel">
         {needle ? (
           <>
             {foundOpts.map((o) => {
