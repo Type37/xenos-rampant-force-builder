@@ -4560,6 +4560,13 @@ const CSS = `
      ("Infantr / y"); on narrow phones the points drop under the name */
   .xr-urow-top{flex-wrap:wrap;row-gap:0;}
   .xr-urow-name{flex-basis:calc(100% - 25px);}
+  /* the builder header stacked three rows here and ate a third of the screen:
+     the four actions go icon only (names stay as labels and tooltips) so the
+     points and actions share one row */
+  .xr-mast-row{gap:8px;}
+  .xr-mast .xr-actions{gap:3px;}
+  .xr-mast .xr-act{min-width:42px;width:42px;padding:0;justify-content:center;}
+  .xr-mast .xr-act span:not(.astryx-button-icon):not(:has(svg)){display:none;}
 }
 @media(max-width:480px){
   .xr-word{white-space:normal;}
