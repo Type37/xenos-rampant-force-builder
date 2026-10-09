@@ -19,6 +19,8 @@ import { ToggleButton } from "@astryxdesign/core/ToggleButton";
 import { Selector } from "@astryxdesign/core/Selector";
 import { TextInput } from "@astryxdesign/core/TextInput";
 import { TextArea } from "@astryxdesign/core/TextArea";
+import { ClickableCard } from "@astryxdesign/core/ClickableCard";
+import { EmptyState } from "@astryxdesign/core/EmptyState";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -1806,15 +1808,15 @@ function LoadPresetModal({ onLoad, onClose }) {
         ) : (
           <div className="xr-preset-grid">
             {setting.detachments.map((d) => (
-              <button className="xr-preset-card" key={d.n} onClick={() => onLoad(d, setting)}>
+              <ClickableCard className="xr-preset-card" key={d.n} label={`Load ${d.name}, ${detachmentUnits(d)} units, ${detachmentPoints(d)} points`} onClick={() => onLoad(d, setting)}>
                 {(d.image || d.icon) && <DetachIcon list={d.image ? { image: `${FACTION_BASE}${d.image}` } : d} size={42} className="xr-preset-img" style={d.badge ? { background: d.badge.bg, color: d.badge.fg } : undefined} />}
                 <span className="xr-preset-name">{d.name}</span>
                 {d.subtitle && <span className="xr-preset-sub">{d.subtitle}</span>}
                 <span className="xr-preset-foot">
                   <span className="xr-preset-meta">{detachmentUnits(d)} units, {detachmentPoints(d)} pts</span>
-                  <span className="xr-preset-load"><Plus size={15} /> Load</span>
+                  <span className="xr-preset-load" aria-hidden="true"><Plus size={15} /> Load</span>
                 </span>
-              </button>
+              </ClickableCard>
             ))}
           </div>
         )}
@@ -1877,17 +1879,15 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
           </div>
         )}
         {arr.length === 0 ? (
-          <div className="xr-home-welcome">
-            <span className="xr-home-welcome-badge"><Alien size={48} /></span>
-            <h2>Build your first detachment</h2>
-            <p>Start from scratch, or load a ready-made force from the rulebook.</p>
-            <div className="xr-home-welcome-btns">
+          <EmptyState className="xr-home-welcome" headingLevel={2} title="Build your first detachment"
+            description="Start from scratch, or load a ready-made force from the rulebook."
+            icon={<span className="xr-home-welcome-badge"><Alien size={48} /></span>}
+            actions={<div className="xr-home-welcome-btns">
               <Button className="xr-btn primary" variant="primary" label="New detachment" icon={<Plus size={19} />} onClick={() => setCreating(true)} />
               {PRESET_SETTINGS.length > 0 && (
                 <Button className="xr-btn" label="Load a preset" icon={<Book size={18} />} onClick={() => setLoading(true)} />
               )}
-            </div>
-          </div>
+            </div>} />
         ) : groups.length === 1 && groups[0].title === null ? (
           <div className="xr-home-grid">{groups[0].items.map(renderCard)}</div>
         ) : (
@@ -2580,7 +2580,9 @@ const CATALOG_STATS = [
 const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
   const stdRules = t.special.filter((s) => s !== "None");
   return (
-    <button className={`xr-cat-card cat-${catOf(t)}`} onClick={() => onAdd(t.id)}>
+    // ClickableCard: one short button name for the whole card, instead of a
+    // button whose name was every stat and rule printed on it
+    <ClickableCard className={`xr-cat-card cat-${catOf(t)}`} label={`Add ${t.name}, ${t.base} ${t.base === 1 ? "point" : "points"}`} onClick={() => onAdd(t.id)}>
       <span className="xr-cat-top">
         <span className="xr-cat-name">{t.name}</span>
       </span>
@@ -2615,8 +2617,8 @@ const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
           ))}
         </span>
       )}
-      <span className="xr-cat-add"><Plus size={15} /> Add <b>{t.base}pts</b></span>
-    </button>
+      <span className="xr-cat-add" aria-hidden="true"><Plus size={15} /> Add <b>{t.base}pts</b></span>
+    </ClickableCard>
   );
 });
 
@@ -2817,12 +2819,9 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
       <div className={`xr-build-body ${sel ? "has-sel" : ""}`}>
         <main className="xr-ulist" aria-label="Detachment roster">
           {roster.length === 0 ? (
-            <button className="xr-firstunit" onClick={() => setAdding(true)}>
-              <span className="xr-firstunit-badge"><Plus size={30} /></span>
-              <span className="xr-firstunit-txt">
-                <b>Add your first unit</b>
-              </span>
-            </button>
+            <EmptyState className="xr-firstunit" title="No units yet" description="Every detachment starts with one."
+              icon={<span className="xr-firstunit-badge"><Plus size={30} /></span>}
+              actions={<Button className="xr-btn primary" variant="primary" label="Add your first unit" icon={<Plus size={18} />} onClick={() => setAdding(true)} />} />
           ) : (
             <>
               {roster.length > 1 && (
@@ -3426,6 +3425,8 @@ const CSS = `
 .xr-app .astryx-button{font-family:var(--ui);}
 }
 .xr-app :focus-visible{outline:none;box-shadow:0 0 0 2px var(--cream),0 0 0 4px var(--ink);border-radius:5px;}
+/* a ClickableCard's focus lands on its hidden button; ring the card itself */
+.xr-app .xr-cat-card:has(button:focus-visible),.xr-app .xr-preset-card:has(button:focus-visible){box-shadow:0 0 0 2px var(--cream),0 0 0 4px var(--ink);}
 @media (prefers-reduced-motion: reduce){.xr-app *{animation-duration:.01ms !important;transition-duration:.01ms !important;}}
 
 /* every :hover below sits in @media(hover:hover): on a touch screen a tap
