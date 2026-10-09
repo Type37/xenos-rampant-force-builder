@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.css";
+import { Dialog } from "@astryxdesign/core/Dialog";
+import { NumberInput } from "@astryxdesign/core/NumberInput";
 /* Icons: Phosphor (solid fills), bundled offline as inline SVG. One cohesive set. */
 import icSword from "@iconify-icons/ph/sword-fill";
 import icMove from "@iconify-icons/ph/arrow-fat-lines-right-fill";
@@ -846,6 +848,25 @@ function parseHash() {
 }
 const nav = (h) => { window.location.hash = h; };
 
+/* every modal goes through Astryx's Dialog: a native <dialog> in the top layer,
+   so focus stays inside, and one shared Escape stack closes only the topmost
+   modal. Dialog's own surface is cleared in CSS (.xr-dlg) and the className
+   here draws the Field Almanac panel inside it. purpose="form" ignores
+   backdrop clicks, so a drag released outside the panel loses nothing. */
+function Modal({ onClose, label, className, purpose = "info", sheet = false, children }) {
+  // the modal unmounts rather than closing, so the browser never hands focus
+  // back; return it to whatever opened the modal. Read during render: by the
+  // time an effect runs, Dialog has already pulled focus inside.
+  const [opener] = useState(() => document.activeElement);
+  useEffect(() => () => { if (opener && opener.isConnected && opener.focus) opener.focus(); }, [opener]);
+  return (
+    <Dialog isOpen onOpenChange={(open) => { if (!open) onClose(); }} aria-label={label}
+      purpose={purpose} padding={0} width="auto" maxHeight="none" className={sheet ? "xr-dlg xr-dlg-sheet" : "xr-dlg"}>
+      <div className={className}>{children}</div>
+    </Dialog>
+  );
+}
+
 /* ---- transient toast notifications ----
    fire from anywhere with toast("Copied", "ok"); a single <Toaster/> mounted in
    the app shell listens on the window and renders an aria-live stack. tones:
@@ -979,12 +1000,6 @@ function CropHost() {
     return () => { c.destroy(); cropRef.current = null; };
   }, [job]);
 
-  useEffect(() => {
-    if (!job) return undefined;
-    const onKey = (e) => { if (e.key === "Escape") setJob(null); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [job]);
 
   if (!job) return null;
 
@@ -1007,22 +1022,20 @@ function CropHost() {
   };
 
   return (
-    <div className="xr-modal-backdrop" onClick={() => setJob(null)}>
-      <div className="xr-modal xr-modal-narrow xr-crop" role="dialog" aria-modal="true" aria-label="Crop the picture" onClick={(e) => e.stopPropagation()}>
-        <div className="xr-modal-head">
-          <span className="xr-modal-title"><Image size={20} /> Frame the picture</span>
-          <button className="xr-iconbtn" onClick={() => setJob(null)} aria-label="Cancel"><XIc size={20} /></button>
-        </div>
-        <p className="xr-crop-hint">Drag to move, drag a corner to resize, scroll or pinch to zoom.</p>
-        <div className="xr-crop-stage"><img ref={imgRef} src={job.src} alt="" /></div>
-        <div className="xr-modal-foot">
-          <button className="xr-btn" onClick={() => cropRef.current && cropRef.current.rotate(90)}>Rotate</button>
-          <button className="xr-btn" onClick={() => cropRef.current && cropRef.current.reset()}>Reset</button>
-          <button className="xr-btn" onClick={() => setJob(null)}>Cancel</button>
-          <button className="xr-btn primary" onClick={use}><Check size={17} /> Use this picture</button>
-        </div>
+    <Modal onClose={() => setJob(null)} label="Crop the picture" className="xr-modal xr-modal-narrow xr-crop" purpose="form">
+      <div className="xr-modal-head">
+        <span className="xr-modal-title"><Image size={20} /> Frame the picture</span>
+        <button className="xr-iconbtn" onClick={() => setJob(null)} aria-label="Cancel"><XIc size={20} /></button>
       </div>
-    </div>
+      <p className="xr-crop-hint">Drag to move, drag a corner to resize, scroll or pinch to zoom.</p>
+      <div className="xr-crop-stage"><img ref={imgRef} src={job.src} alt="" /></div>
+      <div className="xr-modal-foot">
+        <button className="xr-btn" onClick={() => cropRef.current && cropRef.current.rotate(90)}>Rotate</button>
+        <button className="xr-btn" onClick={() => cropRef.current && cropRef.current.reset()}>Reset</button>
+        <button className="xr-btn" onClick={() => setJob(null)}>Cancel</button>
+        <button className="xr-btn primary" onClick={use}><Check size={17} /> Use this picture</button>
+      </div>
+    </Modal>
   );
 }
 
@@ -1332,41 +1345,34 @@ function RailMuster({ used, budget, pct, over, status, count, errors, issues, is
 /* at-the-table quick rules reference, grouped into tabs */
 function RulesModal({ onClose }) {
   const [cat, setCat] = useState(RULES_CATS[0]);
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
   const sections = RULES_REFERENCE.filter((s) => s.cat === cat);
   return (
-    <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Rules reference" onClick={(e) => e.stopPropagation()}>
-        <div className="xr-modal-head">
-          <span className="xr-modal-title"><Book size={20} /> Rules reference</span>
-          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
-        </div>
-        <div className="xr-modal-tabs" role="tablist">
-          {RULES_CATS.map((c) => (
-            <button key={c} role="tab" aria-selected={cat === c} className={`xr-modal-tab ${cat === c ? "on" : ""}`} onClick={() => setCat(c)}>{c}</button>
+    <Modal onClose={onClose} label="Rules reference" className="xr-modal xr-modal-tall xr-modal-wide">
+      <div className="xr-modal-head">
+        <span className="xr-modal-title"><Book size={20} /> Rules reference</span>
+        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+      </div>
+      <div className="xr-modal-tabs" role="tablist">
+        {RULES_CATS.map((c) => (
+          <button key={c} role="tab" aria-selected={cat === c} className={`xr-modal-tab ${cat === c ? "on" : ""}`} onClick={() => setCat(c)}>{c}</button>
+        ))}
+      </div>
+      <div className="xr-modal-body">
+        <div className="xr-rref-cols">
+          {sections.map((s) => (
+            <div className="xr-rref" key={s.title}>
+              <h4 className="xr-rref-h">{s.title}</h4>
+              {s.intro && <p className="xr-rref-intro">{s.intro}</p>}
+              <ul className="xr-rule-list">{s.items.map((it, i) => <li key={i}>{it}</li>)}</ul>
+            </div>
           ))}
         </div>
-        <div className="xr-modal-body">
-          <div className="xr-rref-cols">
-            {sections.map((s) => (
-              <div className="xr-rref" key={s.title}>
-                <h4 className="xr-rref-h">{s.title}</h4>
-                {s.intro && <p className="xr-rref-intro">{s.intro}</p>}
-                <ul className="xr-rule-list">{s.items.map((it, i) => <li key={i}>{it}</li>)}</ul>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="xr-modal-foot">
-          <span className="xr-modal-count">Xenos Rampant, Osprey Games</span>
-          <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
-        </div>
       </div>
-    </div>
+      <div className="xr-modal-foot">
+        <span className="xr-modal-count">Xenos Rampant, Osprey Games</span>
+        <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+      </div>
+    </Modal>
   );
 }
 
@@ -1404,9 +1410,9 @@ function BudgetPicker({ budget, onChange }) {
         <button className="xr-budget-customtab" onClick={() => setCustomOpen((o) => !o)} aria-expanded={custom}
           title="Set your own game size">Custom</button>
         {custom && (
-          <input className="xr-budget-custom" type="number" min={1} max={999} value={budget}
-            onChange={(e) => { const n = parseInt(e.target.value, 10); if (!Number.isNaN(n)) onChange(Math.max(1, Math.min(999, n))); }}
-            aria-label="Custom game size" />
+          <NumberInput className="xr-budget-custom" label="Custom game size" isLabelHidden
+            value={budget} min={1} max={999} isIntegerOnly hasNumberSteppers={false} width={82}
+            onChange={(n) => onChange(Math.max(1, Math.min(999, n)))} />
         )}
       </div>
     </div>
@@ -1452,11 +1458,6 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
   const [imgSel, setImgSel] = useState(null);
   const [imgQ, setImgQ] = useState("");
 
-  useEffect(() => {
-    const fn = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", fn);
-    return () => window.removeEventListener("keydown", fn);
-  }, [onClose]);
 
   const filtered = useMemo(() => {
     let L = DETACH_ICON_LIST_META.filter(
@@ -1497,176 +1498,174 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
     : "All emblems";
 
   return (
-    <div className="xr-modal-backdrop xr-epicker-back" onClick={onClose}>
-      <div className="xr-epicker" role="dialog" aria-modal="true" aria-label="Choose an emblem" onClick={(e) => e.stopPropagation()}>
+    <Modal onClose={onClose} label="Choose an emblem" className="xr-epicker" sheet>
 
-        <div className="xr-epicker-head">
-          <span className="xr-modal-title"><Image size={20} /> Choose an emblem</span>
-          <div className="xr-epicker-tabs">
-            <button className={`xr-epicker-tab${mode === "icons" ? " on" : ""}`} onClick={() => setMode("icons")}>Icons</button>
-            <button className={`xr-epicker-tab${mode === "photos" ? " on" : ""}`} onClick={() => setMode("photos")}>Photos</button>
-          </div>
-          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+      <div className="xr-epicker-head">
+        <span className="xr-modal-title"><Image size={20} /> Choose an emblem</span>
+        <div className="xr-epicker-tabs">
+          <button className={`xr-epicker-tab${mode === "icons" ? " on" : ""}`} onClick={() => setMode("icons")}>Icons</button>
+          <button className={`xr-epicker-tab${mode === "photos" ? " on" : ""}`} onClick={() => setMode("photos")}>Photos</button>
         </div>
+        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+      </div>
 
-        {mode === "icons" && (
-          <div className="xr-epicker-layout">
+      {mode === "icons" && (
+        <div className="xr-epicker-layout">
 
-            {/* sidebar: desktop only */}
-            <aside className="xr-epicker-side">
-              <div className="xr-epicker-side-body">
-                <p className="xr-epicker-side-hd">Type</p>
-                {ICON_CATS.map((c) => (
-                  <button key={c.id} className={`xr-epicker-citem${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
-                    <span className="xr-epicker-dot" style={c.col ? { background: c.col } : {}} />
-                    <span className="xr-epicker-cname">{c.name}</span>
-                    <span className="xr-epicker-cct">{catCt(c.id)}</span>
-                  </button>
-                ))}
-                <div className="xr-epicker-divider" />
-                <p className="xr-epicker-side-hd">Setting</p>
-                {ICON_SETTINGS.map((s) => (
-                  <button key={s.id} className={`xr-epicker-citem${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
-                    <span className="xr-epicker-dot" style={s.col ? { background: s.col } : {}} />
-                    <span className="xr-epicker-cname">{s.name}</span>
-                    <span className="xr-epicker-cct">{setCt(s.id)}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="xr-epicker-side-foot">
-                <button className="xr-btn small" onClick={onUpload}><Image size={16} /> Upload image</button>
-              </div>
-            </aside>
-
-            {/* main content */}
-            <div className="xr-epicker-main">
-
-              {/* mobile pill rows (hidden on desktop via CSS) */}
-              <div className="xr-epicker-pills">
-                <div className="xr-epicker-prow">
-                  <span className="xr-epicker-plbl">Type</span>
-                  <div className="xr-epicker-pscroll">
-                    {ICON_CATS.map((c) => (
-                      <button key={c.id} className={`xr-epicker-pill${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
-                        {c.col && <span className="xr-epicker-pdot" style={{ background: c.col }} />}
-                        {c.short}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="xr-epicker-prow xr-epicker-prow2">
-                  <span className="xr-epicker-plbl">Setting</span>
-                  <div className="xr-epicker-pscroll">
-                    {ICON_SETTINGS.map((s) => (
-                      <button key={s.id} className={`xr-epicker-pill${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
-                        {s.col && <span className="xr-epicker-pdot" style={{ background: s.col }} />}
-                        {s.short}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* search + sort */}
-              <div className="xr-epicker-toolbar">
-                <input className="xr-epicker-search" type="search" placeholder="Search emblems…"
-                  value={q} onChange={(e) => setQ(e.target.value)} />
-                <select className="xr-epicker-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
-                  <option value="def">Default</option>
-                  <option value="az">A – Z</option>
-                  <option value="cat">By type</option>
-                  <option value="set">By setting</option>
-                </select>
-              </div>
-
-              {/* icon grid */}
-              <div className="xr-epicker-grid-wrap">
-                <div className="xr-epicker-sec-lbl">
-                  {secLabel}<span className="xr-epicker-ct">{filtered.length}</span>
-                </div>
-                {filtered.length === 0
-                  ? <p className="xr-epicker-empty">Nothing matches — try broadening the filters.</p>
-                  : <div className="xr-epicker-grid">
-                      {filtered.map(({ id, C, name }) => (
-                        <button key={id}
-                          className={`xr-epicker-cell${sel === id ? " sel" : ""}${sel && sel !== id ? " dim" : ""}`}
-                          onClick={() => setSel(sel === id ? null : id)}
-                          aria-label={name} aria-pressed={sel === id} title={name}>
-                          <C size={40} />
-                          <span className="xr-epicker-tip">{name}</span>
-                        </button>
-                      ))}
-                    </div>}
-              </div>
-
-              {/* confirm / upload footer */}
-              <div className="xr-epicker-foot">
-                {selItem ? (
-                  <>
-                    <span className="xr-epicker-foot-prev"><selItem.C size={22} /></span>
-                    <span className="xr-epicker-foot-info">
-                      {selItem.name}<em>{selCatName} · {selSetName}</em>
-                    </span>
-                    <button className="xr-btn small" onClick={() => setSel(null)}>Clear</button>
-                    <button className="xr-btn" onClick={() => { onPick(sel); }}>Use this emblem</button>
-                  </>
-                ) : (
-                  <>
-                    <button className="xr-btn xr-epicker-upload-m" onClick={onUpload}><Image size={16} /> Upload your own image</button>
-                    <span className="xr-epicker-foot-empty">Select an emblem above.</span>
-                  </>
-                )}
-              </div>
-
+          {/* sidebar: desktop only */}
+          <aside className="xr-epicker-side">
+            <div className="xr-epicker-side-body">
+              <p className="xr-epicker-side-hd">Type</p>
+              {ICON_CATS.map((c) => (
+                <button key={c.id} className={`xr-epicker-citem${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
+                  <span className="xr-epicker-dot" style={c.col ? { background: c.col } : {}} />
+                  <span className="xr-epicker-cname">{c.name}</span>
+                  <span className="xr-epicker-cct">{catCt(c.id)}</span>
+                </button>
+              ))}
+              <div className="xr-epicker-divider" />
+              <p className="xr-epicker-side-hd">Setting</p>
+              {ICON_SETTINGS.map((s) => (
+                <button key={s.id} className={`xr-epicker-citem${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
+                  <span className="xr-epicker-dot" style={s.col ? { background: s.col } : {}} />
+                  <span className="xr-epicker-cname">{s.name}</span>
+                  <span className="xr-epicker-cct">{setCt(s.id)}</span>
+                </button>
+              ))}
             </div>
-          </div>
-        )}
-
-        {mode === "photos" && (
-          <div className="xr-epicker-gallery-pane">
-            <div className="xr-epicker-toolbar">
-              <input className="xr-epicker-search" type="search" placeholder="Search photos…"
-                value={imgQ} onChange={(e) => setImgQ(e.target.value)} />
+            <div className="xr-epicker-side-foot">
+              <button className="xr-btn small" onClick={onUpload}><Image size={16} /> Upload image</button>
             </div>
-            <div className="xr-epicker-gallery-scroll">
-              {filteredGallery.length === 0
-                ? <p className="xr-epicker-empty">Nothing matches.</p>
-                : filteredGallery.map((group) => (
-                    <div key={group.id} className="xr-gallery-group">
-                      <div className="xr-gallery-group-hd">{group.name}</div>
-                      <div className="xr-epicker-grid">
-                        {group.images.map((img) => (
-                          <button key={img.id}
-                            className={`xr-epicker-cell xr-epicker-imgcell${imgSel === img.id ? " sel" : ""}${imgSel && imgSel !== img.id ? " dim" : ""}`}
-                            onClick={() => setImgSel(imgSel === img.id ? null : img.id)}
-                            aria-label={img.name} aria-pressed={imgSel === img.id} title={img.name}>
-                            <img src={img.src} alt="" />
-                            <span className="xr-epicker-tip">{img.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+          </aside>
+
+          {/* main content */}
+          <div className="xr-epicker-main">
+
+            {/* mobile pill rows (hidden on desktop via CSS) */}
+            <div className="xr-epicker-pills">
+              <div className="xr-epicker-prow">
+                <span className="xr-epicker-plbl">Type</span>
+                <div className="xr-epicker-pscroll">
+                  {ICON_CATS.map((c) => (
+                    <button key={c.id} className={`xr-epicker-pill${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
+                      {c.col && <span className="xr-epicker-pdot" style={{ background: c.col }} />}
+                      {c.short}
+                    </button>
                   ))}
+                </div>
+              </div>
+              <div className="xr-epicker-prow xr-epicker-prow2">
+                <span className="xr-epicker-plbl">Setting</span>
+                <div className="xr-epicker-pscroll">
+                  {ICON_SETTINGS.map((s) => (
+                    <button key={s.id} className={`xr-epicker-pill${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
+                      {s.col && <span className="xr-epicker-pdot" style={{ background: s.col }} />}
+                      {s.short}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+
+            {/* search + sort */}
+            <div className="xr-epicker-toolbar">
+              <input className="xr-epicker-search" type="search" placeholder="Search emblems…"
+                value={q} onChange={(e) => setQ(e.target.value)} />
+              <select className="xr-epicker-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="def">Default</option>
+                <option value="az">A – Z</option>
+                <option value="cat">By type</option>
+                <option value="set">By setting</option>
+              </select>
+            </div>
+
+            {/* icon grid */}
+            <div className="xr-epicker-grid-wrap">
+              <div className="xr-epicker-sec-lbl">
+                {secLabel}<span className="xr-epicker-ct">{filtered.length}</span>
+              </div>
+              {filtered.length === 0
+                ? <p className="xr-epicker-empty">Nothing matches — try broadening the filters.</p>
+                : <div className="xr-epicker-grid">
+                    {filtered.map(({ id, C, name }) => (
+                      <button key={id}
+                        className={`xr-epicker-cell${sel === id ? " sel" : ""}${sel && sel !== id ? " dim" : ""}`}
+                        onClick={() => setSel(sel === id ? null : id)}
+                        aria-label={name} aria-pressed={sel === id} title={name}>
+                        <C size={40} />
+                        <span className="xr-epicker-tip">{name}</span>
+                      </button>
+                    ))}
+                  </div>}
+            </div>
+
+            {/* confirm / upload footer */}
             <div className="xr-epicker-foot">
-              {selImg ? (
+              {selItem ? (
                 <>
-                  <span className="xr-epicker-foot-prev">
-                    <img src={selImg.src} alt="" style={{ width: 22, height: 22, objectFit: "contain", borderRadius: 4 }} />
+                  <span className="xr-epicker-foot-prev"><selItem.C size={22} /></span>
+                  <span className="xr-epicker-foot-info">
+                    {selItem.name}<em>{selCatName} · {selSetName}</em>
                   </span>
-                  <span className="xr-epicker-foot-info">{selImg.name}<em>Photo</em></span>
-                  <button className="xr-btn small" onClick={() => setImgSel(null)}>Clear</button>
-                  <button className="xr-btn" onClick={() => onPickImage(selImg.src)}>Use this image</button>
+                  <button className="xr-btn small" onClick={() => setSel(null)}>Clear</button>
+                  <button className="xr-btn" onClick={() => { onPick(sel); }}>Use this emblem</button>
                 </>
               ) : (
-                <span className="xr-epicker-foot-empty">Select a photo above.</span>
+                <>
+                  <button className="xr-btn xr-epicker-upload-m" onClick={onUpload}><Image size={16} /> Upload your own image</button>
+                  <span className="xr-epicker-foot-empty">Select an emblem above.</span>
+                </>
               )}
             </div>
-          </div>
-        )}
 
-      </div>
-    </div>
+          </div>
+        </div>
+      )}
+
+      {mode === "photos" && (
+        <div className="xr-epicker-gallery-pane">
+          <div className="xr-epicker-toolbar">
+            <input className="xr-epicker-search" type="search" placeholder="Search photos…"
+              value={imgQ} onChange={(e) => setImgQ(e.target.value)} />
+          </div>
+          <div className="xr-epicker-gallery-scroll">
+            {filteredGallery.length === 0
+              ? <p className="xr-epicker-empty">Nothing matches.</p>
+              : filteredGallery.map((group) => (
+                  <div key={group.id} className="xr-gallery-group">
+                    <div className="xr-gallery-group-hd">{group.name}</div>
+                    <div className="xr-epicker-grid">
+                      {group.images.map((img) => (
+                        <button key={img.id}
+                          className={`xr-epicker-cell xr-epicker-imgcell${imgSel === img.id ? " sel" : ""}${imgSel && imgSel !== img.id ? " dim" : ""}`}
+                          onClick={() => setImgSel(imgSel === img.id ? null : img.id)}
+                          aria-label={img.name} aria-pressed={imgSel === img.id} title={img.name}>
+                          <img src={img.src} alt="" />
+                          <span className="xr-epicker-tip">{img.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+          </div>
+          <div className="xr-epicker-foot">
+            {selImg ? (
+              <>
+                <span className="xr-epicker-foot-prev">
+                  <img src={selImg.src} alt="" style={{ width: 22, height: 22, objectFit: "contain", borderRadius: 4 }} />
+                </span>
+                <span className="xr-epicker-foot-info">{selImg.name}<em>Photo</em></span>
+                <button className="xr-btn small" onClick={() => setImgSel(null)}>Clear</button>
+                <button className="xr-btn" onClick={() => onPickImage(selImg.src)}>Use this image</button>
+              </>
+            ) : (
+              <span className="xr-epicker-foot-empty">Select a photo above.</span>
+            )}
+          </div>
+        </div>
+      )}
+
+    </Modal>
   );
 }
 
@@ -1680,64 +1679,59 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
   const [icon, setIcon] = useState(null);
   const [collection, setCollection] = useState("");
   const [picking, setPicking] = useState(false);
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
   const roll = () => setName(randomName(ALL_NAMES, name));
   const create = () => onCreate({ name: name.trim(), budget, description: desc.trim(), image: image || undefined, icon: icon || undefined, collection: collection.trim() || undefined });
   const current = { image, icon };
   const suggestions = [...new Set([...collections.filter(Boolean), ...BOOK_COLLECTIONS])];
   return (
-    <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-narrow" role="dialog" aria-modal="true" aria-label="New detachment" onClick={(e) => e.stopPropagation()}>
-        <div className="xr-modal-head">
-          <span className="xr-modal-title"><Plus size={22} /> New detachment</span>
-          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
-        </div>
-        <div className="xr-modal-body">
-          <div className="xr-newimg-row">
-            <button className="xr-newimg" onClick={() => setPicking(true)} title="Choose an emblem or upload a picture" aria-label="Choose an emblem or upload a picture">
-              {(image || icon)
-                ? <DetachIcon list={current} size={34} className="xr-newimg-face" />
-                : <span className="xr-newimg-add"><Plus size={22} /></span>}
-            </button>
-            <div className="xr-newimg-txt">
-              <b>Emblem</b>
-              <button className="xr-linky" onClick={() => setPicking(true)}>Choose an icon or upload a picture</button>
-            </div>
-            {(image || icon) && <button className="xr-iconbtn small" onClick={() => { setImage(null); setIcon(null); }} title="Remove" aria-label="Remove emblem"><XIc size={16} /></button>}
-            <input ref={inputRef} type="file" accept="image/*" hidden
-              onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) chooseImage(f, 512, (d) => { if (d) { setImage(d); setIcon(null); } }); e.target.value = ""; }} />
-          </div>
-
-          <FloatingField id="na-name" label="Name" value={name} onChange={setName} autoFocus onEnter={create} />
-          <button className="xr-linky xr-name-random" onClick={roll}><Dice size={15} /> Not sure? Get a random one.</button>
-
-          <div className="xr-field">
-            <span className="xr-field-l">Game size</span>
-            <BudgetPicker budget={budget} onChange={setBudget} />
-          </div>
-
-          <FloatingField id="na-desc" label="Description" value={desc} onChange={setDesc} textarea rows={3} />
-
-          <FloatingField id="na-coll" label="Save to setting (optional)" value={collection} onChange={setCollection} />
-          <input list="na-collections" hidden />
-          {suggestions.length > 0 && (
-            <div className="xr-coll-chips">
-              {suggestions.map((c) => (
-                <button key={c} className={`xr-coll-chip ${collection === c ? "on" : ""}`} onClick={() => setCollection(c)}>{c}</button>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="xr-modal-foot">
-          <button className="xr-btn primary" onClick={create}><Plus size={17} /> Create detachment</button>
-        </div>
+    <>
+    <Modal onClose={onClose} label="New detachment" className="xr-modal xr-modal-narrow" purpose="form">
+      <div className="xr-modal-head">
+        <span className="xr-modal-title"><Plus size={22} /> New detachment</span>
+        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
       </div>
-      {picking && <IconPickerModal current={icon} onPick={(id) => { setIcon(id); setImage(null); setPicking(false); }} onPickImage={(src) => { setImage(src); setIcon(null); setPicking(false); }} onUpload={() => { setPicking(false); inputRef.current && inputRef.current.click(); }} onClose={() => setPicking(false)} />}
-    </div>
+      <div className="xr-modal-body">
+        <div className="xr-newimg-row">
+          <button className="xr-newimg" onClick={() => setPicking(true)} title="Choose an emblem or upload a picture" aria-label="Choose an emblem or upload a picture">
+            {(image || icon)
+              ? <DetachIcon list={current} size={34} className="xr-newimg-face" />
+              : <span className="xr-newimg-add"><Plus size={22} /></span>}
+          </button>
+          <div className="xr-newimg-txt">
+            <b>Emblem</b>
+            <button className="xr-linky" onClick={() => setPicking(true)}>Choose an icon or upload a picture</button>
+          </div>
+          {(image || icon) && <button className="xr-iconbtn small" onClick={() => { setImage(null); setIcon(null); }} title="Remove" aria-label="Remove emblem"><XIc size={16} /></button>}
+          <input ref={inputRef} type="file" accept="image/*" hidden
+            onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) chooseImage(f, 512, (d) => { if (d) { setImage(d); setIcon(null); } }); e.target.value = ""; }} />
+        </div>
+
+        <FloatingField id="na-name" label="Name" value={name} onChange={setName} autoFocus onEnter={create} />
+        <button className="xr-linky xr-name-random" onClick={roll}><Dice size={15} /> Not sure? Get a random one.</button>
+
+        <div className="xr-field">
+          <span className="xr-field-l">Game size</span>
+          <BudgetPicker budget={budget} onChange={setBudget} />
+        </div>
+
+        <FloatingField id="na-desc" label="Description" value={desc} onChange={setDesc} textarea rows={3} />
+
+        <FloatingField id="na-coll" label="Save to setting (optional)" value={collection} onChange={setCollection} />
+        <input list="na-collections" hidden />
+        {suggestions.length > 0 && (
+          <div className="xr-coll-chips">
+            {suggestions.map((c) => (
+              <button key={c} className={`xr-coll-chip ${collection === c ? "on" : ""}`} onClick={() => setCollection(c)}>{c}</button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="xr-modal-foot">
+        <button className="xr-btn primary" onClick={create}><Plus size={17} /> Create detachment</button>
+      </div>
+    </Modal>
+    {picking && <IconPickerModal current={icon} onPick={(id) => { setIcon(id); setImage(null); setPicking(false); }} onPickImage={(src) => { setImage(src); setIcon(null); setPicking(false); }} onUpload={() => { setPicking(false); inputRef.current && inputRef.current.click(); }} onClose={() => setPicking(false)} />}
+    </>
   );
 }
 
@@ -1745,62 +1739,55 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
 /* load-a-preset modal: pick a genre setting, then a ready-made detachment */
 function LoadPresetModal({ onLoad, onClose }) {
   const [sid, setSid] = useState(PRESET_SETTINGS[0] ? PRESET_SETTINGS[0].id : null);
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
   const setting = PRESET_SETTINGS.find((s) => s.id === sid) || PRESET_SETTINGS[0];
   if (!setting) return null;
   return (
-    <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Load a preset detachment" onClick={(e) => e.stopPropagation()}>
-        <div className="xr-modal-head">
-          <span className="xr-modal-title"><Book size={22} /> Load a preset</span>
-          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
-        </div>
-        <div className="xr-modal-tabs" role="tablist">
-          {PRESET_SETTINGS.map((s) => (
-            <button key={s.id} role="tab" aria-selected={sid === s.id} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} onClick={() => setSid(s.id)}>
-              {s.name.split(":")[0]}
-            </button>
-          ))}
-        </div>
-        <div className="xr-modal-body">
-          {setting.quote ? (
-            <blockquote className="xr-preset-epi">
-              <p className="xr-preset-quote">{setting.quote}</p>
-              <footer className="xr-preset-by">{setting.quoteBy}</footer>
-            </blockquote>
-          ) : (
-            <p className="xr-preset-blurb"><b>{setting.name}.</b> {setting.blurb}</p>
-          )}
-          {(setting.optionalRules || setting.url) && (
-            <p className="xr-preset-notes">
-              {setting.optionalRules && <span>Optional rules: {setting.optionalRules.join(", ")}.</span>}
-              {setting.url && <a href={setting.url} target="_blank" rel="noopener"> {setting.url}</a>}
-            </p>
-          )}
-          {setting.comingSoon || setting.detachments.length === 0 ? (
-            <p className="xr-fac-empty">More to come.</p>
-          ) : (
-            <div className="xr-preset-grid">
-              {setting.detachments.map((d) => (
-                <button className="xr-preset-card" key={d.n} onClick={() => onLoad(d, setting)}>
-                  {(d.image || d.icon) && <DetachIcon list={d.image ? { image: `${FACTION_BASE}${d.image}` } : d} size={42} className="xr-preset-img" style={d.badge ? { background: d.badge.bg, color: d.badge.fg } : undefined} />}
-                  <span className="xr-preset-name">{d.name}</span>
-                  {d.subtitle && <span className="xr-preset-sub">{d.subtitle}</span>}
-                  <span className="xr-preset-foot">
-                    <span className="xr-preset-meta">{detachmentUnits(d)} units, {detachmentPoints(d)} pts</span>
-                    <span className="xr-preset-load"><Plus size={15} /> Load</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+    <Modal onClose={onClose} label="Load a preset detachment" className="xr-modal xr-modal-tall xr-modal-wide">
+      <div className="xr-modal-head">
+        <span className="xr-modal-title"><Book size={22} /> Load a preset</span>
+        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
       </div>
-    </div>
+      <div className="xr-modal-tabs" role="tablist">
+        {PRESET_SETTINGS.map((s) => (
+          <button key={s.id} role="tab" aria-selected={sid === s.id} className={`xr-modal-tab ${sid === s.id ? "on" : ""}`} onClick={() => setSid(s.id)}>
+            {s.name.split(":")[0]}
+          </button>
+        ))}
+      </div>
+      <div className="xr-modal-body">
+        {setting.quote ? (
+          <blockquote className="xr-preset-epi">
+            <p className="xr-preset-quote">{setting.quote}</p>
+            <footer className="xr-preset-by">{setting.quoteBy}</footer>
+          </blockquote>
+        ) : (
+          <p className="xr-preset-blurb"><b>{setting.name}.</b> {setting.blurb}</p>
+        )}
+        {(setting.optionalRules || setting.url) && (
+          <p className="xr-preset-notes">
+            {setting.optionalRules && <span>Optional rules: {setting.optionalRules.join(", ")}.</span>}
+            {setting.url && <a href={setting.url} target="_blank" rel="noopener"> {setting.url}</a>}
+          </p>
+        )}
+        {setting.comingSoon || setting.detachments.length === 0 ? (
+          <p className="xr-fac-empty">More to come.</p>
+        ) : (
+          <div className="xr-preset-grid">
+            {setting.detachments.map((d) => (
+              <button className="xr-preset-card" key={d.n} onClick={() => onLoad(d, setting)}>
+                {(d.image || d.icon) && <DetachIcon list={d.image ? { image: `${FACTION_BASE}${d.image}` } : d} size={42} className="xr-preset-img" style={d.badge ? { background: d.badge.bg, color: d.badge.fg } : undefined} />}
+                <span className="xr-preset-name">{d.name}</span>
+                {d.subtitle && <span className="xr-preset-sub">{d.subtitle}</span>}
+                <span className="xr-preset-foot">
+                  <span className="xr-preset-meta">{detachmentUnits(d)} units, {detachmentPoints(d)} pts</span>
+                  <span className="xr-preset-load"><Plus size={15} /> Load</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </Modal>
   );
 }
 
@@ -2104,36 +2091,29 @@ const COMMANDER_RULES = [
 function CommanderModal({ u, dispatch, onClose }) {
   const tbl = u.traitTable || "aggressive";
   const trait = typeof u.traitIndex === "number" ? COMMANDER_TABLES[tbl].traits[u.traitIndex] : null;
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
   return (
-    <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-tall xr-modal-wide" role="dialog" aria-modal="true" aria-label="Commander traits" onClick={(e) => e.stopPropagation()}>
-        <div className="xr-modal-head">
-          <span className="xr-modal-title"><Crown size={20} /> Commander traits</span>
-          <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
-        </div>
-        <div className="xr-modal-body">
-          <span className="xr-cmd-step">1. Trait table</span>
-          <div className="xr-cmd-tablecards">
-            {Object.entries(COMMANDER_TABLES).map(([key, ct]) => (
-              <button key={key} className={`xr-cmd-tablecard ${tbl === key ? "on" : ""}`} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
-                <b>{ct.label}</b><i>{ct.blurb}</i>
-                <span className="xr-cmd-tablecard-check" aria-hidden="true">{tbl === key && <Check size={16} />}</span>
-              </button>
-            ))}
-          </div>
-          <span className="xr-cmd-step">2. Trait</span>
-          <TraitPicker u={u} tbl={tbl} trait={trait} dispatch={dispatch} />
-        </div>
-        <div className="xr-modal-foot">
-          <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
-        </div>
+    <Modal onClose={onClose} label="Commander traits" className="xr-modal xr-modal-tall xr-modal-wide">
+      <div className="xr-modal-head">
+        <span className="xr-modal-title"><Crown size={20} /> Commander traits</span>
+        <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
       </div>
-    </div>
+      <div className="xr-modal-body">
+        <span className="xr-cmd-step">1. Trait table</span>
+        <div className="xr-cmd-tablecards">
+          {Object.entries(COMMANDER_TABLES).map(([key, ct]) => (
+            <button key={key} className={`xr-cmd-tablecard ${tbl === key ? "on" : ""}`} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
+              <b>{ct.label}</b><i>{ct.blurb}</i>
+              <span className="xr-cmd-tablecard-check" aria-hidden="true">{tbl === key && <Check size={16} />}</span>
+            </button>
+          ))}
+        </div>
+        <span className="xr-cmd-step">2. Trait</span>
+        <TraitPicker u={u} tbl={tbl} trait={trait} dispatch={dispatch} />
+      </div>
+      <div className="xr-modal-foot">
+        <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+      </div>
+    </Modal>
   );
 }
 
@@ -2310,11 +2290,6 @@ function PsychicTab({ u, rules, dispatch, onConfigure }) {
    flow, or the mercenary table with a roll. */
 function XenoConfigModal({ rule, u, dispatch, onClose, initialStep }) {
   const [step, setStep] = useState(initialStep || "tier");
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
   const tierIdx = typeof u.xenos[rule.id] === "number" ? u.xenos[rule.id] : 0;
 
   const tierCards = (onPick) => (
@@ -2337,71 +2312,69 @@ function XenoConfigModal({ rule, u, dispatch, onClose, initialStep }) {
   const title = isMerc ? "Mercenary" : isPsychic ? (step === "powers" ? `${rule.tiers[tierIdx].label} powers` : `${rule.name} class`) : `${rule.name}`;
 
   return (
-    <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-tall" role="dialog" aria-modal="true" aria-label={`Configure ${rule.name}`} onClick={(e) => e.stopPropagation()}>
-        <div className="xr-modal-head">
-          {isPsychic && step === "powers" && <button className="xr-iconbtn" onClick={() => setStep("class")} aria-label="Back to class"><Back size={20} /></button>}
-          <span className="xr-modal-title"><Gear size={20} /> {title}</span>
-          <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
-        </div>
-        <div className="xr-modal-body">
-          {isMerc && (
-            <>
-              <div className="xr-merc-roll">
-                <button className="xr-btn primary" onClick={() => dispatch({ type: "mercroll", key: u.key, roll: 1 + Math.floor(Math.random() * 6) })}>
-                  <Dice size={18} /> Roll the die
-                </button>
-                <span className="xr-merc-note">Roll before the game, after Attacker and Defender are set. Or just pick a result.</span>
-              </div>
-              <div className="xr-merc-table">
-                {MERC_TABLE.map((row) => (
-                  <button key={row.roll} className={`xr-merc-row ${u.mercRoll === row.roll ? "on" : ""}`} onClick={() => dispatch({ type: "mercroll", key: u.key, roll: row.roll })}>
-                    <span className="xr-merc-d">{row.roll}</span>
-                    <span className="xr-merc-body"><b>{row.name}</b><i>{row.text}</i></span>
-                    <span className="xr-merc-check" aria-hidden="true">{u.mercRoll === row.roll && <Check size={16} />}</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {isPsychic && step === "class" && tierCards((i) => { dispatch({ type: "tier", key: u.key, xid: rule.id, i }); setStep("powers"); })}
-
-          {isPsychic && step === "powers" && (
-            <div className="xr-psy-powers">
-              <div className="xr-psy-powers-h">
-                <h4>Choose powers</h4>
-                <span className={`xr-psy-count ${chosen.length >= limit ? "full" : ""}`}>{chosen.length} of {limit} chosen</span>
-              </div>
-              <div className="xr-psy-table">
-                <div className="xr-psy-tr xr-psy-head"><span aria-hidden="true" /><span>Power</span><span>Diff.</span><span>Target</span><span>Duration</span><span>Effect</span></div>
-                {PSYCHIC_POWERS.map((pw) => {
-                  const on = chosen.includes(pw.name);
-                  const atLimit = chosen.length >= limit && !on;
-                  return (
-                    <button key={pw.name} className={`xr-psy-tr xr-psy-row ${on ? "on" : ""}`} disabled={atLimit}
-                      onClick={() => dispatch({ type: "psypower", key: u.key, power: pw.name })}
-                      title={on ? "Remove this power" : atLimit ? "This class has no free power slots" : "Add this power"}>
-                      <span className="xr-psy-check">{on && <Check size={14} />}</span>
-                      <span className="xr-psy-name">{pw.name}</span>
-                      <span className="xr-psy-diff">{pw.difficulty}</span>
-                      <span className="xr-psy-target">{pw.target}</span>
-                      <span className="xr-psy-dur">{pw.duration}</span>
-                      <span className="xr-psy-effect">{pw.effect}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {!isMerc && !isPsychic && tierCards((i) => { dispatch({ type: "tier", key: u.key, xid: rule.id, i }); onClose(); })}
-        </div>
-        <div className="xr-modal-foot">
-          <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
-        </div>
+    <Modal onClose={onClose} label={`Configure ${rule.name}`} className="xr-modal xr-modal-tall">
+      <div className="xr-modal-head">
+        {isPsychic && step === "powers" && <button className="xr-iconbtn" onClick={() => setStep("class")} aria-label="Back to class"><Back size={20} /></button>}
+        <span className="xr-modal-title"><Gear size={20} /> {title}</span>
+        <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
       </div>
-    </div>
+      <div className="xr-modal-body">
+        {isMerc && (
+          <>
+            <div className="xr-merc-roll">
+              <button className="xr-btn primary" onClick={() => dispatch({ type: "mercroll", key: u.key, roll: 1 + Math.floor(Math.random() * 6) })}>
+                <Dice size={18} /> Roll the die
+              </button>
+              <span className="xr-merc-note">Roll before the game, after Attacker and Defender are set. Or just pick a result.</span>
+            </div>
+            <div className="xr-merc-table">
+              {MERC_TABLE.map((row) => (
+                <button key={row.roll} className={`xr-merc-row ${u.mercRoll === row.roll ? "on" : ""}`} onClick={() => dispatch({ type: "mercroll", key: u.key, roll: row.roll })}>
+                  <span className="xr-merc-d">{row.roll}</span>
+                  <span className="xr-merc-body"><b>{row.name}</b><i>{row.text}</i></span>
+                  <span className="xr-merc-check" aria-hidden="true">{u.mercRoll === row.roll && <Check size={16} />}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {isPsychic && step === "class" && tierCards((i) => { dispatch({ type: "tier", key: u.key, xid: rule.id, i }); setStep("powers"); })}
+
+        {isPsychic && step === "powers" && (
+          <div className="xr-psy-powers">
+            <div className="xr-psy-powers-h">
+              <h4>Choose powers</h4>
+              <span className={`xr-psy-count ${chosen.length >= limit ? "full" : ""}`}>{chosen.length} of {limit} chosen</span>
+            </div>
+            <div className="xr-psy-table">
+              <div className="xr-psy-tr xr-psy-head"><span aria-hidden="true" /><span>Power</span><span>Diff.</span><span>Target</span><span>Duration</span><span>Effect</span></div>
+              {PSYCHIC_POWERS.map((pw) => {
+                const on = chosen.includes(pw.name);
+                const atLimit = chosen.length >= limit && !on;
+                return (
+                  <button key={pw.name} className={`xr-psy-tr xr-psy-row ${on ? "on" : ""}`} disabled={atLimit}
+                    onClick={() => dispatch({ type: "psypower", key: u.key, power: pw.name })}
+                    title={on ? "Remove this power" : atLimit ? "This class has no free power slots" : "Add this power"}>
+                    <span className="xr-psy-check">{on && <Check size={14} />}</span>
+                    <span className="xr-psy-name">{pw.name}</span>
+                    <span className="xr-psy-diff">{pw.difficulty}</span>
+                    <span className="xr-psy-target">{pw.target}</span>
+                    <span className="xr-psy-dur">{pw.duration}</span>
+                    <span className="xr-psy-effect">{pw.effect}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {!isMerc && !isPsychic && tierCards((i) => { dispatch({ type: "tier", key: u.key, xid: rule.id, i }); onClose(); })}
+      </div>
+      <div className="xr-modal-foot">
+        <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+      </div>
+    </Modal>
   );
 }
 
@@ -2429,89 +2402,82 @@ function AbilitiesModal({ u, dispatch, onClose }) {
   const foundOpts = needle ? topOpts.filter((o) => matches(o.name, o.text) || subsOf(o.id).some((s) => matches(s.name, s.text))) : [];
   const foundXeno = needle ? [...eligXeno, ...eligPsy].filter((x) => matches(x.name, x.text)) : [];
   const noHits = needle && !foundOpts.length && !foundXeno.length;
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
   const bought = t.options.filter((o) => u.options[o.id]).length + Object.keys(u.xenos).length + custom.length;
   return (
     <>
-    <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-tall" role="dialog" aria-modal="true" aria-label="Buy abilities" onClick={(e) => e.stopPropagation()}>
-        <div className="xr-modal-head">
-          <span className="xr-modal-title"><Plus size={22} /> {t.name} abilities</span>
-          <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
-        </div>
-        <div className="xr-abil-searchbar">
-          <input className="xr-abil-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search abilities by name or effect" spellCheck={false} aria-label="Search abilities" />
-          {q && <button className="xr-iconbtn small" onClick={() => setQ("")} aria-label="Clear search"><XIc size={16} /></button>}
-        </div>
-        {tabs.length > 1 && (
-          <div className="xr-modal-tabs" role="tablist">
-            {tabs.map((tb) => (
-              <button key={tb.id} role="tab" aria-selected={tab === tb.id} className={`xr-modal-tab ${tab === tb.id ? "on" : ""}`} onClick={() => setTab(tb.id)}>
-                {tb.label}{tb.n > 0 && <em className="xr-tab-n">{tb.n}</em>}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="xr-modal-body">
-          {needle ? (
-            <>
-              {foundOpts.map((o) => {
-                const on = !!u.options[o.id];
-                const subs = subsOf(o.id);
-                return (
-                  <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
-                    onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
-                    {on && subs.length > 0 && (
-                      <div className="xr-subs">
-                        {subs.map((s) => (
-                          <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
-                            onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
-                        ))}
-                      </div>
-                    )}
-                  </OptionRow>
-                );
-              })}
-              {foundXeno.map((x) => <XenoRow key={x.id} x={x} u={u} dispatch={dispatch} onConfigure={openConfig} />)}
-              {noHits && <p className="xr-abil-empty">No abilities match that search.</p>}
-            </>
-          ) : (
-          <>
-          {tab === "load" && topOpts.map((o) => {
-            const on = !!u.options[o.id];
-            const subs = subsOf(o.id);
-            return (
-              <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
-                onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
-                {on && subs.length > 0 && (
-                  <div className="xr-subs">
-                    {subs.map((s) => (
-                      <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
-                        onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
-                    ))}
-                  </div>
-                )}
-              </OptionRow>
-            );
-          })}
-          {tab === "xeno" && eligXeno.map((x) => <XenoRow key={x.id} x={x} u={u} dispatch={dispatch} onConfigure={openConfig} />)}
-          {tab === "psychic" && <PsychicTab u={u} rules={eligPsy} dispatch={dispatch} onConfigure={openConfig} />}
-          {tab === "custom" && (
-            <CustomTab u={u} custom={custom} dispatch={dispatch} />
-          )}
-          </>
-          )}
-        </div>
-        <div className="xr-modal-foot">
-          <span className="xr-modal-count">{bought} bought</span>
-          <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
-        </div>
+    <Modal onClose={onClose} label="Buy abilities" className="xr-modal xr-modal-tall">
+      <div className="xr-modal-head">
+        <span className="xr-modal-title"><Plus size={22} /> {t.name} abilities</span>
+        <button className="xr-iconbtn" onClick={onClose} aria-label="Done"><XIc size={20} /></button>
       </div>
-    </div>
+      <div className="xr-abil-searchbar">
+        <input className="xr-abil-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search abilities by name or effect" spellCheck={false} aria-label="Search abilities" />
+        {q && <button className="xr-iconbtn small" onClick={() => setQ("")} aria-label="Clear search"><XIc size={16} /></button>}
+      </div>
+      {tabs.length > 1 && (
+        <div className="xr-modal-tabs" role="tablist">
+          {tabs.map((tb) => (
+            <button key={tb.id} role="tab" aria-selected={tab === tb.id} className={`xr-modal-tab ${tab === tb.id ? "on" : ""}`} onClick={() => setTab(tb.id)}>
+              {tb.label}{tb.n > 0 && <em className="xr-tab-n">{tb.n}</em>}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="xr-modal-body">
+        {needle ? (
+          <>
+            {foundOpts.map((o) => {
+              const on = !!u.options[o.id];
+              const subs = subsOf(o.id);
+              return (
+                <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
+                  onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
+                  {on && subs.length > 0 && (
+                    <div className="xr-subs">
+                      {subs.map((s) => (
+                        <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
+                          onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
+                      ))}
+                    </div>
+                  )}
+                </OptionRow>
+              );
+            })}
+            {foundXeno.map((x) => <XenoRow key={x.id} x={x} u={u} dispatch={dispatch} onConfigure={openConfig} />)}
+            {noHits && <p className="xr-abil-empty">No abilities match that search.</p>}
+          </>
+        ) : (
+        <>
+        {tab === "load" && topOpts.map((o) => {
+          const on = !!u.options[o.id];
+          const subs = subsOf(o.id);
+          return (
+            <OptionRow key={o.id} active={on} name={o.name} cost={optCost(o)} text={o.text}
+              onToggle={() => dispatch({ type: "opt", key: u.key, oid: o.id })}>
+              {on && subs.length > 0 && (
+                <div className="xr-subs">
+                  {subs.map((s) => (
+                    <OptionRow key={s.id} active={!!u.options[s.id]} name={s.name} cost={optCost(s)} text={s.text}
+                      onToggle={() => dispatch({ type: "opt", key: u.key, oid: s.id })} />
+                  ))}
+                </div>
+              )}
+            </OptionRow>
+          );
+        })}
+        {tab === "xeno" && eligXeno.map((x) => <XenoRow key={x.id} x={x} u={u} dispatch={dispatch} onConfigure={openConfig} />)}
+        {tab === "psychic" && <PsychicTab u={u} rules={eligPsy} dispatch={dispatch} onConfigure={openConfig} />}
+        {tab === "custom" && (
+          <CustomTab u={u} custom={custom} dispatch={dispatch} />
+        )}
+        </>
+        )}
+      </div>
+      <div className="xr-modal-foot">
+        <span className="xr-modal-count">{bought} bought</span>
+        <button className="xr-btn primary" onClick={onClose}><Check size={17} /> Done</button>
+      </div>
+    </Modal>
     {config && <XenoConfigModal rule={XENO_BY_ID[config.id]} u={u} dispatch={dispatch} initialStep={config.step} onClose={() => setConfig(null)} />}
     </>
   );
@@ -2562,11 +2528,11 @@ function CustomAbilityForm({ initial, onSave, onCancel }) {
         <span className="xr-field-l">Name</span>
         <input className="xr-field-in" value={name} onChange={(e) => setName(e.target.value)} placeholder="Eg. Scavenged Plating" autoFocus spellCheck={false} />
       </label>
-      <label className="xr-field">
-        <span className="xr-field-l">Cost <em>points, negative for a downgrade</em></span>
-        <input className="xr-field-in xr-custom-cost" type="number" value={cost}
-          onChange={(e) => setCost(parseInt(e.target.value, 10) || 0)} />
-      </label>
+      <div className="xr-field">
+        <span className="xr-field-l" aria-hidden="true">Cost <em>points, negative for a downgrade</em></span>
+        <NumberInput className="xr-custom-cost" label="Cost in points, negative for a downgrade" isLabelHidden
+          value={cost} isIntegerOnly hasNumberSteppers={false} width={110} onChange={setCost} />
+      </div>
       <label className="xr-field">
         <span className="xr-field-l">Rule text <em>optional</em></span>
         <textarea className="xr-field-in xr-field-area" value={text} onChange={(e) => setText(e.target.value)}
@@ -2635,35 +2601,28 @@ const CatalogCard = React.memo(function CatalogCard({ t, onAdd }) {
 
 function AddUnitModal({ onAdd, onClose }) {
   const [cat, setCat] = useState("inf");
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
   const units = UNIT_TYPES.filter((t) => catOf(t) === cat);
   return (
-    <div className="xr-modal-backdrop" onClick={onClose}>
-      <div className="xr-modal xr-modal-tall xr-modal-wide xr-modal-addunit" role="dialog" aria-modal="true" aria-label="Add unit" onClick={(e) => e.stopPropagation()}>
-        <div className="xr-modal-head">
-          <span className="xr-modal-title"><Plus size={22} /> Add unit</span>
-          <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
-        </div>
-        <div className="xr-stabs" role="tablist" style={{ "--n": CATS.length, "--i": Math.max(0, CATS.findIndex((c) => c.id === cat)) }}>
-          <span className="xr-stabs-ind" aria-hidden="true" />
-          {CATS.map((c) => (
-            <button key={c.id} role="tab" aria-selected={cat === c.id}
-              className={`xr-stab cat-${c.id} ${cat === c.id ? "on" : ""}`} onClick={() => setCat(c.id)}>
-              <c.Icon size={18} /> <span>{c.label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="xr-modal-body">
-          <div className="xr-pick-grid">
-            {units.map((t) => <CatalogCard key={t.id} t={t} onAdd={onAdd} />)}
-          </div>
+    <Modal onClose={onClose} label="Add unit" className="xr-modal xr-modal-tall xr-modal-wide xr-modal-addunit">
+      <div className="xr-modal-head">
+        <span className="xr-modal-title"><Plus size={22} /> Add unit</span>
+        <button className="xr-iconbtn" onClick={onClose} aria-label="Close"><XIc size={20} /></button>
+      </div>
+      <div className="xr-stabs" role="tablist" style={{ "--n": CATS.length, "--i": Math.max(0, CATS.findIndex((c) => c.id === cat)) }}>
+        <span className="xr-stabs-ind" aria-hidden="true" />
+        {CATS.map((c) => (
+          <button key={c.id} role="tab" aria-selected={cat === c.id}
+            className={`xr-stab cat-${c.id} ${cat === c.id ? "on" : ""}`} onClick={() => setCat(c.id)}>
+            <c.Icon size={18} /> <span>{c.label}</span>
+          </button>
+        ))}
+      </div>
+      <div className="xr-modal-body">
+        <div className="xr-pick-grid">
+          {units.map((t) => <CatalogCard key={t.id} t={t} onAdd={onAdd} />)}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -2680,7 +2639,8 @@ function Builder({ list, selectedKey, dispatch, updateList, onDelete }) {
   const emblemFileRef = useRef(null);
   useEffect(() => {
     if (!settingsOpen && !shareOpen && !issuesOpen) return;
-    const onKey = (e) => { if (e.key !== "Escape") return; setSettingsOpen(false); setShareOpen(false); setIssuesOpen(false); };
+    // defaultPrevented: Astryx's dialog stack already spent this press on a modal
+    const onKey = (e) => { if (e.key !== "Escape" || e.defaultPrevented) return; setSettingsOpen(false); setShareOpen(false); setIssuesOpen(false); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [settingsOpen, shareOpen, issuesOpen]);
@@ -3914,7 +3874,6 @@ const CSS = `
 .xr-coll-chip:hover{border-color:var(--ink);color:var(--ink);}
 .xr-coll-chip.on{background:var(--ink);border-color:var(--ink);color:var(--cream);}
 /* emblem picker — two-pane desktop / bottom-sheet mobile */
-.xr-epicker-back{align-items:center;justify-content:center;}
 .xr-epicker{display:flex;flex-direction:column;width:min(920px,96vw);max-height:88vh;background:var(--paper);border:2px solid var(--ink-30);border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.28);}
 .xr-epicker-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid var(--ink-18);flex-shrink:0;}
 .xr-epicker-layout{display:flex;flex:1;min-height:0;}
@@ -3993,7 +3952,11 @@ const CSS = `
 .xr-custom-row-text{font-family:var(--flavor);font-style:italic;font-size:15.5px;color:var(--ink-2);margin-top:6px;}
 .xr-iconbtn.small{width:44px;height:44px;flex:none;}
 .xr-custom-form{border:1.5px solid var(--ink-30);border-radius:10px;padding:14px;background:var(--paper-2);}
-.xr-custom-cost{max-width:110px;}
+.xr-custom-cost{max-width:110px;font-family:var(--mono);font-weight:700;font-size:17px;color:var(--ink);background:var(--paper-2);border:2px solid var(--ink-30);border-radius:10px;padding:11px 13px;min-height:48px;}
+.xr-custom-cost:focus-within,.xr-budget-custom:focus-within{border-color:var(--coral);}
+/* Astryx NumberInput draws its own <input> inside the wrapper; let it take the wrapper's type */
+.xr-budget-custom input,.xr-custom-cost input{font:inherit;color:inherit;text-align:center;}
+.xr-budget-custom,.xr-custom-cost,.xr-budget-custom input:focus-visible,.xr-custom-cost input:focus-visible{outline:none;box-shadow:none;}
 .xr-custom-form-foot{display:flex;justify-content:flex-end;gap:10px;}
 .xr-chips{display:flex;flex-direction:column;gap:6px;}
 .xr-chipwrap{display:flex;flex-direction:column;}
@@ -4098,10 +4061,17 @@ const CSS = `
    dialog collapsing in the frame before the picture has decoded. */
 .xr-crop-stage{margin:12px 20px;min-height:220px;max-height:52vh;background:var(--ink-10,#eceee9);}
 .xr-crop-stage>img{display:block;max-width:100%;}
-.xr-crop .xr-modal-foot{gap:8px;justify-content:flex-start;}
+.xr-crop .xr-modal-foot{gap:8px;justify-content:flex-start;flex-wrap:wrap;}
 .xr-crop .xr-modal-foot .primary{margin-left:auto;}
 
-.xr-modal-backdrop{position:fixed;inset:0;background:rgba(31,61,46,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:90;animation:xr-fade var(--dur-fast) var(--curve-decel);}
+/* Astryx Dialog shell (see Modal). The native <dialog> keeps its top layer,
+   focus trap and Escape stack; its own surface is cleared so .xr-modal draws
+   the panel. Full width box, panel centred inside: a tap on the empty sides
+   lands on the dialog itself, which Astryx reads as a backdrop tap. */
+.xr-dlg{background:transparent;border:none;box-shadow:none;padding:20px;margin:0;inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;overflow:visible;}
+.xr-dlg[open]{display:flex;align-items:center;justify-content:center;}
+.xr-dlg>div{display:contents;}
+.xr-dlg::backdrop{background:rgba(31,61,46,.55);backdrop-filter:none;}
 .xr-modal{width:min(880px,100%);max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:var(--shadow64);display:flex;flex-direction:column;overflow:hidden;animation:xr-pop var(--dur-slow) var(--curve-decel);}
 /* fixed height so switching tabs does not resize/move the window */
 .xr-modal.xr-modal-tall{height:min(680px,86vh);}
@@ -4431,7 +4401,7 @@ const CSS = `
 /* ---------- mobile ---------- */
 @media(max-width:880px){
   /* emblem picker — bottom sheet */
-  .xr-epicker-back{align-items:flex-end;padding:0;}
+  .xr-dlg-sheet[open]{align-items:flex-end;padding:0;}
   .xr-epicker{width:100%;max-height:92vh;border-radius:18px 18px 0 0;animation:xr-sheet-up .22s ease;}
   @keyframes xr-sheet-up{from{transform:translateY(60px);opacity:.7}to{transform:none;opacity:1}}
   .xr-epicker-side{display:none;}

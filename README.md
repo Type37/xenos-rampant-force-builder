@@ -25,6 +25,7 @@ Assemble and print your detachment in this unofficial detachment builder for [Xe
 - Hyper Scrypt titles, Sligoil Micro for numbers, Source Serif for prose. Open fonts from [Velvetyne](https://velvetyne.fr), bundled not fetched.
 - Activation rolls get tinted die chips so they never read as bare profile values.
 - One icon set, inlined. A CDN icon breaks offline.
+- Modals and number fields come from [Astryx](https://github.com/facebook/astryx), skinned to the Almanac. One Escape closes one modal, focus stays inside, and a half typed number stays put.
 - The oldest skin of the five, and it shows. Due a reskin before the others.
 
 ## Still to do
