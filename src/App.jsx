@@ -1386,9 +1386,9 @@ function RailMuster({ used, budget, pct, over, status, count, errors, issues, up
     <div className="xr-railmuster">
       <span className="xr-railmuster-cap">Game size</span>
       <div className="xr-railsize" role="group" aria-label="Game size in points">
-        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.max(1, budget - 6) })} title="Smaller game size" aria-label="Smaller game size">−</button>
+        <IconButton className="xr-railsize-btn" label="Smaller game size" icon={<span aria-hidden="true">−</span>} onClick={() => updateList({ budget: Math.max(1, budget - 6) })} />
         <b className="xr-railsize-val" title="Game size in points">{budget}</b>
-        <button className="xr-railsize-btn" onClick={() => updateList({ budget: Math.min(999, budget + 6) })} title="Larger game size" aria-label="Larger game size">+</button>
+        <IconButton className="xr-railsize-btn" label="Larger game size" icon={<span aria-hidden="true">+</span>} onClick={() => updateList({ budget: Math.min(999, budget + 6) })} />
       </div>
       <div className={`xr-railbar ${cls}`} title={`${used} of ${budget} points spent`} aria-hidden="true">
         <div className="xr-railbar-fill" style={{ height: `${Math.min(100, pct)}%` }} />
@@ -1471,7 +1471,7 @@ function BudgetPicker({ budget, onChange }) {
   return (
     <div className="xr-budget" role="group" aria-label="Game size">
       {BUDGET_PRESETS.map((b) => (
-        <button key={b} className={`xr-budget-chip ${isPreset && budget === b ? "on" : ""} ${b === 24 ? "std" : ""}`}
+        <button key={b} className={`xr-budget-chip ${isPreset && budget === b ? "on" : ""} ${b === 24 ? "std" : ""}`} aria-pressed={isPreset && budget === b}
           title={b === 24 ? "Standard game size, the default" : `${b}-point game`}
           onClick={() => { setCustomOpen(false); onChange(b); }}>
           <span className="xr-budget-num">{b}</span>
@@ -1583,7 +1583,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
             <div className="xr-epicker-side-body">
               <p className="xr-epicker-side-hd">Type</p>
               {ICON_CATS.map((c) => (
-                <button key={c.id} className={`xr-epicker-citem${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
+                <button key={c.id} className={`xr-epicker-citem${cat === c.id ? " on" : ""}`} aria-pressed={cat === c.id} onClick={() => setCat(c.id)}>
                   <span className="xr-epicker-dot" style={c.col ? { background: c.col } : {}} />
                   <span className="xr-epicker-cname">{c.name}</span>
                   <span className="xr-epicker-cct">{catCt(c.id)}</span>
@@ -1592,7 +1592,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
               <div className="xr-epicker-divider" />
               <p className="xr-epicker-side-hd">Setting</p>
               {ICON_SETTINGS.map((s) => (
-                <button key={s.id} className={`xr-epicker-citem${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
+                <button key={s.id} className={`xr-epicker-citem${setting === s.id ? " on" : ""}`} aria-pressed={setting === s.id} onClick={() => setSetting(s.id)}>
                   <span className="xr-epicker-dot" style={s.col ? { background: s.col } : {}} />
                   <span className="xr-epicker-cname">{s.name}</span>
                   <span className="xr-epicker-cct">{setCt(s.id)}</span>
@@ -1613,7 +1613,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
                 <span className="xr-epicker-plbl">Type</span>
                 <div className="xr-epicker-pscroll">
                   {ICON_CATS.map((c) => (
-                    <button key={c.id} className={`xr-epicker-pill${cat === c.id ? " on" : ""}`} onClick={() => setCat(c.id)}>
+                    <button key={c.id} className={`xr-epicker-pill${cat === c.id ? " on" : ""}`} aria-pressed={cat === c.id} onClick={() => setCat(c.id)}>
                       {c.col && <span className="xr-epicker-pdot" style={{ background: c.col }} />}
                       {c.short}
                     </button>
@@ -1624,7 +1624,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
                 <span className="xr-epicker-plbl">Setting</span>
                 <div className="xr-epicker-pscroll">
                   {ICON_SETTINGS.map((s) => (
-                    <button key={s.id} className={`xr-epicker-pill${setting === s.id ? " on" : ""}`} onClick={() => setSetting(s.id)}>
+                    <button key={s.id} className={`xr-epicker-pill${setting === s.id ? " on" : ""}`} aria-pressed={setting === s.id} onClick={() => setSetting(s.id)}>
                       {s.col && <span className="xr-epicker-pdot" style={{ background: s.col }} />}
                       {s.short}
                     </button>
@@ -1651,7 +1651,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
                     {filtered.map(({ id, C, name }) => (
                       <button key={id}
                         className={`xr-epicker-cell${sel === id ? " sel" : ""}${sel && sel !== id ? " dim" : ""}`}
-                        onClick={() => setSel(sel === id ? null : id)}
+                        aria-pressed={sel === id} onClick={() => setSel(sel === id ? null : id)}
                         aria-label={name} aria-pressed={sel === id} title={name}>
                         <C size={40} />
                         <span className="xr-epicker-tip">{name}</span>
@@ -1698,7 +1698,7 @@ function IconPickerModal({ current, onPick, onPickImage, onUpload, onClose }) {
                       {group.images.map((img) => (
                         <button key={img.id}
                           className={`xr-epicker-cell xr-epicker-imgcell${imgSel === img.id ? " sel" : ""}${imgSel && imgSel !== img.id ? " dim" : ""}`}
-                          onClick={() => setImgSel(imgSel === img.id ? null : img.id)}
+                          aria-pressed={imgSel === img.id} onClick={() => setImgSel(imgSel === img.id ? null : img.id)}
                           aria-label={img.name} aria-pressed={imgSel === img.id} title={img.name}>
                           <img src={img.src} alt="" />
                           <span className="xr-epicker-tip">{img.name}</span>
@@ -1782,7 +1782,7 @@ function NewArmyModal({ onCreate, onClose, collections = [] }) {
         {suggestions.length > 0 && (
           <div className="xr-coll-chips">
             {suggestions.map((c) => (
-              <button key={c} className={`xr-coll-chip ${collection === c ? "on" : ""}`} onClick={() => setCollection(c)}>{c}</button>
+              <button key={c} className={`xr-coll-chip ${collection === c ? "on" : ""}`} aria-pressed={collection === c} onClick={() => setCollection(c)}>{c}</button>
             ))}
           </div>
         )}
@@ -1886,8 +1886,8 @@ function Dashboard({ lists, onOpen, onCreate, onLoadPreset, onDup, onDel }) {
           {l.description && <span className="xr-list-desc">{l.description}</span>}
         </button>
         <div className="xr-list-tools">
-          <button onClick={() => { onDup(l.id); toast("Detachment duplicated"); }} aria-label="Duplicate" title="Duplicate"><CopyIc size={19} /></button>
-          <button onClick={() => onDel(l.id)} aria-label="Delete" title="Delete"><Trash size={19} /></button>
+          <IconButton label={`Duplicate ${l.name || "detachment"}`} tooltip="Duplicate" icon={<CopyIc size={19} />} onClick={() => { onDup(l.id); toast("Detachment duplicated"); }} />
+          <IconButton label={`Delete ${l.name || "detachment"}`} tooltip="Delete" icon={<Trash size={19} />} onClick={() => onDel(l.id)} />
         </div>
       </div>
     );
@@ -1978,8 +1978,9 @@ const UnitRow = React.memo(function UnitRow({ u, i, selected, dispatch, dragging
       <div className="xr-urow-tools">
         <span className="xr-drag-handle" aria-hidden="true" title="Drag to reorder"
           onPointerDown={onDragDown} onPointerMove={onDragMove} onPointerUp={onDragUp} onPointerCancel={onDragCancel}><Grip size={14} /></span>
-        <button onClick={() => { dispatch({ type: "dup", key: u.key }); toast("Unit duplicated"); }} title="Duplicate this unit" aria-label="Duplicate this unit"><CopyIc size={16} /></button>
-        <button className="danger" onClick={() => { const removed = u, at = i; dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); toast(`${unitDisplayName(removed, at)} removed`, "ok", { label: "Undo", fn: () => dispatch({ type: "insertAt", unit: removed, index: at }) }); }} title="Remove this unit" aria-label="Remove this unit"><Trash size={16} /></button>
+        <IconButton label="Duplicate this unit" tooltip="Duplicate this unit" icon={<CopyIc size={16} />} onClick={() => { dispatch({ type: "dup", key: u.key }); toast("Unit duplicated"); }} />
+        <IconButton className="danger" label="Remove this unit" tooltip="Remove this unit" icon={<Trash size={16} />}
+          onClick={() => { const removed = u, at = i; dispatch({ type: "del", key: u.key }); if (selected) nav("#/build"); toast(`${unitDisplayName(removed, at)} removed`, "ok", { label: "Undo", fn: () => dispatch({ type: "insertAt", unit: removed, index: at }) }); }} />
       </div>
     </div>
   );
@@ -2126,7 +2127,7 @@ function TraitPicker({ u, tbl, trait, dispatch }) {
       {picking && (
         <div className="xr-trait-choices">
           {traits.map((tr, i) => (
-            <button key={i} className={`xr-trait-choice ${u.traitIndex === i ? "on" : ""}`}
+            <button key={i} className={`xr-trait-choice ${u.traitIndex === i ? "on" : ""}`} aria-pressed={u.traitIndex === i}
               onClick={() => { dispatch({ type: "trait", key: u.key, i }); setPicking(false); }}>
               <b>{tr.name}</b><span>{tr.flavor && <i className="xr-trait-flavor">{tr.flavor} </i>}{tr.rule}</span>
             </button>
@@ -2163,7 +2164,7 @@ function CommanderModal({ u, dispatch, onClose }) {
         <span className="xr-cmd-step">1. Trait table</span>
         <div className="xr-cmd-tablecards">
           {Object.entries(COMMANDER_TABLES).map(([key, ct]) => (
-            <button key={key} className={`xr-cmd-tablecard ${tbl === key ? "on" : ""}`} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
+            <button key={key} className={`xr-cmd-tablecard ${tbl === key ? "on" : ""}`} aria-pressed={tbl === key} onClick={() => dispatch({ type: "table", key: u.key, tbl: key })}>
               <b>{ct.label}</b><i>{ct.blurb}</i>
               <span className="xr-cmd-tablecard-check" aria-hidden="true">{tbl === key && <Check size={16} />}</span>
             </button>
@@ -2354,7 +2355,7 @@ function XenoConfigModal({ rule, u, dispatch, onClose, initialStep }) {
   const tierCards = (onPick) => (
     <div className="xr-cfg-cards">
       {rule.tiers.map((t, i) => (
-        <button key={i} className={`xr-cfg-card ${tierIdx === i ? "on" : ""}`} onClick={() => onPick(i)}>
+        <button key={i} className={`xr-cfg-card ${tierIdx === i ? "on" : ""}`} aria-pressed={tierIdx === i} onClick={() => onPick(i)}>
           <span className="xr-cfg-card-top"><b>{t.label}</b><i>{costLabel(t.cost)}</i></span>
           {t.sub && <span className="xr-cfg-card-sub">{t.sub}</span>}
           {t.desc && <span className="xr-cfg-card-desc">{t.desc}</span>}
@@ -2386,7 +2387,7 @@ function XenoConfigModal({ rule, u, dispatch, onClose, initialStep }) {
             </div>
             <div className="xr-merc-table">
               {MERC_TABLE.map((row) => (
-                <button key={row.roll} className={`xr-merc-row ${u.mercRoll === row.roll ? "on" : ""}`} onClick={() => dispatch({ type: "mercroll", key: u.key, roll: row.roll })}>
+                <button key={row.roll} className={`xr-merc-row ${u.mercRoll === row.roll ? "on" : ""}`} aria-pressed={u.mercRoll === row.roll} onClick={() => dispatch({ type: "mercroll", key: u.key, roll: row.roll })}>
                   <span className="xr-merc-d">{row.roll}</span>
                   <span className="xr-merc-body"><b>{row.name}</b><i>{row.text}</i></span>
                   <span className="xr-merc-check" aria-hidden="true">{u.mercRoll === row.roll && <Check size={16} />}</span>
@@ -2410,7 +2411,7 @@ function XenoConfigModal({ rule, u, dispatch, onClose, initialStep }) {
                 const on = chosen.includes(pw.name);
                 const atLimit = chosen.length >= limit && !on;
                 return (
-                  <button key={pw.name} className={`xr-psy-tr xr-psy-row ${on ? "on" : ""}`} disabled={atLimit}
+                  <button key={pw.name} className={`xr-psy-tr xr-psy-row ${on ? "on" : ""}`} disabled={atLimit} aria-pressed={on}
                     onClick={() => dispatch({ type: "psypower", key: u.key, power: pw.name })}
                     title={on ? "Remove this power" : atLimit ? "This class has no free power slots" : "Add this power"}>
                     <span className="xr-psy-check">{on && <Check size={14} />}</span>
@@ -4441,8 +4442,10 @@ const CSS = `
 .game-info-footer a{color:var(--brand-deep-blue);text-decoration:none;font-weight:600;}
 @media(hover:hover){.game-info-footer a:hover{text-decoration:underline;}}
 .gif-builder{margin-left:auto;}
-/* on the dashboard the credits ride the bottom of the screen until the shared WarLore footer arrives */
-.xr-home .game-info-footer{position:sticky;bottom:0;z-index:30;}
+/* on the dashboard the credits ride the bottom of the screen until the shared
+   WarLore footer arrives; not on a phone, where they wrap to four lines and
+   would cover a seventh of the screen for good */
+@media(min-width:601px){.xr-home .game-info-footer{position:sticky;bottom:0;z-index:30;}}
 .game-info-footer a.warlore-mark{font-family:'Terminal Grotesque Open','Zilla Slab',monospace;font-size:17px;letter-spacing:.03em;color:#FFCC00;background:#000;padding:1px 8px;text-decoration:none;font-weight:400;transition:color .12s,background .12s;}
 @media(hover:hover){.game-info-footer a.warlore-mark:hover{color:#000;background:#FFCC00;}}
 .warlore-mark .wl-lore{font:inherit;}
