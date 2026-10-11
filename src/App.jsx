@@ -1227,6 +1227,11 @@ const UNIT_STAT_MODS = {
   },
 };
 const modFor = (unitId, id) => (UNIT_STAT_MODS[unitId] && UNIT_STAT_MODS[unitId][id]) || GLOBAL_STAT_MODS[id];
+/* A mod that only shifts a value (worsen by 1, +4" move) must apply after any mod
+   that sets it outright, or the set wipes the shift: Berserk Increased Squad Size
+   sets Attack 3+, Enthusiastic then worsens it to 4+, whichever was ticked first. */
+const RELATIVE_KEYS = ["movDelta", "armDelta", "couImprove", "couWorsen", "atkImprove", "atkWorsen", "defImprove"];
+const isRelative = (m) => !m.fn && !m.act && !m.prof && RELATIVE_KEYS.some((k) => k in m);
 /* to-hit targets improve as the number falls (3+ beats 5+); distances, Armour
    and Strength improve as the number rises. */
 const LOWER_IS_BETTER = new Set(["act:atk", "act:mov", "act:sho", "act:cou", "prof:atk", "prof:def", "prof:sho"]);
@@ -1244,7 +1249,7 @@ function deriveStats(u, t) {
   const resolved = idList
     .map((id) => ({ id, m: modFor(t.id, id) }))
     .filter((x) => x.m)
-    .sort((a, b) => (a.m.pri || 0) - (b.m.pri || 0));
+    .sort((a, b) => (isRelative(a.m) - isRelative(b.m)) || ((a.m.pri || 0) - (b.m.pri || 0)));
   resolved.forEach(({ m }) => {
     if (m.fn) m = m.fn(idSet);
     if (m.act) setBlock(act, "act", m.act);
